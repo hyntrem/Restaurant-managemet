@@ -1,0 +1,143 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: restaurant_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - restaurant_network
+
+  user-service:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    container_name: user_service
+    command: python services/user-service/app.py
+    ports:
+      - "${USER_SERVICE_PORT}:5001"
+    env_file:
+      - .env
+    depends_on:
+      - mysql
+    networks:
+      - restaurant_network
+
+  menu-service:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    container_name: menu_service
+    command: python services/menu-service/app.py
+    ports:
+      - "${MENU_SERVICE_PORT}:5002"
+    env_file:
+      - .env
+    depends_on:
+      - mysql
+    networks:
+      - restaurant_network
+
+  inventory-service:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    container_name: inventory_service
+    command: python services/inventory-service/app.py
+    ports:
+      - "${INVENTORY_SERVICE_PORT}:5003"
+    env_file:
+      - .env
+    depends_on:
+      - mysql
+    networks:
+      - restaurant_network
+
+  order-service:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    container_name: order_service
+    command: python services/order-service/app.py
+    ports:
+      - "${ORDER_SERVICE_PORT}:5004"
+    env_file:
+      - .env
+    depends_on:
+      - mysql
+    networks:
+      - restaurant_network
+
+  payment-service:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    container_name: payment_service
+    command: python services/payment-service/app.py
+    ports:
+      - "${PAYMENT_SERVICE_PORT}:5005"
+    env_file:
+      - .env
+    depends_on:
+      - mysql
+    networks:
+      - restaurant_network
+
+  table-service:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    container_name: table_service
+    command: python services/table-service/app.py
+    ports:
+      - "${TABLE_SERVICE_PORT}:5006"
+    env_file:
+      - .env
+    depends_on:
+      - mysql
+    networks:
+      - restaurant_network
+
+  branch-service:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    container_name: branch_service
+    command: python services/branch-service/app.py
+    ports:
+      - "${BRANCH_SERVICE_PORT}:5007"
+    env_file:
+      - .env
+    depends_on:
+      - mysql
+    networks:
+      - restaurant_network
+
+  report-service:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    container_name: report_service
+    command: python services/report-service/app.py
+    ports:
+      - "${REPORT_SERVICE_PORT}:5008"
+    env_file:
+      - .env
+    depends_on:
+      - mysql
+    networks:
+      - restaurant_network
+
+volumes:
+  mysql_data:
+
+networks:
+  restaurant_network:
+    driver: bridge
