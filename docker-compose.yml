@@ -19,17 +19,28 @@ services:
     build:
       context: .
       dockerfile: api-gateway/Dockerfile
+
     container_name: user_service
+
     command: python services/user-service/app.py
+
     ports:
       - "${USER_SERVICE_PORT}:5001"
+
     env_file:
       - .env
+
+    volumes:
+      - .:/app
+
+    environment:
+      PYTHONPATH: /app
+
     depends_on:
       - mysql
+
     networks:
       - restaurant_network
-
   menu-service:
     build:
       context: .
