@@ -1,0 +1,158 @@
+from common.database import SessionLocal
+from sqlalchemy import text
+
+def create_user(full_name, username, email, phone, password_hash, role_id):
+    db = SessionLocal()
+
+    query = text("""
+        INSERT INTO users 
+        (full_name, username, email, phone, password_hash, role_id)
+        VALUES 
+        (:full_name, :username, :email, :phone, :password_hash, :role_id)
+    """)
+
+    db.execute(query, {
+        "full_name": full_name,
+        "username": username,
+        "email": email,
+        "phone": phone,
+        "password_hash": password_hash,
+        "role_id": role_id
+    })
+
+    db.commit()
+    db.close()
+
+
+def find_user_by_username(username):
+    db = SessionLocal()
+
+    query = text("""
+        SELECT u.id, u.full_name, u.username, u.email, u.phone,
+               u.password_hash, r.name AS role, u.status
+        FROM users u
+        JOIN roles r ON u.role_id = r.id
+        WHERE u.username = :username
+    """)
+
+    result = db.execute(query, {"username": username}).mappings().first()
+    db.close()
+
+    return dict(result) if result else None
+
+
+def find_user_by_email(email):
+    db = SessionLocal()
+
+    query = text("""
+        SELECT id, email
+        FROM users
+        WHERE email = :email
+    """)
+
+    result = db.execute(query, {"email": email}).mappings().first()
+    db.close()
+
+    return dict(result) if result else None
+
+
+def find_user_by_id(user_id):
+    db = SessionLocal()
+
+    query = text("""
+        SELECT u.id, u.full_name, u.username, u.email, u.phone,
+               r.name AS role, u.status
+        FROM users u
+        JOIN roles r ON u.role_id = r.id
+        WHERE u.id = :user_id
+    """)
+
+    result = db.execute(query, {"user_id": user_id}).mappings().first()
+    db.close()
+
+    return dict(result) if result else None
+
+
+def get_all_users():
+    db = SessionLocal()
+
+    query = text("""
+        SELECT u.id, u.full_name, u.username, u.email, u.phone,
+               r.name AS role, u.status, u.created_at
+        FROM users u
+        JOIN roles r ON u.role_id = r.id
+    """)
+
+    result = db.execute(query).mappings().all()
+    db.close()
+
+    return [dict(row) for row in result]
+
+
+def save_otp(email, otp_code, expired_at):
+    db = SessionLocal()
+
+    query = text("""
+        INSERT INTO password_otps (email, otp_code, expired_at)
+        VALUES (:email, :otp_code, :expired_at)
+    """)
+
+    db.execute(query, {
+        "email": email,
+        "otp_code": otp_code,
+        "expired_at": expired_at
+    })
+
+    db.commit()
+    db.close()
+
+
+def verify_otp(email, otp_code):
+    db = SessionLocal()
+
+    query = text("""
+        SELECT id
+        FROM password_otps
+        WHERE email = :email
+        AND otp_code = :otp_code
+        AND is_used = FALSE
+        AND expired_at > NOW()
+        ORDER BY id DESC
+        LIMIT 1
+    """)
+
+    result = db.execute(query, {
+        "email": email,
+        "otp_code": otp_code
+    }).mappings().first()
+
+    if result:
+        update_query = text("""
+            UPDATE password_otps
+            SET is_used = TRUE
+            WHERE id = :id
+        """)
+        db.execute(update_query, {"id": result["id"]})
+        db.commit()
+
+    db.close()
+
+    return True if result else False
+
+
+def update_password(email, password_hash):
+    db = SessionLocal()
+
+    query = text("""
+        UPDATE users
+        SET password_hash = :password_hash
+        WHERE email = :email
+    """)
+
+    db.execute(query, {
+        "email": email,
+        "password_hash": password_hash
+    })
+
+    db.commit()
+    db.close()
