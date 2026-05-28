@@ -51,6 +51,8 @@ services:
       - "${MENU_SERVICE_PORT}:5002"
     env_file:
       - .env
+    environment:
+      - PYTHONPATH=/app
     depends_on:
       - mysql
     networks:
