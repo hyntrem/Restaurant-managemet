@@ -297,3 +297,5 @@ INSERT INTO roles (name) VALUES
 ('KITCHEN'),
 ('MANAGER'),
 ('ADMIN');
+INSERT INTO users (full_name, email, phone, username, password_hash, role_id, branch_id, status) VALUES 
+('Quản Trị Viên', 'admin@restaurant.com', '0123456789', 'admin', '$2b$12$K399lzW8gUe10MtkA66Abe0779Qf69xW2gW1iJp54A1wF5.A3zG6a', 5, NULL, 'ACTIVE');
