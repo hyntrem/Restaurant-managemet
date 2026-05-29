@@ -18,41 +18,36 @@ services:
   user-service:
     build:
       context: .
-      dockerfile: api-gateway/Dockerfile
-
+      dockerfile: Dockerfile
     container_name: user_service
-
     command: python services/user-service/app.py
-
     ports:
       - "${USER_SERVICE_PORT}:5001"
-
     env_file:
       - .env
-
     volumes:
       - .:/app
-
     environment:
       PYTHONPATH: /app
-
     depends_on:
       - mysql
-
     networks:
       - restaurant_network
+
   menu-service:
     build:
       context: .
-      dockerfile: api-gateway/Dockerfile
+      dockerfile: Dockerfile
     container_name: menu_service
     command: python services/menu-service/app.py
     ports:
       - "${MENU_SERVICE_PORT}:5002"
     env_file:
       - .env
+    volumes:
+      - .:/app
     environment:
-      - PYTHONPATH=/app
+      PYTHONPATH: /app
     depends_on:
       - mysql
     networks:
@@ -61,13 +56,17 @@ services:
   inventory-service:
     build:
       context: .
-      dockerfile: api-gateway/Dockerfile
+      dockerfile: Dockerfile
     container_name: inventory_service
     command: python services/inventory-service/app.py
     ports:
       - "${INVENTORY_SERVICE_PORT}:5003"
     env_file:
       - .env
+    volumes:
+      - .:/app
+    environment:
+      PYTHONPATH: /app
     depends_on:
       - mysql
     networks:
@@ -76,13 +75,17 @@ services:
   order-service:
     build:
       context: .
-      dockerfile: api-gateway/Dockerfile
+      dockerfile: Dockerfile
     container_name: order_service
     command: python services/order-service/app.py
     ports:
       - "${ORDER_SERVICE_PORT}:5004"
     env_file:
       - .env
+    volumes:
+      - .:/app
+    environment:
+      PYTHONPATH: /app
     depends_on:
       - mysql
     networks:
@@ -91,13 +94,17 @@ services:
   payment-service:
     build:
       context: .
-      dockerfile: api-gateway/Dockerfile
+      dockerfile: Dockerfile
     container_name: payment_service
     command: python services/payment-service/app.py
     ports:
       - "${PAYMENT_SERVICE_PORT}:5005"
     env_file:
       - .env
+    volumes:
+      - .:/app
+    environment:
+      PYTHONPATH: /app
     depends_on:
       - mysql
     networks:
@@ -106,13 +113,17 @@ services:
   table-service:
     build:
       context: .
-      dockerfile: api-gateway/Dockerfile
+      dockerfile: Dockerfile
     container_name: table_service
     command: python services/table-service/app.py
     ports:
       - "${TABLE_SERVICE_PORT}:5006"
     env_file:
       - .env
+    volumes:
+      - .:/app
+    environment:
+      PYTHONPATH: /app
     depends_on:
       - mysql
     networks:
@@ -121,13 +132,17 @@ services:
   branch-service:
     build:
       context: .
-      dockerfile: api-gateway/Dockerfile
+      dockerfile: Dockerfile
     container_name: branch_service
     command: python services/branch-service/app.py
     ports:
       - "${BRANCH_SERVICE_PORT}:5007"
     env_file:
       - .env
+    volumes:
+      - .:/app
+    environment:
+      PYTHONPATH: /app
     depends_on:
       - mysql
     networks:
@@ -136,15 +151,38 @@ services:
   report-service:
     build:
       context: .
-      dockerfile: api-gateway/Dockerfile
+      dockerfile: Dockerfile
     container_name: report_service
     command: python services/report-service/app.py
     ports:
       - "${REPORT_SERVICE_PORT}:5008"
     env_file:
       - .env
+    volumes:
+      - .:/app
+    environment:
+      PYTHONPATH: /app
     depends_on:
       - mysql
+    networks:
+      - restaurant_network
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api_gateway
+    ports:
+      - "8080:80"
+    depends_on:
+      - user-service
+      - menu-service
+      - inventory-service
+      - order-service
+      - payment-service
+      - table-service
+      - branch-service
+      - report-service
     networks:
       - restaurant_network
 

@@ -1,11 +1,5 @@
-FROM python:3.11-slim
+FROM nginx:alpine
 
-WORKDIR /app
+COPY nginx.conf /etc/nginx/nginx.conf
 
-COPY requirements.txt .
-
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY . .
-
-ENV PYTHONUNBUFFERED=1
+EXPOSE 80
