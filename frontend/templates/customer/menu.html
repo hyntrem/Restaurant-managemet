@@ -1,0 +1,11 @@
+<h1>Customer Menu Page</h1>
+<button onclick="logout()">Logout</button>
+
+<script>
+function logout() {
+  localStorage.removeItem("customer_token");
+  localStorage.removeItem("customer_user");
+  globalThis.location.href = "login.html";
+}
+</script>
+#file test font #
