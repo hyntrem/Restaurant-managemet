@@ -1,13 +1,17 @@
 from flask import request, jsonify
 from services.inventory_service import (
     list_inventory, add_new_ingredient, edit_ingredient, 
-    import_goods, waste_goods, check_and_deduct_order_stock, get_inventory_alerts, view_logs
+    import_goods, waste_goods, check_and_deduct_order_stock, 
+    get_inventory_alerts, view_logs,
+    delete_ingredient_service, get_ingredient_detail, export_goods
 )
-
 def get_inventory():
     res, status_code = list_inventory()
     return jsonify(res), status_code
 
+def get_ingredient_by_id_controller(ingredient_id):
+    res, status_code = get_ingredient_detail(ingredient_id)
+    return jsonify(res), status_code
 
 def post_ingredient():
     res, status_code = add_new_ingredient(request.json)
@@ -23,6 +27,9 @@ def import_stock_controller():
     res, status_code = import_goods(request.json)
     return jsonify(res), status_code
 
+def export_stock_controller():
+    res, status_code = export_goods(request.json)
+    return jsonify(res), status_code
 
 def waste_stock_controller():
     res, status_code = waste_goods(request.json)
@@ -57,4 +64,8 @@ def get_alerts_controller():
 
 def get_logs_history():
     res, status_code = view_logs()
+    return jsonify(res), status_code
+
+def delete_ingredient_controller(ingredient_id):
+    res, status_code = delete_ingredient_service(ingredient_id)
     return jsonify(res), status_code

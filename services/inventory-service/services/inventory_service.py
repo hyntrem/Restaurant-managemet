@@ -2,13 +2,21 @@ from models.inventory_model import (
     get_all_ingredients, create_ingredient, update_ingredient_fields,
     execute_stock_transaction, get_recipes_for_menu_items, 
     get_all_stock_logs, get_ingredient_by_id,
-    get_expired_and_low_stock_ingredients # Đã bổ sung hàm bị thiếu
+    get_expired_and_low_stock_ingredients,
+    delete_ingredient_from_db 
 )
 
 def list_inventory():
     ingredients = get_all_ingredients()
     return {"success": True, "message": "Lấy danh sách tồn kho thành công", "data": ingredients}, 200
 
+def get_ingredient_detail(ing_id):
+    """Lấy chi tiết 1 nguyên liệu"""
+    ing = get_ingredient_by_id(ing_id)
+    if not ing:
+        return {"success": False, "message": "Không tìm thấy nguyên liệu này trong kho"}, 404
+        
+    return {"success": True, "message": "Lấy thông tin chi tiết thành công", "data": ing}, 200
 def add_new_ingredient(data):
     if not data.get('name') or not data.get('unit'):
         return {"success": False, "message": "Vui lòng điền đầy đủ tên và đơn vị tính"}, 400
@@ -33,12 +41,30 @@ def import_goods(data):
     
     if not ing_id or not qty:
         return {"success": False, "message": "Thiếu mã vật tư hoặc số lượng thực tế nhập kho"}, 400
+    if float(qty) <= 0:
+        return {"success": False, "message": "Số lượng hàng hóa phải lớn hơn 0"}, 400    
         
     updated_ing, error = execute_stock_transaction(ing_id, 'IMPORT', qty, note)
     if error:
         return {"success": False, "message": error}, 400
         
     return {"success": True, "message": "Nhập kho vật tư thành công", "data": updated_ing}, 200
+
+    
+def export_goods(data):
+    """Xuất kho thủ công"""
+    ing_id = data.get('ingredient_id')
+    qty = data.get('quantity')
+    note = data.get('note', 'Xuất kho thủ công')
+    
+    if not ing_id or not qty:
+        return {"success": False, "message": "Thiếu mã vật tư hoặc số lượng thực tế xuất kho"}, 400
+    if float(qty) <= 0:
+        return {"success": False, "message": "Số lượng hàng hóa phải lớn hơn 0"}, 400    
+    updated_ing, error = execute_stock_transaction(ing_id, 'EXPORT', qty, note)
+    if error:
+        return {"success": False, "message": error}, 400
+    return {"success": True, "message": "Xuất kho vật tư thành công", "data": updated_ing}, 200
 
 def waste_goods(data):
     ing_id = data.get('ingredient_id')
@@ -47,7 +73,9 @@ def waste_goods(data):
     
     if not ing_id or not qty:
         return {"success": False, "message": "Thiếu thông tin vật tư hoặc số lượng cần hủy bỏ"}, 400
-        
+    if float(qty) <= 0:
+        return {"success": False, "message": "Số lượng hàng hóa phải lớn hơn 0"}, 400
+
     updated_ing, error = execute_stock_transaction(ing_id, 'WASTE', qty, note)
     if error:
         return {"success": False, "message": error}, 400
@@ -137,3 +165,17 @@ def get_inventory_alerts():
 def view_logs():
     logs = get_all_stock_logs()
     return {"success": True, "data": logs}, 200
+
+def delete_ingredient_service(ing_id):
+    # 1. Kiểm tra xem nguyên liệu có tồn tại không
+    ing = get_ingredient_by_id(ing_id)
+    if not ing:
+        return {"success": False, "message": "Không tìm thấy nguyên liệu này trong kho"}, 404
+
+    # 2. Thực hiện xóa và bắt lỗi khóa ngoại
+    success, error = delete_ingredient_from_db(ing_id)
+    if not success:
+        return {
+            "success": False, 
+            "message": "Không thể xóa! Nguyên liệu này đang nằm trong công thức món ăn hoặc đã có lịch sử nhập/xuất kho."
+        }, 400

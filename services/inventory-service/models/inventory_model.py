@@ -161,3 +161,16 @@ def get_expired_and_low_stock_ingredients():
     results = db.execute(query).mappings().all()
     db.close()
     return [safe_dict(row) for row in results]
+
+def delete_ingredient_from_db(ing_id):
+    db = SessionLocal()
+    try:
+        query = text("DELETE FROM ingredients WHERE id = :id")
+        db.execute(query, {"id": ing_id})
+        db.commit()
+        return True, None
+    except Exception as e:
+        db.rollback()
+        return False, str(e)
+    finally:
+        db.close()
