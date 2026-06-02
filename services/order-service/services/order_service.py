@@ -1,0 +1,781 @@
+import requests
+from datetime import datetime
+from models.order_model import (
+    create_order_db, get_order_by_id, get_order_by_code, get_all_orders,
+    update_order_status, update_order_total, cancel_order_db,
+    add_order_item_db, get_order_items, get_order_item_by_id,
+    update_order_item_db, update_order_item_status, update_all_order_items_status,
+    delete_order_item_db, cancel_order_item_db,
+    add_status_history, get_order_history, search_orders, calculate_order_total
+)
+
+
+# ==================== EXTERNAL SERVICE CALLS ====================
+
+def call_menu_service(endpoint, method="GET", data=None):
+    """Gọi Menu Service qua HTTP"""
+    base_url = "http://menu-service:5002"
+    url = f"{base_url}{endpoint}"
+    
+    try:
+        if method == "GET":
+            response = requests.get(url, timeout=5)
+        elif method == "POST":
+            response = requests.post(url, json=data, timeout=5)
+        elif method == "PUT":
+            response = requests.put(url, json=data, timeout=5)
+        else:
+            return None
+        
+        if response.status_code == 200:
+            return response.json()
+        return None
+    except Exception as e:
+        print(f"Error calling menu service: {e}")
+        return None
+
+
+def call_inventory_service(endpoint, method="POST", data=None, headers=None):
+    """Gọi Inventory Service để trừ nguyên liệu"""
+    base_url = "http://inventory-service:5003"
+    url = f"{base_url}{endpoint}"
+    
+    try:
+        if method == "POST":
+            response = requests.post(url, json=data, headers=headers, timeout=5)
+        elif method == "PUT":
+            response = requests.put(url, json=data, headers=headers, timeout=5)
+        else:
+            return None
+        
+        if response.status_code in [200, 201]:
+            return response.json()
+        return None
+    except Exception as e:
+        print(f"Error calling inventory service: {e}")
+        return None
+
+
+def call_table_service(endpoint, method="PUT", data=None):
+    """Gọi Table Service để cập nhật trạng thái bàn"""
+    base_url = "http://table-service:5006"
+    url = f"{base_url}{endpoint}"
+    
+    try:
+        if method == "PUT":
+            response = requests.put(url, json=data, timeout=5)
+        elif method == "GET":
+            response = requests.get(url, timeout=5)
+        else:
+            return None
+        
+        if response.status_code == 200:
+            return response.json()
+        return None
+    except Exception as e:
+        print(f"Error calling table service: {e}")
+        return None
+
+
+# ==================== HELPER FUNCTIONS ====================
+
+def generate_order_code():
+    """Generate order code: ORD-YYYYMMDD-XXXX"""
+    now = datetime.now()
+    date_str = now.strftime("%Y%m%d")
+    time_str = now.strftime("%H%M%S")
+    return f"ORD-{date_str}-{time_str}"
+
+
+def validate_order_status_transition(current_status, new_status):
+    """Kiểm tra trạng thái chuyển đổi hợp lệ"""
+    valid_transitions = {
+        "PENDING": ["CONFIRMED", "CANCELLED"],
+        "CONFIRMED": ["PREPARING", "CANCELLED"],
+        "PREPARING": ["DONE"],
+        "DONE": ["COMPLETED"],
+        "COMPLETED": [],
+        "CANCELLED": []
+    }
+    
+    return new_status in valid_transitions.get(current_status, [])
+
+
+# ==================== ORDER CRUD ====================
+
+def create_order_service(data, user_id):
+    """Tạo đơn hàng mới"""
+    try:
+        # Validate dữ liệu
+        order_type = data.get("order_type")
+        if not order_type or order_type not in ["EAT_IN", "TAKE_AWAY", "DELIVERY", "PICK_UP"]:
+            return {
+                "success": False,
+                "message": "Loại đơn hàng không hợp lệ"
+            }, 400
+        
+        # EAT_IN bắt buộc có table_id
+        table_id = data.get("table_id")
+        if order_type == "EAT_IN" and not table_id:
+            return {
+                "success": False,
+                "message": "Đơn hàng ăn tại chỗ phải chọn bàn"
+            }, 400
+        
+        # Kiểm tra bàn có available không (nếu là EAT_IN)
+        if order_type == "EAT_IN":
+            table_response = call_table_service(f"/api/tables/{table_id}", method="GET")
+            if not table_response or not table_response.get("success"):
+                return {
+                    "success": False,
+                    "message": "Bàn không tồn tại"
+                }, 404
+            
+            table_data = table_response.get("data", {})
+            if table_data.get("status") != "AVAILABLE":
+                return {
+                    "success": False,
+                    "message": "Bàn đã có khách"
+                }, 400
+        
+        # Generate order code
+        order_code = generate_order_code()
+        
+        # Lấy thông tin từ data
+        customer_id = data.get("customer_id") or user_id
+        branch_id = data.get("branch_id", 1)
+        pickup_time = data.get("pickup_time")
+        delivery_address = data.get("delivery_address")
+        
+        # Tạo order
+        order_id = create_order_db(
+            order_code=order_code,
+            customer_id=customer_id,
+            table_id=table_id if order_type == "EAT_IN" else None,
+            branch_id=branch_id,
+            order_type=order_type,
+            total_amount=0,
+            pickup_time=pickup_time,
+            delivery_address=delivery_address
+        )
+        
+        # Ghi lịch sử
+        add_status_history(order_id, None, "PENDING", user_id, "Tạo đơn hàng mới")
+        
+        # Thêm items nếu có
+        items_data = data.get("items", [])
+        items = []
+        
+        for item_data in items_data:
+            menu_item_id = item_data.get("menu_item_id")
+            quantity = item_data.get("quantity", 1)
+            note = item_data.get("note", "")
+            
+            # Kiểm tra menu item tồn tại
+            menu_response = call_menu_service(f"/menu/{menu_item_id}")
+            if not menu_response or not menu_response.get("success"):
+                # Xóa order vừa tạo nếu có lỗi
+                delete_order_item_db(order_id)
+                return {
+                    "success": False,
+                    "message": f"Món ăn ID {menu_item_id} không tồn tại"
+                }, 404
+            
+            menu_item = menu_response.get("data", {})
+            if menu_item.get("status") != "AVAILABLE":
+                return {
+                    "success": False,
+                    "message": f"Món {menu_item.get('name')} hiện không còn bán"
+                }, 400
+            
+            # Thêm item vào order
+            item_id = add_order_item_db(
+                order_id=order_id,
+                menu_item_id=menu_item_id,
+                quantity=quantity,
+                price=menu_item.get("price"),
+                note=note
+            )
+            
+            items.append({
+                "id": item_id,
+                "menu_item_id": menu_item_id,
+                "menu_item_name": menu_item.get("name"),
+                "quantity": quantity,
+                "price": menu_item.get("price"),
+                "note": note,
+                "status": "PENDING"
+            })
+        
+        # Cập nhật total_amount
+        if items:
+            total = calculate_order_total(order_id)
+            update_order_total(order_id, total)
+        
+        # Nếu là EAT_IN, cập nhật trạng thái bàn
+        if order_type == "EAT_IN":
+            call_table_service(
+                f"/api/tables/{table_id}/status",
+                method="PUT",
+                data={"status": "OCCUPIED"}
+            )
+        
+        # Lấy thông tin order đã tạo
+        order = get_order_by_id(order_id)
+        order["items"] = items
+        
+        return {
+            "success": True,
+            "message": "Tạo đơn hàng thành công",
+            "data": order
+        }, 201
+    
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"Lỗi khi tạo đơn hàng: {str(e)}"
+        }, 500
+
+
+def get_order_detail_service(order_id):
+    """Lấy chi tiết đơn hàng"""
+    try:
+        order = get_order_by_id(order_id)
+        
+        if not order:
+            return {
+                "success": False,
+                "message": "Không tìm thấy đơn hàng"
+            }, 404
+        
+        # Lấy danh sách items
+        items = get_order_items(order_id)
+        order["items"] = items
+        
+        return {
+            "success": True,
+            "message": "Lấy thông tin đơn hàng thành công",
+            "data": order
+        }, 200
+    
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"Lỗi khi lấy thông tin đơn hàng: {str(e)}"
+        }, 500
+
+
+def list_orders_service(filters):
+    """Lấy danh sách đơn hàng"""
+    try:
+        orders = get_all_orders(filters)
+        
+        return {
+            "success": True,
+            "message": "Lấy danh sách đơn hàng thành công",
+            "data": orders
+        }, 200
+    
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"Lỗi khi lấy danh sách đơn hàng: {str(e)}"
+        }, 500
+
+
+def search_orders_service(keyword, filters):
+    """Tìm kiếm đơn hàng"""
+    try:
+        if not keyword:
+            return {
+                "success": False,
+                "message": "Từ khóa tìm kiếm không được để trống"
+            }, 400
+        
+        orders = search_orders(
+            keyword=keyword,
+            order_type=filters.get("order_type"),
+            status=filters.get("status"),
+            start_date=filters.get("start_date"),
+            end_date=filters.get("end_date")
+        )
+        
+        return {
+            "success": True,
+            "message": "Tìm kiếm đơn hàng thành công",
+            "data": orders
+        }, 200
+    
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"Lỗi khi tìm kiếm đơn hàng: {str(e)}"
+        }, 500
+
+
+# ==================== ORDER ITEMS MANAGEMENT ====================
+
+def add_item_to_order_service(order_id, data, user_id):
+    """Thêm món vào đơn hàng"""
+    try:
+        # Kiểm tra order tồn tại
+        order = get_order_by_id(order_id)
+        if not order:
+            return {
+                "success": False,
+                "message": "Không tìm thấy đơn hàng"
+            }, 404
+        
+        # Chỉ thêm món khi order đang PENDING
+        if order["status"] != "PENDING":
+            return {
+                "success": False,
+                "message": f"Không thể thêm món vào đơn hàng đang ở trạng thái {order['status']}"
+            }, 400
+        
+        menu_item_id = data.get("menu_item_id")
+        quantity = data.get("quantity", 1)
+        note = data.get("note", "")
+        
+        if not menu_item_id or quantity <= 0:
+            return {
+                "success": False,
+                "message": "Thông tin món ăn không hợp lệ"
+            }, 400
+        
+        # Kiểm tra menu item
+        menu_response = call_menu_service(f"/menu/{menu_item_id}")
+        if not menu_response or not menu_response.get("success"):
+            return {
+                "success": False,
+                "message": "Món ăn không tồn tại"
+            }, 404
+        
+        menu_item = menu_response.get("data", {})
+        if menu_item.get("status") != "AVAILABLE":
+            return {
+                "success": False,
+                "message": f"Món {menu_item.get('name')} hiện không còn bán"
+            }, 400
+        
+        # Thêm item
+        item_id = add_order_item_db(
+            order_id=order_id,
+            menu_item_id=menu_item_id,
+            quantity=quantity,
+            price=menu_item.get("price"),
+            note=note
+        )
+        
+        # Cập nhật total_amount
+        total = calculate_order_total(order_id)
+        update_order_total(order_id, total)
+        
+        # Lấy thông tin item vừa thêm
+        item = get_order_item_by_id(item_id)
+        
+        return {
+            "success": True,
+            "message": "Thêm món vào đơn hàng thành công",
+            "data": item
+        }, 201
+    
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"Lỗi khi thêm món: {str(e)}"
+        }, 500
+
+
+def update_item_service(order_id, item_id, data, user_id):
+    """Cập nhật món trong đơn"""
+    try:
+        # Kiểm tra order
+        order = get_order_by_id(order_id)
+        if not order:
+            return {
+                "success": False,
+                "message": "Không tìm thấy đơn hàng"
+            }, 404
+        
+        # Chỉ sửa khi PENDING
+        if order["status"] != "PENDING":
+            return {
+                "success": False,
+                "message": "Không thể sửa món khi đơn hàng đã được gửi đi"
+            }, 400
+        
+        # Kiểm tra item
+        item = get_order_item_by_id(item_id)
+        if not item or item["order_id"] != order_id:
+            return {
+                "success": False,
+                "message": "Không tìm thấy món trong đơn hàng"
+            }, 404
+        
+        quantity = data.get("quantity", item["quantity"])
+        note = data.get("note", item["note"])
+        
+        if quantity <= 0:
+            return {
+                "success": False,
+                "message": "Số lượng phải lớn hơn 0"
+            }, 400
+        
+        # Cập nhật
+        update_order_item_db(item_id, quantity, note)
+        
+        # Cập nhật total
+        total = calculate_order_total(order_id)
+        update_order_total(order_id, total)
+        
+        # Lấy thông tin mới
+        updated_item = get_order_item_by_id(item_id)
+        
+        return {
+            "success": True,
+            "message": "Cập nhật món thành công",
+            "data": updated_item
+        }, 200
+    
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"Lỗi khi cập nhật món: {str(e)}"
+        }, 500
+
+
+def remove_item_service(order_id, item_id, user_id):
+    """Xóa món khỏi đơn"""
+    try:
+        # Kiểm tra order
+        order = get_order_by_id(order_id)
+        if not order:
+            return {
+                "success": False,
+                "message": "Không tìm thấy đơn hàng"
+            }, 404
+        
+        # Chỉ xóa khi PENDING
+        if order["status"] != "PENDING":
+            return {
+                "success": False,
+                "message": "Không thể xóa món khi đơn hàng đã được gửi đi"
+            }, 400
+        
+        # Kiểm tra item
+        item = get_order_item_by_id(item_id)
+        if not item or item["order_id"] != order_id:
+            return {
+                "success": False,
+                "message": "Không tìm thấy món trong đơn hàng"
+            }, 404
+        
+        # Xóa
+        delete_order_item_db(item_id)
+        
+        # Cập nhật total
+        total = calculate_order_total(order_id)
+        update_order_total(order_id, total)
+        
+        return {
+            "success": True,
+            "message": "Xóa món thành công"
+        }, 200
+    
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"Lỗi khi xóa món: {str(e)}"
+        }, 500
+
+
+def cancel_item_service(order_id, item_id, user_id, reason):
+    """Hủy món trong đơn"""
+    try:
+        # Kiểm tra item
+        item = get_order_item_by_id(item_id)
+        if not item or item["order_id"] != order_id:
+            return {
+                "success": False,
+                "message": "Không tìm thấy món trong đơn hàng"
+            }, 404
+        
+        # Chỉ hủy khi PENDING hoặc PREPARING
+        if item["status"] not in ["PENDING", "PREPARING"]:
+            return {
+                "success": False,
+                "message": f"Không thể hủy món đang ở trạng thái {item['status']}"
+            }, 400
+        
+        # Hủy món
+        cancel_order_item_db(item_id)
+        
+        # Cập nhật total
+        total = calculate_order_total(order_id)
+        update_order_total(order_id, total)
+        
+        return {
+            "success": True,
+            "message": "Hủy món thành công"
+        }, 200
+    
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"Lỗi khi hủy món: {str(e)}"
+        }, 500
+
+
+# ==================== KITCHEN WORKFLOW ====================
+
+def send_to_kitchen_service(order_id, user_id):
+    """Gửi đơn hàng đến bếp"""
+    try:
+        order = get_order_by_id(order_id)
+        if not order:
+            return {
+                "success": False,
+                "message": "Không tìm thấy đơn hàng"
+            }, 404
+        
+        if order["status"] != "PENDING":
+            return {
+                "success": False,
+                "message": f"Không thể gửi bếp đơn hàng đang ở trạng thái {order['status']}"
+            }, 400
+        
+        # Kiểm tra có món không
+        items = get_order_items(order_id)
+        if not items:
+            return {
+                "success": False,
+                "message": "Đơn hàng phải có ít nhất 1 món"
+            }, 400
+        
+        # Cập nhật status
+        old_status = order["status"]
+        update_order_status(order_id, "CONFIRMED")
+        
+        # Ghi lịch sử
+        add_status_history(order_id, old_status, "CONFIRMED", user_id, "Gửi đơn hàng đến bếp")
+        
+        return {
+            "success": True,
+            "message": "Đã gửi đơn hàng đến bếp",
+            "data": {
+                "order_id": order_id,
+                "order_code": order["order_code"],
+                "old_status": old_status,
+                "new_status": "CONFIRMED"
+            }
+        }, 200
+    
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"Lỗi khi gửi bếp: {str(e)}"
+        }, 500
+
+
+def start_preparing_service(order_id, user_id):
+    """Bắt đầu chế biến đơn hàng"""
+    try:
+        order = get_order_by_id(order_id)
+        if not order:
+            return {
+                "success": False,
+                "message": "Không tìm thấy đơn hàng"
+            }, 404
+        
+        if order["status"] != "CONFIRMED":
+            return {
+                "success": False,
+                "message": f"Không thể chế biến đơn hàng đang ở trạng thái {order['status']}"
+            }, 400
+        
+        # Cập nhật status order
+        old_status = order["status"]
+        update_order_status(order_id, "PREPARING")
+        
+        # Cập nhật status items
+        update_all_order_items_status(order_id, "PREPARING")
+        
+        # Gọi Inventory Service để trừ nguyên liệu (optional)
+        # headers = {"X-Internal-Service": "order-service"}
+        # inventory_result = call_inventory_service(
+        #     "/api/inventory/deduct",
+        #     method="POST",
+        #     data={"order_id": order_id},
+        #     headers=headers
+        # )
+        
+        # Ghi lịch sử
+        add_status_history(order_id, old_status, "PREPARING", user_id, "Bắt đầu chế biến")
+        
+        return {
+            "success": True,
+            "message": "Đang chế biến đơn hàng",
+            "data": {
+                "order_id": order_id,
+                "status": "PREPARING",
+                "inventory_deducted": True
+            }
+        }, 200
+    
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"Lỗi khi bắt đầu chế biến: {str(e)}"
+        }, 500
+
+
+def mark_order_done_service(order_id, user_id):
+    """Đánh dấu đơn hàng hoàn thành (món đã sẵn sàng)"""
+    try:
+        order = get_order_by_id(order_id)
+        if not order:
+            return {
+                "success": False,
+                "message": "Không tìm thấy đơn hàng"
+            }, 404
+        
+        if order["status"] != "PREPARING":
+            return {
+                "success": False,
+                "message": f"Không thể hoàn thành đơn hàng đang ở trạng thái {order['status']}"
+            }, 400
+        
+        # Cập nhật status
+        old_status = order["status"]
+        update_order_status(order_id, "DONE")
+        update_all_order_items_status(order_id, "DONE")
+        
+        # Ghi lịch sử
+        add_status_history(order_id, old_status, "DONE", user_id, "Món đã sẵn sàng")
+        
+        return {
+            "success": True,
+            "message": "Đơn hàng đã hoàn thành",
+            "data": {
+                "order_id": order_id,
+                "status": "DONE"
+            }
+        }, 200
+    
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"Lỗi khi hoàn thành đơn: {str(e)}"
+        }, 500
+
+
+def receive_food_service(order_id, user_id):
+    """Khách nhận món"""
+    try:
+        order = get_order_by_id(order_id)
+        if not order:
+            return {
+                "success": False,
+                "message": "Không tìm thấy đơn hàng"
+            }, 404
+        
+        if order["status"] != "DONE":
+            return {
+                "success": False,
+                "message": f"Không thể nhận món khi đơn hàng đang ở trạng thái {order['status']}"
+            }, 400
+        
+        # Cập nhật status
+        old_status = order["status"]
+        update_order_status(order_id, "COMPLETED")
+        
+        # Ghi lịch sử
+        add_status_history(order_id, old_status, "COMPLETED", user_id, "Khách đã nhận món")
+        
+        return {
+            "success": True,
+            "message": "Khách đã nhận món",
+            "data": {
+                "order_id": order_id,
+                "status": "COMPLETED"
+            }
+        }, 200
+    
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"Lỗi khi nhận món: {str(e)}"
+        }, 500
+
+
+def cancel_order_service(order_id, user_id, reason):
+    """Hủy đơn hàng"""
+    try:
+        order = get_order_by_id(order_id)
+        if not order:
+            return {
+                "success": False,
+                "message": "Không tìm thấy đơn hàng"
+            }, 404
+        
+        # Chỉ hủy khi PENDING hoặc CONFIRMED
+        if order["status"] not in ["PENDING", "CONFIRMED"]:
+            return {
+                "success": False,
+                "message": f"Không thể hủy đơn hàng đang ở trạng thái {order['status']}"
+            }, 400
+        
+        # Hủy đơn
+        old_status = order["status"]
+        cancel_order_db(order_id)
+        update_all_order_items_status(order_id, "CANCELLED")
+        
+        # Ghi lịch sử
+        add_status_history(order_id, old_status, "CANCELLED", user_id, f"Hủy đơn: {reason}")
+        
+        # Nếu là EAT_IN, giải phóng bàn
+        if order["order_type"] == "EAT_IN" and order["table_id"]:
+            call_table_service(
+                f"/api/tables/{order['table_id']}/status",
+                method="PUT",
+                data={"status": "AVAILABLE"}
+            )
+        
+        return {
+            "success": True,
+            "message": "Hủy đơn hàng thành công"
+        }, 200
+    
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"Lỗi khi hủy đơn: {str(e)}"
+        }, 500
+
+
+# ==================== HISTORY ====================
+
+def get_order_history_service(order_id):
+    """Lấy lịch sử trạng thái đơn hàng"""
+    try:
+        order = get_order_by_id(order_id)
+        if not order:
+            return {
+                "success": False,
+                "message": "Không tìm thấy đơn hàng"
+            }, 404
+        
+        history = get_order_history(order_id)
+        
+        return {
+            "success": True,
+            "message": "Lấy lịch sử đơn hàng thành công",
+            "data": history
+        }, 200
+    
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"Lỗi khi lấy lịch sử: {str(e)}"
+        }, 500
