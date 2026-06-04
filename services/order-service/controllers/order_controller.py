@@ -1,5 +1,5 @@
 from flask import request, jsonify
-from services.order_service import (
+from Services.order_service import (
     create_order_service, get_order_detail_service, list_orders_service,
     search_orders_service, add_item_to_order_service, update_item_service,
     remove_item_service, cancel_item_service, send_to_kitchen_service,
@@ -19,7 +19,6 @@ def create_order_controller():
 
 
 def get_orders_controller():
-    """GET /api/orders?status=PENDING&order_type=EAT_IN"""
     filters = {
         "status": request.args.get("status"),
         "order_type": request.args.get("order_type"),
@@ -28,13 +27,20 @@ def get_orders_controller():
         "start_date": request.args.get("start_date"),
         "end_date": request.args.get("end_date")
     }
+
+    if request.user_role == "CUSTOMER":
+        filters["customer_id"] = request.user_id
+
     response, status_code = list_orders_service(filters)
     return jsonify(response), status_code
 
 
 def get_order_controller(order_id):
-    """GET /api/orders/{id}"""
-    response, status_code = get_order_detail_service(order_id)
+    response, status_code = get_order_detail_service(
+        order_id,
+        request.user_id,
+        request.user_role
+    )
     return jsonify(response), status_code
 
 
@@ -129,6 +135,9 @@ def cancel_order_controller(order_id):
 # ==================== HISTORY ====================
 
 def get_history_controller(order_id):
-    """GET /api/orders/{id}/history"""
-    response, status_code = get_order_history_service(order_id)
+    response, status_code = get_order_history_service(
+        order_id,
+        request.user_id,
+        request.user_role
+    )
     return jsonify(response), status_code

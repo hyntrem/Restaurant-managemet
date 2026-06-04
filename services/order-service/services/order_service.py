@@ -1,6 +1,6 @@
 import requests
 from datetime import datetime
-from models.order_model import (
+from Models.order_model import (
     create_order_db, get_order_by_id, get_order_by_code, get_all_orders,
     update_order_status, update_order_total, cancel_order_db,
     add_order_item_db, get_order_items, get_order_item_by_id,
@@ -13,10 +13,9 @@ from models.order_model import (
 # ==================== EXTERNAL SERVICE CALLS ====================
 
 def call_menu_service(endpoint, method="GET", data=None):
-    """Gọi Menu Service qua HTTP"""
     base_url = "http://menu-service:5002"
     url = f"{base_url}{endpoint}"
-    
+
     try:
         if method == "GET":
             response = requests.get(url, timeout=5)
@@ -26,52 +25,69 @@ def call_menu_service(endpoint, method="GET", data=None):
             response = requests.put(url, json=data, timeout=5)
         else:
             return None
-        
-        if response.status_code == 200:
+
+        if response.status_code in [200, 201]:
             return response.json()
+
+        print(f"Menu service error: {response.status_code} - {response.text}")
         return None
+
     except Exception as e:
         print(f"Error calling menu service: {e}")
         return None
 
 
 def call_inventory_service(endpoint, method="POST", data=None, headers=None):
-    """Gọi Inventory Service để trừ nguyên liệu"""
     base_url = "http://inventory-service:5003"
     url = f"{base_url}{endpoint}"
-    
+
+    if headers is None:
+        headers = {"X-Internal-Service": "order-service"}
+
     try:
-        if method == "POST":
+        if method == "GET":
+            response = requests.get(url, headers=headers, timeout=5)
+        elif method == "POST":
             response = requests.post(url, json=data, headers=headers, timeout=5)
         elif method == "PUT":
             response = requests.put(url, json=data, headers=headers, timeout=5)
         else:
             return None
-        
+
         if response.status_code in [200, 201]:
             return response.json()
+
+        print(f"Inventory service error: {response.status_code} - {response.text}")
         return None
+
     except Exception as e:
         print(f"Error calling inventory service: {e}")
         return None
 
 
-def call_table_service(endpoint, method="PUT", data=None):
-    """Gọi Table Service để cập nhật trạng thái bàn"""
+def call_table_service(endpoint, method="PUT", data=None, headers=None):
     base_url = "http://table-service:5006"
     url = f"{base_url}{endpoint}"
-    
+
+    if headers is None:
+        headers = {"X-Internal-Service": "order-service"}
+
     try:
-        if method == "PUT":
-            response = requests.put(url, json=data, timeout=5)
-        elif method == "GET":
-            response = requests.get(url, timeout=5)
+        if method == "GET":
+            response = requests.get(url, headers=headers, timeout=5)
+        elif method == "POST":
+            response = requests.post(url, json=data, headers=headers, timeout=5)
+        elif method == "PUT":
+            response = requests.put(url, json=data, headers=headers, timeout=5)
         else:
             return None
-        
-        if response.status_code == 200:
+
+        if response.status_code in [200, 201]:
             return response.json()
+
+        print(f"Table service error: {response.status_code} - {response.text}")
         return None
+
     except Exception as e:
         print(f"Error calling table service: {e}")
         return None
@@ -124,7 +140,7 @@ def create_order_service(data, user_id):
         
         # Kiểm tra bàn có available không (nếu là EAT_IN)
         if order_type == "EAT_IN":
-            table_response = call_table_service(f"/api/tables/{table_id}", method="GET")
+            table_response = call_table_service(f"/tables/{table_id}", method="GET")
             if not table_response or not table_response.get("success"):
                 return {
                     "success": False,
@@ -212,12 +228,14 @@ def create_order_service(data, user_id):
             total = calculate_order_total(order_id)
             update_order_total(order_id, total)
         
-        # Nếu là EAT_IN, cập nhật trạng thái bàn
+        # Nếu là EAT_IN, cập nhật trạng thái bàn + gắn order
         if order_type == "EAT_IN":
             call_table_service(
-                f"/api/tables/{table_id}/status",
+                "/assign-order",
                 method="PUT",
-                data={"status": "OCCUPIED"}
+                data={"table_id": table_id,
+                      "order_id": order_id
+                      }
             )
         
         # Lấy thông tin order đã tạo
@@ -237,27 +255,32 @@ def create_order_service(data, user_id):
         }, 500
 
 
-def get_order_detail_service(order_id):
+def get_order_detail_service(order_id, user_id=None, user_role=None):
     """Lấy chi tiết đơn hàng"""
     try:
         order = get_order_by_id(order_id)
-        
+
         if not order:
             return {
                 "success": False,
-                "message": "Không tìm thấy đơn hàng"
+                "message": "Không tìm thấy đơn hàng đã order "
             }, 404
-        
-        # Lấy danh sách items
+
+        if user_role == "CUSTOMER" and order["customer_id"] != user_id:
+            return {
+                "success": False,
+                "message": "Bạn không có quyền xem đơn hàng này"
+            }, 403
+
         items = get_order_items(order_id)
         order["items"] = items
-        
+
         return {
             "success": True,
             "message": "Lấy thông tin đơn hàng thành công",
             "data": order
         }, 200
-    
+
     except Exception as e:
         return {
             "success": False,
@@ -315,7 +338,7 @@ def search_orders_service(keyword, filters):
 
 # ==================== ORDER ITEMS MANAGEMENT ====================
 
-def add_item_to_order_service(order_id, data, user_id):
+def add_item_to_order_service(order_id, data):
     """Thêm món vào đơn hàng"""
     try:
         # Kiểm tra order tồn tại
@@ -323,7 +346,7 @@ def add_item_to_order_service(order_id, data, user_id):
         if not order:
             return {
                 "success": False,
-                "message": "Không tìm thấy đơn hàng"
+                "message": "Không tìm thấy đơn hàng  "
             }, 404
         
         # Chỉ thêm món khi order đang PENDING
@@ -387,7 +410,7 @@ def add_item_to_order_service(order_id, data, user_id):
         }, 500
 
 
-def update_item_service(order_id, item_id, data, user_id):
+def update_item_service(order_id, item_id, data):
     """Cập nhật món trong đơn"""
     try:
         # Kiểm tra order
@@ -395,7 +418,7 @@ def update_item_service(order_id, item_id, data, user_id):
         if not order:
             return {
                 "success": False,
-                "message": "Không tìm thấy đơn hàng"
+                "message": "Không tìm thấy đơn hàng  "
             }, 404
         
         # Chỉ sửa khi PENDING
@@ -410,7 +433,7 @@ def update_item_service(order_id, item_id, data, user_id):
         if not item or item["order_id"] != order_id:
             return {
                 "success": False,
-                "message": "Không tìm thấy món trong đơn hàng"
+                "message": "Không tìm thấy món trong đơn hàng!"
             }, 404
         
         quantity = data.get("quantity", item["quantity"])
@@ -445,7 +468,7 @@ def update_item_service(order_id, item_id, data, user_id):
         }, 500
 
 
-def remove_item_service(order_id, item_id, user_id):
+def remove_item_service(order_id, item_id):
     """Xóa món khỏi đơn"""
     try:
         # Kiểm tra order
@@ -453,7 +476,7 @@ def remove_item_service(order_id, item_id, user_id):
         if not order:
             return {
                 "success": False,
-                "message": "Không tìm thấy đơn hàng"
+                "message": "Không tìm thấy đơn hàng."
             }, 404
         
         # Chỉ xóa khi PENDING
@@ -490,7 +513,7 @@ def remove_item_service(order_id, item_id, user_id):
         }, 500
 
 
-def cancel_item_service(order_id, item_id, user_id, reason):
+def cancel_item_service(order_id, item_id):
     """Hủy món trong đơn"""
     try:
         # Kiểm tra item
@@ -536,7 +559,7 @@ def send_to_kitchen_service(order_id, user_id):
         if not order:
             return {
                 "success": False,
-                "message": "Không tìm thấy đơn hàng"
+                "message": "Không tìm thấy đơn hàng đã order "
             }, 404
         
         if order["status"] != "PENDING":
@@ -582,37 +605,63 @@ def start_preparing_service(order_id, user_id):
     """Bắt đầu chế biến đơn hàng"""
     try:
         order = get_order_by_id(order_id)
+
         if not order:
             return {
                 "success": False,
-                "message": "Không tìm thấy đơn hàng"
+                "message": "Không tìm thấy đơn hàng đã order"
             }, 404
-        
+
         if order["status"] != "CONFIRMED":
             return {
                 "success": False,
                 "message": f"Không thể chế biến đơn hàng đang ở trạng thái {order['status']}"
             }, 400
-        
-        # Cập nhật status order
+
+        items = get_order_items(order_id)
+
+        if not items:
+            return {
+                "success": False,
+                "message": "Đơn hàng không có món để chế biến"
+            }, 400
+
+        inventory_items = []
+
+        for item in items:
+            inventory_items.append({
+                "menu_item_id": item["menu_item_id"],
+                "quantity": item["quantity"]
+            })
+
+        inventory_result = call_inventory_service(
+            "/deduct",
+            method="POST",
+            data={
+                "items": inventory_items
+            }
+        )
+
+        if not inventory_result or not inventory_result.get("success"):
+            return {
+                "success": False,
+                "message": "Không đủ nguyên liệu hoặc không thể trừ kho",
+                "inventory_error": inventory_result
+            }, 400
+
         old_status = order["status"]
+
         update_order_status(order_id, "PREPARING")
-        
-        # Cập nhật status items
         update_all_order_items_status(order_id, "PREPARING")
-        
-        # Gọi Inventory Service để trừ nguyên liệu (optional)
-        # headers = {"X-Internal-Service": "order-service"}
-        # inventory_result = call_inventory_service(
-        #     "/api/inventory/deduct",
-        #     method="POST",
-        #     data={"order_id": order_id},
-        #     headers=headers
-        # )
-        
-        # Ghi lịch sử
-        add_status_history(order_id, old_status, "PREPARING", user_id, "Bắt đầu chế biến")
-        
+
+        add_status_history(
+            order_id,
+            old_status,
+            "PREPARING",
+            user_id,
+            "Bắt đầu chế biến và đã trừ kho nguyên liệu"
+        )
+
         return {
             "success": True,
             "message": "Đang chế biến đơn hàng",
@@ -622,7 +671,7 @@ def start_preparing_service(order_id, user_id):
                 "inventory_deducted": True
             }
         }, 200
-    
+
     except Exception as e:
         return {
             "success": False,
@@ -637,7 +686,7 @@ def mark_order_done_service(order_id, user_id):
         if not order:
             return {
                 "success": False,
-                "message": "Không tìm thấy đơn hàng"
+                "message": "Không tìm thấy đơn hàng."
             }, 404
         
         if order["status"] != "PREPARING":
@@ -677,7 +726,7 @@ def receive_food_service(order_id, user_id):
         if not order:
             return {
                 "success": False,
-                "message": "Không tìm thấy đơn hàng"
+                "message": "Không tìm thấy đơn hàng đã order"
             }, 404
         
         if order["status"] != "DONE":
@@ -737,9 +786,10 @@ def cancel_order_service(order_id, user_id, reason):
         # Nếu là EAT_IN, giải phóng bàn
         if order["order_type"] == "EAT_IN" and order["table_id"]:
             call_table_service(
-                f"/api/tables/{order['table_id']}/status",
+                "/status",
                 method="PUT",
-                data={"status": "AVAILABLE"}
+                data={"table_id": order["table_id"],
+                      "status": "AVAILABLE"}
             )
         
         return {
