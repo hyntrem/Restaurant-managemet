@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pizza 4P's - Cashier POS</title>
+  <link rel="stylesheet" href="../../static/css/staff.css">
+</head>
+
+<body>
+  <header class="staff-header">
+    <div class="logo-box">
+      <img
+        src="../../static/images/pizza4ps-logo.png"
+        alt="Pizza 4P's Vietnam"
+        class="logo-img">
+      <span class="logo-country">VIETNAM</span>
+    </div>
+
+    <div class="staff-user">
+      <span id="staffUserInfo" class="user-pill">User</span>
+      <button type="button" class="logout-btn" onclick="globalThis.logoutStaff()">Đăng xuất</button>
+    </div>
+  </header>
+
+  <main class="staff-main">
+    <h1 class="page-title">Cashier / Lobby POS</h1>
+    <p class="page-subtitle">Chọn loại order để bắt đầu thao tác bán hàng.</p>
+
+    <section class="pos-type-grid">
+      <button type="button" class="pos-type-btn active" data-order-type="EAT_IN">
+        Eat In
+      </button>
+
+      <button type="button" class="pos-type-btn" data-order-type="TAKE_AWAY">
+        Take Away
+      </button>
+
+      <button type="button" class="pos-type-btn" data-order-type="DELIVERY">
+        Delivery
+      </button>
+
+      <button type="button" class="pos-type-btn" data-order-type="GRAB">
+        Grab
+      </button>
+
+      <button type="button" class="pos-type-btn" data-order-type="SHOPEEFOOD">
+        ShopeeFood
+      </button>
+
+      <button type="button" class="pos-type-btn" data-order-type="PARTY">
+        Party
+      </button>
+    </section>
+
+    <section class="cashier-layout">
+      <section class="panel order-panel">
+      <section id="cashierPOS" class="cashier-layout hidden"></section>
+        <div class="panel-title">Order</div>
+
+        <div class="order-header">
+          <p class="small-order-type">
+            Loại order hiện tại: <span id="currentOrderType">Chưa chọn</span>
+          </p>
+
+          <p><strong>Mã hóa đơn:</strong> <span id="orderCode">Chưa tạo</span></p>
+
+          <div id="tableInputBox">
+            <label for="selectedTableId">Mã bàn</label>
+            <input
+              type="number"
+              id="selectedTableId"
+              name="selectedTableId"
+              placeholder="Nhập mã bàn nếu Eat In">
+          </div>
+        </div>
+
+        <div id="orderItems" class="order-list">
+          <p class="empty-text">Chưa có món nào trong order.</p>
+        </div>
+
+        <div class="order-total-box">
+          <p>Subtotal: <strong id="subtotalAmount">0 VNĐ</strong></p>
+          <p>Tax: <strong id="taxAmount">0 VNĐ</strong></p>
+          <p>Total: <strong id="totalAmount">0 VNĐ</strong></p>
+        </div>
+
+        <div class="order-actions">
+          <button type="button" class="secondary-btn" onclick="globalThis.changeQuantity()">Quantity</button>
+          <button type="button" class="secondary-btn" onclick="globalThis.loadMenu()">Main Menu</button>
+          <button type="button" class="danger-btn" onclick="globalThis.deleteSelectedItem()">Delete</button>
+          <button type="button" class="primary-btn" onclick="globalThis.createOrder()">Create Order</button>
+        </div>
+      </section>
+
+      <section class="panel menu-panel">
+        <div class="panel-title">Menu</div>
+
+        <div id="menuList" class="menu-grid">
+          <p class="empty-text">Đang tải menu...</p>
+        </div>
+
+        <div class="modify-box">
+          <div class="panel-title">Modify - Không lấy thành phần</div>
+
+          <div class="modify-grid">
+            <button type="button" class="modifier-btn" data-modifier="No Onion">No Onion</button>
+            <button type="button" class="modifier-btn" data-modifier="No Mushroom">No Mushroom</button>
+            <button type="button" class="modifier-btn" data-modifier="No Cheese">No Cheese</button>
+            <button type="button" class="modifier-btn" data-modifier="No Sauce">No Sauce</button>
+            <button type="button" class="modifier-btn" data-modifier="No Tomato">No Tomato</button>
+            <button type="button" class="modifier-btn" data-modifier="No Vegetable">No Vegetable</button>
+          </div>
+
+          <p class="helper-text">Chọn món trong order rồi bấm thành phần không lấy. Nội dung này sẽ gửi xuống Kitchen qua ghi chú.</p>
+        </div>
+      </section>
+
+      <section class="panel category-panel">
+        <div class="panel-title">Category</div>
+        <div id="categoryList" class="category-list">
+          <p class="empty-text">Đang tải danh mục...</p>
+        </div>
+      </section>
+    </section>
+
+    <section class="bottom-action-bar">
+      <button type="button" onclick="globalThis.lockPOS()">Lock POS</button>
+      <button type="button" onclick="globalThis.showUpdating()">Khuyến mãi</button>
+      <button type="button" onclick="globalThis.resetOrderType()">Order Type</button>
+      <button type="button" onclick="globalThis.reprintInvoice()">In lại hóa đơn</button>
+      <button type="button" onclick="globalThis.showUpdating()">Manager Function</button>
+      <button type="button" onclick="globalThis.goBackDashboard()">Main Dashboard</button>
+    </section>
+
+    <p id="message" class="pos-message"></p>
+  </main>
+
+  <footer class="staff-footer"></footer>
+
+  <script src="../../static/js/staff-api.js"></script>
+  <script src="../../static/js/cashier.js"></script>
+</body>
+</html>
