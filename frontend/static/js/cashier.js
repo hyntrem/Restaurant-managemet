@@ -123,32 +123,34 @@ function protectPage() {
   }
 
   function renderMenu(items) {
-    const menuList = document.getElementById("menuList");
+  const menuList = document.getElementById("menuList");
 
-    if (!items || items.length === 0) {
-      menuList.innerHTML = '<p class="empty-text">Không có món trong danh mục này.</p>';
-      return;
-    }
-
-    menuList.innerHTML = "";
-
-    items.forEach((item) => {
-      const card = document.createElement("button");
-      card.type = "button";
-      card.className = "menu-card";
-      card.onclick = function () {
-        addToCart(item);
-      };
-
-      card.innerHTML = `
-        <h4>${item.name}</h4>
-        <p>${formatCurrency(item.price)}</p>
-        <small>${item.status}</small>
-      `;
-
-      menuList.appendChild(card);
-    });
+  if (!items || items.length === 0) {
+    menuList.innerHTML = '<p class="empty-text">Không có món trong danh mục này.</p>';
+    return;
   }
+
+  menuList.innerHTML = "";
+
+  items.forEach(function (item) {
+    const card = document.createElement("button");
+
+    card.type = "button";
+    card.className = "menu-card";
+
+    card.addEventListener("click", function () {
+      addToCart(item);
+    });
+
+    card.innerHTML = `
+      <h4>${item.name}</h4>
+      <p>${formatCurrency(item.price)}</p>
+      <small>${item.status}</small>
+    `;
+
+    menuList.appendChild(card);
+  });
+}
 
   function isSameCategory(item, categoryId) {
   return Number(item.category_id) === Number(categoryId);
@@ -394,7 +396,17 @@ function updateSelectedItemModifier(button) {
   globalThis.goBackDashboard = function () {
     globalThis.location.href = "admin-dashboard.html";
   };
+globalThis.loadMenu = async function () {
+  const result = await globalThis.apiGet("/api/menu/menu");
 
+  if (!result.success) {
+    setMessage("Không tải được menu.");
+    return;
+  }
+
+  menuItems = result.data;
+  renderMenu(menuItems);
+};
   globalThis.logoutStaff = function () {
     globalThis.localStorage.removeItem("staff_token");
     globalThis.localStorage.removeItem("staff_user");
