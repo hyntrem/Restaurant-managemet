@@ -1,3 +1,6 @@
+@charset "UTF-8";
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap');
+ 
 :root {
   --marine: #163B6D;
   --marine-hover: #0f2a4d;
@@ -11,10 +14,10 @@
   --shadow: rgba(22,59,109,0.10);
   --muted: #888;
 }
-
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+ 
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Be Vietnam Pro', 'Segoe UI', 'Arial Unicode MS', Tahoma, Geneva, Arial, sans-serif; }
 body { background: var(--cream); min-height: 100vh; color: #1a2a3a; }
-
+ 
 /* ── HEADER ── */
 .staff-header {
   background: var(--marine);
@@ -31,7 +34,7 @@ body { background: var(--cream); min-height: 100vh; color: #1a2a3a; }
 .staff-user { display: flex; align-items: center; gap: 10px; }
 .user-pill {
   background: rgba(255,255,255,0.15);
-  color: #fff;
+  color: #F7F3E8;
   border: 1px solid rgba(255,255,255,0.3);
   padding: 5px 14px;
   border-radius: 20px;
@@ -48,8 +51,8 @@ body { background: var(--cream); min-height: 100vh; color: #1a2a3a; }
   font-weight: 600;
   transition: .15s;
 }
-.logout-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
-
+.logout-btn:hover { background: rgba(255,255,255,0.15); color: #F7F3E8; }
+ 
 /* ── FOOTER ── */
 .staff-footer {
   background: var(--marine);
@@ -57,13 +60,13 @@ body { background: var(--cream); min-height: 100vh; color: #1a2a3a; }
   height: 50px;
   margin-top: 12px;
 }
-
+ 
 /* ── MAIN ── */
 .staff-main { padding: 20px 24px; max-width: 1100px; margin: 0 auto; }
 .staff-main.pos-active { max-width: 1440px; }
 .page-title { font-size: 22px; font-weight: 700; color: var(--marine); margin-bottom: 4px; }
 .page-subtitle { color: var(--muted); font-size: 13px; margin-bottom: 20px; }
-
+ 
 /* ── ADMIN DASHBOARD MODULE GRID ── */
 .module-grid {
   display: grid;
@@ -91,7 +94,7 @@ body { background: var(--cream); min-height: 100vh; color: #1a2a3a; }
 .module-card h3 { color: var(--marine); font-size: 17px; font-weight: 700; }
 .module-card p { color: #666; font-size: 13px; line-height: 1.5; }
 .module-card.hidden { display: none; }
-
+ 
 /* ── ORDER TYPE SELECTION (cashier-dashboard: step 1) ── */
 .order-type-screen { padding: 0; }
 .ot-grid {
@@ -121,11 +124,11 @@ body { background: var(--cream); min-height: 100vh; color: #1a2a3a; }
 .ot-grab     { background: #00833e; }
 .ot-shopee   { background: #ee4d2d; }
 .ot-party    { background: #7d3c98; }
-
+ 
 /* ── POS LAYOUT (cashier-dashboard: step 2) ── */
 .cashier-layout {
   display: grid;
-  grid-template-columns: 2fr 1fr 3fr;
+  grid-template-columns: 2fr 4fr 1fr;
   gap: 14px;
   min-height: 580px;
 }
@@ -146,7 +149,7 @@ body { background: var(--cream); min-height: 100vh; color: #1a2a3a; }
   padding-bottom: 8px;
   border-bottom: 2px solid var(--marine);
 }
-
+ 
 /* Order panel */
 .order-panel { min-height: 580px; }
 .order-header { background: var(--cream); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; display: grid; gap: 6px; }
@@ -176,10 +179,10 @@ body { background: var(--cream); min-height: 100vh; color: #1a2a3a; }
 .order-total-box p:last-child { font-size: 15px; font-weight: 700; color: var(--marine); border-top: 1px solid var(--border); padding-top: 6px; margin-top: 2px; }
 .order-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 10px; }
 .order-actions button { border: none; border-radius: 8px; padding: 10px; cursor: pointer; font-weight: 700; font-size: 13px; transition: .15s; }
-
+ 
 /* Menu panel */
 .menu-panel { }
-.menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.menu-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
 .menu-card { border: 1.5px solid var(--border); border-radius: 9px; padding: 10px 8px; text-align: center; cursor: pointer; background: var(--white); transition: .15s; }
 .menu-card:hover { background: var(--cream); border-color: var(--marine); }
 .menu-card h4 { color: var(--marine); font-size: 12px; font-weight: 700; margin-bottom: 3px; }
@@ -191,14 +194,14 @@ body { background: var(--cream); min-height: 100vh; color: #1a2a3a; }
 .modifier-btn:hover { border-color: var(--marine); }
 .modifier-btn.active { background: var(--marine); color: var(--white); border-color: var(--marine); }
 .helper-text { margin-top: 8px; color: var(--muted); font-size: 11px; }
-
+ 
 /* Category panel */
 .category-panel { }
 .category-list { display: flex; flex-direction: column; gap: 7px; flex: 1; }
 .category-btn { border: 1.5px solid var(--border); background: var(--cream); padding: 11px 14px; border-radius: 9px; cursor: pointer; text-align: left; font-size: 13px; font-weight: 600; color: var(--marine); transition: .15s; }
 .category-btn:hover { background: var(--marine); color: var(--white); border-color: var(--marine); }
 .category-btn.active { background: var(--marine); color: var(--white); border-color: var(--marine); }
-
+ 
 /* ── BUTTONS ── */
 .primary-btn { background: var(--marine); color: var(--white); }
 .primary-btn:hover { background: var(--marine-hover); }
@@ -221,7 +224,7 @@ body { background: var(--cream); min-height: 100vh; color: #1a2a3a; }
   transition: .15s;
 }
 .back-btn:hover { background: var(--border); }
-
+ 
 /* ── BOTTOM ACTION BAR (footer buttons) ── */
 .bottom-action-bar {
   margin-top: 14px;
@@ -260,11 +263,11 @@ body { background: var(--cream); min-height: 100vh; color: #1a2a3a; }
 .bottom-action-bar .btn-print   { background: #b7770d; }
 .bottom-action-bar .btn-manager { background: #922b21; }
 .bottom-action-bar .btn-home    { background: #163B6D; }
-
+ 
 /* ── MISC ── */
 .pos-message { margin-top: 12px; color: var(--marine); font-weight: 700; font-size: 13px; min-height: 20px; }
 .hidden { display: none !important; }
-
+ 
 /* ── RESPONSIVE ── */
 @media (max-width: 1100px) {
   .cashier-layout { grid-template-columns: 1fr; }

@@ -1,12 +1,15 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
   <title>Pizza 4P's - Cashier POS</title>
   <link rel="stylesheet" href="../../static/css/staff.css">
 </head>
-
+ 
 <body>
   <header class="staff-header">
     <div class="logo-box">
@@ -18,15 +21,15 @@
       <button type="button" class="logout-btn" onclick="globalThis.logoutStaff()">Đăng xuất</button>
     </div>
   </header>
-
+ 
   <main class="staff-main">
-
+ 
     <!-- ── STEP 1: CHỌN LOẠI ORDER ── -->
     <div id="screenOrderType">
       <button type="button" class="back-btn" onclick="globalThis.goBackDashboard()">← Admin Dashboard</button>
       <h1 class="page-title">Cashier / Lobby POS</h1>
       <p class="page-subtitle">Chọn loại order để bắt đầu thao tác bán hàng.</p>
-
+ 
       <div class="ot-grid">
         <button type="button" class="ot-card ot-eatin" data-order-type="EAT_IN">
           <span class="ot-icon">🍽️</span>
@@ -60,17 +63,17 @@
         </button>
       </div>
     </div>
-
+ 
     <!-- ── STEP 2: POS SCREEN ── -->
     <div id="screenPOS" class="hidden">
       <button type="button" class="back-btn" onclick="globalThis.resetOrderType()">← Đổi loại order</button>
-
+ 
       <section id="cashierPOS" class="cashier-layout">
-
+ 
         <!-- Cột 1: Order (2fr) -->
         <section class="panel order-panel">
           <div class="panel-title">Order</div>
-
+ 
           <div class="order-header">
             <p class="small-order-type">
               Loại đơn: <span id="currentOrderType" class="order-type-tag">Chưa chọn</span>
@@ -85,17 +88,17 @@
                 placeholder="Nhập mã bàn nếu Eat In">
             </div>
           </div>
-
+ 
           <div id="orderItems" class="order-list">
             <p class="empty-text">Chưa có món nào trong order.</p>
           </div>
-
+ 
           <div class="order-total-box">
             <p>Subtotal: <strong id="subtotalAmount">0 VNĐ</strong></p>
             <p>Tax: <strong id="taxAmount">0 VNĐ</strong></p>
             <p>Total: <strong id="totalAmount">0 VNĐ</strong></p>
           </div>
-
+ 
           <div class="order-actions">
             <button type="button" class="secondary-btn" onclick="globalThis.changeQuantity()">Quantity</button>
             <button type="button" class="secondary-btn" onclick="globalThis.loadMenu()">Main Menu</button>
@@ -103,15 +106,15 @@
             <button type="button" class="primary-btn" onclick="globalThis.createOrder()">Create Order</button>
           </div>
         </section>
-
+ 
         <!-- Cột 2: Menu (1fr) -->
         <section class="panel menu-panel">
           <div class="panel-title">Menu</div>
-
+ 
           <div id="menuList" class="menu-grid">
             <p class="empty-text">Đang tải menu...</p>
           </div>
-
+ 
           <div class="modify-box">
             <div class="panel-title">Modify</div>
             <div class="modify-grid">
@@ -125,7 +128,7 @@
             <p class="helper-text">Chọn món trong order rồi bấm thành phần không lấy.</p>
           </div>
         </section>
-
+ 
         <!-- Cột 3: Category (3fr) -->
         <section class="panel category-panel">
           <div class="panel-title">Category</div>
@@ -133,38 +136,30 @@
             <p class="empty-text">Đang tải danh mục...</p>
           </div>
         </section>
-
       </section>
-
       <!-- Bottom action bar -->
       <div class="bottom-action-bar">
-        <button type="button" class="btn-lock" onclick="globalThis.lockPOS()">
-          <span class="btn-icon">🔒</span><span class="btn-label">Khóa POS</span>
+        <button type="button" class="btn-lock" onclick="globalThis.lockPOS()"><span class="btn-label">Khóa POS</span>
         </button>
-        <button type="button" class="btn-promo" onclick="globalThis.showUpdating()">
-          <span class="btn-icon">🎁</span><span class="btn-label">Khuyến mãi</span>
+        <button type="button" class="btn-promo" onclick="globalThis.showUpdating()"><span class="btn-label">Khuyến mãi</span>
         </button>
-        <button type="button" class="btn-otype" onclick="globalThis.resetOrderType()">
-          <span class="btn-icon">📋</span><span class="btn-label">Loại Order</span>
+        <button type="button" class="btn-otype" onclick="globalThis.resetOrderType()"><span class="btn-label">Loại Order</span>
         </button>
-        <button type="button" class="btn-print" onclick="globalThis.reprintInvoice()">
-          <span class="btn-icon">🖨️</span><span class="btn-label">In hóa đơn</span>
+        <button type="button" class="btn-print" onclick="globalThis.reprintInvoice()"><span class="btn-label">In hóa đơn</span>
         </button>
-        <button type="button" class="btn-manager" onclick="globalThis.showUpdating()">
-          <span class="btn-icon">⚙️</span><span class="btn-label">Manager</span>
+        <button type="button" class="btn-manager" onclick="globalThis.showUpdating()"><span class="btn-label">Manager</span>
         </button>
-        <button type="button" class="btn-home" onclick="globalThis.goBackDashboard()">
-          <span class="btn-icon">🏠</span><span class="btn-label">Dashboard</span>
+        <button type="button" class="btn-home" onclick="globalThis.goBackDashboard()"><span class="btn-label">Dashboard</span>
         </button>
       </div>
-
+ 
     </div><!-- end screenPOS -->
-
+ 
     <p id="message" class="pos-message"></p>
   </main>
-
+ 
   <footer class="staff-footer"></footer>
-
+ 
   <script src="../../static/js/staff-api.js"></script>
   <script src="../../static/js/cashier.js"></script>
 </body>

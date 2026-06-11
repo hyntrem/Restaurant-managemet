@@ -1,6 +1,8 @@
-CREATE DATABASE IF NOT EXISTS restaurant_management;
-USE restaurant_management;
+CREATE DATABASE IF NOT EXISTS restaurant_management
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;
 
+USE restaurant_management;
 -- =========================
 -- 1. USER / ROLE / BRANCH
 -- =========================

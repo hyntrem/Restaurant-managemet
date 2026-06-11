@@ -3,10 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
   <title>Pizza 4P's - Staff Dashboard</title>
   <link rel="stylesheet" href="../../static/css/staff.css">
 </head>
-
+ 
 <body>
   <header class="staff-header">
     <div class="logo-box">
@@ -18,41 +21,41 @@
       <button type="button" class="logout-btn" onclick="globalThis.logoutStaff()">Đăng xuất</button>
     </div>
   </header>
-
+ 
   <main class="staff-main">
     <h1 class="page-title">Staff Dashboard</h1>
     <p class="page-subtitle">Chọn phân hệ cần sử dụng trong hệ thống nội bộ Pizza 4P's.</p>
-
+ 
     <section class="module-grid">
       <button type="button" class="module-card" data-module="cashier" onclick="globalThis.goToModule('cashier')">
-        <h3>🧾 Cashier / Lobby</h3>
+        <h3>Cashier / Lobby</h3>
         <p>Tạo order, chọn bàn, xử lý Eat In, Take Away, Delivery, Grab, ShopeeFood.</p>
       </button>
       <button type="button" class="module-card" data-module="kitchen" onclick="globalThis.goToModule('kitchen')">
-        <h3>🍳 Kitchen</h3>
+        <h3>Kitchen</h3>
         <p>Nhận order, kiểm tra nguyên liệu, chuyển trạng thái Preparing và Done.</p>
       </button>
       <button type="button" class="module-card" data-module="inventory" onclick="globalThis.showUpdating()">
-        <h3>📦 Inventory</h3>
+        <h3>Inventory</h3>
         <p>Quản lý nguyên liệu, nhập kho, hủy hàng và cảnh báo tồn kho.</p>
       </button>
       <button type="button" class="module-card" data-module="dashboard" onclick="globalThis.showUpdating()">
-        <h3>📊 Dashboard</h3>
+        <h3>Dashboard</h3>
         <p>Theo dõi hoạt động hệ thống, order, doanh thu và tình trạng vận hành.</p>
       </button>
       <button type="button" class="module-card" data-module="manager" onclick="globalThis.showUpdating()">
-        <h3>👥 Manager</h3>
+        <h3>Manager</h3>
         <p>Quản lý nhân viên, menu, bàn, kho và hoạt động chi nhánh.</p>
       </button>
       <button type="button" class="module-card" data-module="admin" onclick="globalThis.showUpdating()">
-        <h3>⚙️ Admin</h3>
+        <h3>Admin</h3>
         <p>Quản trị toàn hệ thống, chi nhánh, phân quyền và tài khoản quản lý.</p>
       </button>
     </section>
   </main>
-
+ 
   <footer class="staff-footer"></footer>
-
+ 
   <script src="../../static/js/staff-dashboard.js"></script>
 </body>
 </html>

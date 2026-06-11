@@ -144,7 +144,7 @@ def transfer_table_service(data):
     from_id = data.get("from_table_id")
     to_id = data.get("to_table_id")
     if not from_id or not to_id:
-    return {
+        return {
         "success": False,
         "message": "Vui lòng cung cấp đầy đủ mã bàn cũ và mã bàn mới"
     }, 400
