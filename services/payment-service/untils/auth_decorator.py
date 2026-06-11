@@ -6,7 +6,7 @@ def require_roles(*allowed_roles):
     """
     Decorator kiểm tra đăng nhập và phân quyền hệ thống.
     - Cho phép gọi nội bộ qua Header X-Internal-Service.
-    - Kiểm tra Role nếu có truyền tham số (Ví dụ: "CASHIER", "MANAGER").
+    - Kiểm tra Role nếu có truyền tham số (Ví dụ: "CASHIER_LOBBY", "MANAGER").
     """
     def decorator(f):
         @wraps(f)

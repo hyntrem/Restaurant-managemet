@@ -233,6 +233,7 @@ CREATE TABLE payments (
     method ENUM('CASH', 'TRANSFER', 'ATM', 'ONLINE') NOT NULL,
     amount DECIMAL(12,2) NOT NULL,
     status ENUM('PENDING', 'PAID', 'FAILED') DEFAULT 'PENDING',
+    transaction_id VARCHAR(100) NULL,
     payment_time DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (invoice_id) REFERENCES invoices(id)
 );
