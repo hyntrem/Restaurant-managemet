@@ -30,7 +30,7 @@ def get_table_detail(table_id):
     if not table:
         return {
             "success": False,
-            "message": "Mã bàn không tồn tại"
+            "message": "Mã bàn không tồn tại "
         }, 404
 
     return {
@@ -68,7 +68,7 @@ def edit_table_info(table_id, data):
     if not table:
         return {
             "success": False,
-            "message": "Mã bàn không tồn tại"
+            "message": "Mã bàn không tồn tại "
         }, 404
     table_number = data.get("table_number")
     existing_table = get_table_by_number(table_number)
@@ -144,16 +144,17 @@ def transfer_table_service(data):
     from_id = data.get("from_table_id")
     to_id = data.get("to_table_id")
     if not from_id or not to_id:
-        return {
-            "success": False,
-            "message": "Vui lòng cung cấp đầy đủ mã bàn cũ và mã bàn mới"
-        }, 400
-    success, error = execute_table_transfer(from_id, to_id)
+    return {
+        "success": False,
+        "message": "Vui lòng cung cấp đầy đủ mã bàn cũ và mã bàn mới"
+    }, 400
+    _, error = execute_table_transfer(from_id, to_id)
     if error:
         return {
             "success": False,
             "message": error
         }, 400
+
     return {
         "success": True,
         "message": "Chuyển bàn thành công"

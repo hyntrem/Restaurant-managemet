@@ -10,13 +10,9 @@
 <body>
   <header class="staff-header">
     <div class="logo-box">
-      <img
-        src="../../static/images/pizza4ps-logo.png"
-        alt="Pizza 4P's Vietnam"
-        class="logo-img">
+      <img src="../../static/images/pizza4ps-logo.png" alt="Pizza 4P's Vietnam" class="logo-img">
       <span class="logo-country">VIETNAM</span>
     </div>
-
     <div class="staff-user">
       <span id="staffUserInfo" class="user-pill">User</span>
       <button type="button" class="logout-btn" onclick="globalThis.logoutStaff()">Đăng xuất</button>
@@ -24,114 +20,145 @@
   </header>
 
   <main class="staff-main">
-    <h1 class="page-title">Cashier / Lobby POS</h1>
-    <p class="page-subtitle">Chọn loại order để bắt đầu thao tác bán hàng.</p>
 
-    <section class="pos-type-grid">
-      <button type="button" class="pos-type-btn active" data-order-type="EAT_IN">
-        Eat In
-      </button>
+    <!-- ── STEP 1: CHỌN LOẠI ORDER ── -->
+    <div id="screenOrderType">
+      <button type="button" class="back-btn" onclick="globalThis.goBackDashboard()">← Admin Dashboard</button>
+      <h1 class="page-title">Cashier / Lobby POS</h1>
+      <p class="page-subtitle">Chọn loại order để bắt đầu thao tác bán hàng.</p>
 
-      <button type="button" class="pos-type-btn" data-order-type="TAKE_AWAY">
-        Take Away
-      </button>
+      <div class="ot-grid">
+        <button type="button" class="ot-card ot-eatin" data-order-type="EAT_IN">
+          <span class="ot-icon">🍽️</span>
+          <span class="ot-name">Eat In</span>
+          <span class="ot-desc">Khách ăn tại bàn</span>
+        </button>
+        <button type="button" class="ot-card ot-takeaway" data-order-type="TAKE_AWAY">
+          <span class="ot-icon">🛍️</span>
+          <span class="ot-name">Take Away</span>
+          <span class="ot-desc">Mang về tại quầy</span>
+        </button>
+        <button type="button" class="ot-card ot-delivery" data-order-type="DELIVERY">
+          <span class="ot-icon">🛵</span>
+          <span class="ot-name">Delivery</span>
+          <span class="ot-desc">Giao hàng trực tiếp</span>
+        </button>
+        <button type="button" class="ot-card ot-grab" data-order-type="GRAB">
+          <span class="ot-icon">🟢</span>
+          <span class="ot-name">Grab</span>
+          <span class="ot-desc">Đơn hàng qua Grab</span>
+        </button>
+        <button type="button" class="ot-card ot-shopee" data-order-type="SHOPEEFOOD">
+          <span class="ot-icon">🧡</span>
+          <span class="ot-name">ShopeeFood</span>
+          <span class="ot-desc">Đơn hàng qua Shopee</span>
+        </button>
+        <button type="button" class="ot-card ot-party" data-order-type="PARTY">
+          <span class="ot-icon">🎉</span>
+          <span class="ot-name">Party</span>
+          <span class="ot-desc">Đặt tiệc & sự kiện</span>
+        </button>
+      </div>
+    </div>
 
-      <button type="button" class="pos-type-btn" data-order-type="DELIVERY">
-        Delivery
-      </button>
+    <!-- ── STEP 2: POS SCREEN ── -->
+    <div id="screenPOS" class="hidden">
+      <button type="button" class="back-btn" onclick="globalThis.resetOrderType()">← Đổi loại order</button>
 
-      <button type="button" class="pos-type-btn" data-order-type="GRAB">
-        Grab
-      </button>
+      <section id="cashierPOS" class="cashier-layout">
 
-      <button type="button" class="pos-type-btn" data-order-type="SHOPEEFOOD">
-        ShopeeFood
-      </button>
+        <!-- Cột 1: Order (2fr) -->
+        <section class="panel order-panel">
+          <div class="panel-title">Order</div>
 
-      <button type="button" class="pos-type-btn" data-order-type="PARTY">
-        Party
-      </button>
-    </section>
-
-    <section class="cashier-layout">
-      <section class="panel order-panel">
-      <section id="cashierPOS" class="cashier-layout hidden"></section>
-        <div class="panel-title">Order</div>
-
-        <div class="order-header">
-          <p class="small-order-type">
-            Loại order hiện tại: <span id="currentOrderType">Chưa chọn</span>
-          </p>
-
-          <p><strong>Mã hóa đơn:</strong> <span id="orderCode">Chưa tạo</span></p>
-
-          <div id="tableInputBox">
-            <label for="selectedTableId">Mã bàn</label>
-            <input
-              type="number"
-              id="selectedTableId"
-              name="selectedTableId"
-              placeholder="Nhập mã bàn nếu Eat In">
-          </div>
-        </div>
-
-        <div id="orderItems" class="order-list">
-          <p class="empty-text">Chưa có món nào trong order.</p>
-        </div>
-
-        <div class="order-total-box">
-          <p>Subtotal: <strong id="subtotalAmount">0 VNĐ</strong></p>
-          <p>Tax: <strong id="taxAmount">0 VNĐ</strong></p>
-          <p>Total: <strong id="totalAmount">0 VNĐ</strong></p>
-        </div>
-
-        <div class="order-actions">
-          <button type="button" class="secondary-btn" onclick="globalThis.changeQuantity()">Quantity</button>
-          <button type="button" class="secondary-btn" onclick="globalThis.loadMenu()">Main Menu</button>
-          <button type="button" class="danger-btn" onclick="globalThis.deleteSelectedItem()">Delete</button>
-          <button type="button" class="primary-btn" onclick="globalThis.createOrder()">Create Order</button>
-        </div>
-      </section>
-
-      <section class="panel menu-panel">
-        <div class="panel-title">Menu</div>
-
-        <div id="menuList" class="menu-grid">
-          <p class="empty-text">Đang tải menu...</p>
-        </div>
-
-        <div class="modify-box">
-          <div class="panel-title">Modify - Không lấy thành phần</div>
-
-          <div class="modify-grid">
-            <button type="button" class="modifier-btn" data-modifier="No Onion">No Onion</button>
-            <button type="button" class="modifier-btn" data-modifier="No Mushroom">No Mushroom</button>
-            <button type="button" class="modifier-btn" data-modifier="No Cheese">No Cheese</button>
-            <button type="button" class="modifier-btn" data-modifier="No Sauce">No Sauce</button>
-            <button type="button" class="modifier-btn" data-modifier="No Tomato">No Tomato</button>
-            <button type="button" class="modifier-btn" data-modifier="No Vegetable">No Vegetable</button>
+          <div class="order-header">
+            <p class="small-order-type">
+              Loại đơn: <span id="currentOrderType" class="order-type-tag">Chưa chọn</span>
+            </p>
+            <p style="font-size:13px;"><strong>Mã hóa đơn:</strong> <span id="orderCode">Chưa tạo</span></p>
+            <div id="tableInputBox">
+              <label for="selectedTableId" style="font-size:12px;color:#666;">Mã bàn</label>
+              <input
+                type="number"
+                id="selectedTableId"
+                name="selectedTableId"
+                placeholder="Nhập mã bàn nếu Eat In">
+            </div>
           </div>
 
-          <p class="helper-text">Chọn món trong order rồi bấm thành phần không lấy. Nội dung này sẽ gửi xuống Kitchen qua ghi chú.</p>
-        </div>
+          <div id="orderItems" class="order-list">
+            <p class="empty-text">Chưa có món nào trong order.</p>
+          </div>
+
+          <div class="order-total-box">
+            <p>Subtotal: <strong id="subtotalAmount">0 VNĐ</strong></p>
+            <p>Tax: <strong id="taxAmount">0 VNĐ</strong></p>
+            <p>Total: <strong id="totalAmount">0 VNĐ</strong></p>
+          </div>
+
+          <div class="order-actions">
+            <button type="button" class="secondary-btn" onclick="globalThis.changeQuantity()">Quantity</button>
+            <button type="button" class="secondary-btn" onclick="globalThis.loadMenu()">Main Menu</button>
+            <button type="button" class="danger-btn" onclick="globalThis.deleteSelectedItem()">Delete</button>
+            <button type="button" class="primary-btn" onclick="globalThis.createOrder()">Create Order</button>
+          </div>
+        </section>
+
+        <!-- Cột 2: Menu (1fr) -->
+        <section class="panel menu-panel">
+          <div class="panel-title">Menu</div>
+
+          <div id="menuList" class="menu-grid">
+            <p class="empty-text">Đang tải menu...</p>
+          </div>
+
+          <div class="modify-box">
+            <div class="panel-title">Modify</div>
+            <div class="modify-grid">
+              <button type="button" class="modifier-btn" data-modifier="No Onion">No Onion</button>
+              <button type="button" class="modifier-btn" data-modifier="No Mushroom">No Mushroom</button>
+              <button type="button" class="modifier-btn" data-modifier="No Cheese">No Cheese</button>
+              <button type="button" class="modifier-btn" data-modifier="No Sauce">No Sauce</button>
+              <button type="button" class="modifier-btn" data-modifier="No Tomato">No Tomato</button>
+              <button type="button" class="modifier-btn" data-modifier="No Vegetable">No Vegetable</button>
+            </div>
+            <p class="helper-text">Chọn món trong order rồi bấm thành phần không lấy.</p>
+          </div>
+        </section>
+
+        <!-- Cột 3: Category (3fr) -->
+        <section class="panel category-panel">
+          <div class="panel-title">Category</div>
+          <div id="categoryList" class="category-list">
+            <p class="empty-text">Đang tải danh mục...</p>
+          </div>
+        </section>
+
       </section>
 
-      <section class="panel category-panel">
-        <div class="panel-title">Category</div>
-        <div id="categoryList" class="category-list">
-          <p class="empty-text">Đang tải danh mục...</p>
-        </div>
-      </section>
-    </section>
+      <!-- Bottom action bar -->
+      <div class="bottom-action-bar">
+        <button type="button" class="btn-lock" onclick="globalThis.lockPOS()">
+          <span class="btn-icon">🔒</span><span class="btn-label">Khóa POS</span>
+        </button>
+        <button type="button" class="btn-promo" onclick="globalThis.showUpdating()">
+          <span class="btn-icon">🎁</span><span class="btn-label">Khuyến mãi</span>
+        </button>
+        <button type="button" class="btn-otype" onclick="globalThis.resetOrderType()">
+          <span class="btn-icon">📋</span><span class="btn-label">Loại Order</span>
+        </button>
+        <button type="button" class="btn-print" onclick="globalThis.reprintInvoice()">
+          <span class="btn-icon">🖨️</span><span class="btn-label">In hóa đơn</span>
+        </button>
+        <button type="button" class="btn-manager" onclick="globalThis.showUpdating()">
+          <span class="btn-icon">⚙️</span><span class="btn-label">Manager</span>
+        </button>
+        <button type="button" class="btn-home" onclick="globalThis.goBackDashboard()">
+          <span class="btn-icon">🏠</span><span class="btn-label">Dashboard</span>
+        </button>
+      </div>
 
-    <section class="bottom-action-bar">
-      <button type="button" onclick="globalThis.lockPOS()">Lock POS</button>
-      <button type="button" onclick="globalThis.showUpdating()">Khuyến mãi</button>
-      <button type="button" onclick="globalThis.resetOrderType()">Order Type</button>
-      <button type="button" onclick="globalThis.reprintInvoice()">In lại hóa đơn</button>
-      <button type="button" onclick="globalThis.showUpdating()">Manager Function</button>
-      <button type="button" onclick="globalThis.goBackDashboard()">Main Dashboard</button>
-    </section>
+    </div><!-- end screenPOS -->
 
     <p id="message" class="pos-message"></p>
   </main>
