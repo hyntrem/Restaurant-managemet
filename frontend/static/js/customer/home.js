@@ -50,9 +50,7 @@ function renderFeaturedMenu(items) {
 
 // Create menu card HTML
 function createMenuCard(item) {
-    const price = formatPrice(item.price);
     const description = item.description || 'Món ăn đặc biệt của Pizza 4P\'s';
-    const tags = getItemTags(item);
     const imageUrl = item.image_url || DEFAULT_MENU_IMAGE;
     
     return `
@@ -60,16 +58,8 @@ function createMenuCard(item) {
             <div class="h-64 bg-cover bg-center" style="background-image: url('${imageUrl}')">
             </div>
             <div class="p-stack-md">
-                <div class="flex justify-between items-start mb-2">
-                    <h3 class="font-headline-md text-headline-md text-primary">${escapeHtml(item.name)}</h3>
-                    <span class="font-bold text-primary">${price}</span>
-                </div>
-                <p class="font-body-md text-body-md text-on-surface-variant mb-stack-md">${escapeHtml(description)}</p>
-                <div class="flex gap-2 flex-wrap">
-                    ${tags.map(tag => `
-                        <span class="bg-surface-container text-label-sm font-label-sm px-3 py-1 rounded-full text-on-surface-variant">${tag}</span>
-                    `).join('')}
-                </div>
+                <h3 class="font-headline-md text-headline-md text-primary mb-2">${escapeHtml(item.name)}</h3>
+                <p class="font-body-md text-body-md text-on-surface-variant">${escapeHtml(description)}</p>
             </div>
         </div>
     `;
