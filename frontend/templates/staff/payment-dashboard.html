@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pizza 4P's - Thanh Toán Đơn Hàng</title>
+    <link rel="stylesheet" href="../../static/css/payment.css?v=105">
+</head>
+<body>
+
+    <div class="header-bar">
+        <a href="cashier-dashboard.html" class="btn-back">← Quay lại POS</a>
+        <h2>MÀN HÌNH THANH TOÁN (CASHIER INTERFACE)</h2>
+        <div style="width: 110px;"></div>
+    </div>
+
+    <div class="payment-grid">
+        <div class="pay-panel">
+            <div class="panel-heading">Chi Tiết Đơn Hàng</div>
+            <div class="bill-details">
+                <p>Mã hóa đơn: <strong id="billId" style="color: #0f172a;">#4P-LOADING</strong></p>
+                
+                <div class="order-items-box">
+                    <ul id="orderItemList" class="item-list">
+                        </ul>
+                </div>
+
+                <p style="margin-top: 15px;">Số tiền cần thanh toán:</p>
+                <div class="grand-total" id="amountToPay">0 VNĐ</div>
+            </div>
+
+            <div class="calculation-box">
+                <p>Khách đưa: <span id="lblKhachDua">0 VNĐ</span></p>
+                <p>Tiền thối lại: <span id="lblTienThoi" class="lime-text">0 VNĐ</span></p>
+            </div>
+
+            <button type="button" class="btn-submit-pay" onclick="processPayment()">XÁC NHẬN THANH TOÁN</button>
+        </div>
+
+        <div class="pay-panel-right">
+            
+            <div class="method-box">
+                <div class="box-title">TIỀN MẶT (CASH)</div>
+                <div class="input-row">
+                    <input type="text" class="txt-input-money" id="txtCashInput" placeholder="0">
+                    <button type="button" class="btn-cash-action btn-exact" onclick="setExactCash()">Exactly</button>
+                    <button type="button" class="btn-cash-action btn-clear" onclick="clearCashInput()">Clear</button>
+                </div>
+                <div class="quick-cash-container">
+                    <button type="button" class="btn-cash-quick" onclick="addCash(10000)">+10k</button>
+                    <button type="button" class="btn-cash-quick" onclick="addCash(20000)">+20k</button>
+                    <button type="button" class="btn-cash-quick" onclick="addCash(50000)">+50k</button>
+                    <button type="button" class="btn-cash-quick" onclick="addCash(100000)">+100k</button>
+                    <button type="button" class="btn-cash-quick" onclick="addCash(200000)">+200k</button>
+                    <button type="button" class="btn-cash-quick" onclick="addCash(500000)">+500k</button>
+                </div>
+            </div>
+
+            <div class="method-box">
+                <div class="box-title">HỆ THỐNG THẺ THANH TOÁN</div>
+                <div class="buttons-grid-2x2">
+                    <button type="button" class="btn-method" id="btnNAPAS" onclick="selectMethod('NAPAS')">💳 Thẻ NAPAS</button>
+                    <button type="button" class="btn-method" id="btnVISA" onclick="selectMethod('VISA')">🪪 Thẻ VISA</button>
+                    <button type="button" class="btn-method" id="btnMASTER" onclick="selectMethod('MASTER')">🃏 MasterCard</button>
+                    <button type="button" class="btn-method" id="btnJCB" onclick="selectMethod('JCB')">🇯🇵 Thẻ JCB</button>
+                </div>
+            </div>
+
+            <div class="method-box">
+                <div class="box-title">CHUYỂN KHOẢN DI ĐỘNG</div>
+                <button type="button" class="btn-method btn-full-width" id="btnTRANSFER" onclick="selectMethod('TRANSFER')">📲 Chuyển Khoản Ngân Hàng (QR Code)</button>
+            </div>
+
+            <div class="method-box">
+                <div class="box-title">ĐỐI TÁC GIAO DOANH (FOOD APP)</div>
+                <div class="buttons-grid-2x1">
+                    <button type="button" class="btn-method btn-grab" id="btnGRAB" onclick="selectMethod('GRAB')">🟢 Ứng dụng GRAB</button>
+                    <button type="button" class="btn-method btn-shopee" id="btnSHOPEE" onclick="selectMethod('SHOPEE')">🧡 ShopeeFood</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="footer-bar">
+        <p>© 2026 Pizza 4P's - Cashier POS System</p>
+    </div>
+
+    <script src="../../static/js/payment.js?v=105"></script>
+</body>
+</html>
