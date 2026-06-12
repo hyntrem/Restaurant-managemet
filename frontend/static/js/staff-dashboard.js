@@ -55,18 +55,27 @@
     });
   }
 
-  globalThis.goToModule = function (moduleName) {
+ globalThis.goToModule = function (moduleName) {
+
     const moduleRoutes = {
-      cashier: "cashier-dashboard.html",
-      kitchen: "kitchen-dashboard.html"
+
+        cashier: "cashier-dashboard.html",
+
+        kitchen: "kitchen-dashboard.html",
+
+        dashboard: "admin-report.html"
+
     };
+
     const targetPage = moduleRoutes[moduleName];
+
     if (!targetPage) {
-      globalThis.showUpdating();
-      return;
+        globalThis.showUpdating();
+        return;
     }
+
     globalThis.location.href = targetPage;
-  };
+};
   globalThis.showUpdating = function () {
     globalThis.alert("Chức năng đang cập nhật phiên bản mới.");
   };

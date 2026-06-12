@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Pizza 4P's - Payment Revenue & Dashboard</title>
+    <link rel="stylesheet" href="../../static/css/payment.css">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            background-color: #f8fafc; 
+            font-family: 'Be Vietnam Pro', sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+        }
+        .admin-container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+        }
+        .back-to-admin { 
+            background: #123c69; 
+            color: white; 
+            border: none; 
+            padding: 10px 18px; 
+            border-radius: 6px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            margin-bottom: 20px; 
+            transition: background 0.2s; 
+        }
+        .back-to-admin:hover { 
+            background: #0f3156; 
+        }
+    </style>
+</head>
+<body>
+
+    <div class="admin-container">
+        <button class="back-to-admin" onclick="globalThis.location.href='admin-dashboard.html'">← Admin Dashboard</button>
+
+        <div class="admin-report-container" style="display: flex; flex-direction: column; gap: 25px;">
+            
+            <div class="report-header">
+                <h2 style="margin: 0; color: #123c69; font-size: 24px; font-weight: 700;"> Hệ Thống Báo Cáo Doanh Thu & Dự Báo </h2>
+                <p style="margin: 5px 0 0 0; color: #64748b; font-size: 14px;">Số liệu doanh thu tổng hợp thời gian thực từ các phương thức thanh toán tại quầy</p>
+            </div>
+
+            <div class="dashboard-cards" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+                <div class="dash-card" style="background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-left: 5px solid #10b981; text-align: left;">
+                    <h5 style="margin: 0; color: #64748b; font-size: 13px; font-weight: 500;">Tổng Tiền Mặt (Cash)</h5>
+                    <div class="card-val" id="adminDashCash" style="font-size: 26px; font-weight: 700; color: #123c69; margin-top: 8px;">0 VNĐ</div>
+                </div>
+                
+                <div class="dash-card" style="background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-left: 5px solid #3b82f6; text-align: left;">
+                    <h5 style="margin: 0; color: #64748b; font-size: 13px; font-weight: 500;">Tổng Chuyển Khoản Ngân Hàng</h5>
+                    <div class="card-val" id="adminDashTransfer" style="font-size: 26px; font-weight: 700; color: #123c69; margin-top: 8px;">0 VNĐ</div>
+                </div>
+                
+                <div class="dash-card" style="background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-left: 5px solid #6366f1; text-align: left;">
+                    <h5 style="margin: 0; color: #64748b; font-size: 13px; font-weight: 500;">Tổng Thẻ & Food App (Grab/Shopee)</h5>
+                    <div class="card-val" id="adminDashDigital" style="font-size: 26px; font-weight: 700; color: #123c69; margin-top: 8px;">0 VNĐ</div>
+                </div>
+            </div>
+
+            <div class="predict-panel" style="background: #ffffff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                <h3 style="margin: 0 0 5px 0; color: #123c69; font-size: 18px; font-weight: 700;"> Kết Quả Phân Tích & Dự Đoán </h3>
+                <p style="color: #64748b; font-size: 13px; margin: 0 0 20px 0;">Mô hình máy học tự động tính toán lượng tiêu thụ món ăn dự kiến dựa trên các hóa đơn đã chốt trong ngày.</p>
+                
+                <table class="predict-table" style="width: 100%; border-collapse: collapse; text-align: left;">
+                    <thead>
+                        <tr style="background: #f8fafc; border-bottom: 2px solid #edf2f7;">
+                            <th style="padding: 14px; color: #123c69; font-weight: 600; font-size: 14px;">Tên Món Ăn</th>
+                            <th style="padding: 14px; color: #123c69; font-weight: 600; font-size: 14px;">Số Lượng Dự Kiến</th>
+                            <th style="padding: 14px; color: #123c69; font-weight: 600; font-size: 14px;">Tỷ Lệ Chính Xác</th>
+                            <th style="padding: 14px; color: #123c69; font-weight: 600; font-size: 14px;">Trạng Thái Kho</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminAiPredictRows">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../static/js/admin-report.js"></script>
+</body>
+</html>

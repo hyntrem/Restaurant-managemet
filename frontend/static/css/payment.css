@@ -1,0 +1,121 @@
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; }
+body { background-color: #f4f6f9; color: #333; padding: 20px; }
+
+/* --- GIAO DIỆN HEADER & FOOTER XANH MARINE --- */
+.header-bar { 
+    display: flex; justify-content: space-between; align-items: center; 
+    background-color: #153b5c; /* Màu xanh Marine */
+    color: white; /* Đổi chữ thành màu trắng */
+    padding: 15px 25px; border-radius: 8px; 
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; 
+}
+.header-bar h2 {
+    font-weight: 700; color: white; margin: 0; font-size: 20px;
+}
+.footer-bar {
+    background-color: #153b5c;
+    color: rgba(255, 255, 255, 0.8);
+    text-align: center;
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 20px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+/* --- HIỆU ỨNG NÚT QUAY LẠI POS --- */
+.btn-back { 
+    padding: 8px 18px; 
+    background: transparent; 
+    border: 2px solid rgba(255, 255, 255, 0.6); 
+    border-radius: 20px; 
+    cursor: pointer; font-weight: bold; 
+    text-decoration: none; color: white; 
+    transition: all 0.2s ease-in-out;
+}
+.btn-back:hover { 
+    background: white; 
+    color: #153b5c; 
+    border-color: white;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+.btn-back:active {
+    transform: scale(0.95);
+}
+
+/* --- LAYOUT CHÍNH --- */
+.payment-grid { display: grid; grid-template-columns: 1fr 1.3fr; gap: 20px; max-width: 1500px; margin: 0 auto; }
+.pay-panel { background: white; padding: 25px; border-radius: 8px; border: 1px solid #e0e0e0; height: fit-content; }
+.pay-panel-right { display: flex; flex-direction: column; gap: 20px; }
+
+.panel-heading { font-size: 20px; font-weight: bold; color: #1e3a8a; margin-bottom: 25px; }
+
+/* --- CHI TIẾT ĐƠN HÀNG & DANH SÁCH MÓN ĂN --- */
+.bill-details { background: #f8fafc; padding: 20px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #e8edf2; }
+.bill-details p { color: #666; font-size: 14px; margin-bottom: 6px; }
+.grand-total { font-size: 38px; font-weight: 800; color: #1e3a8a; margin-top: 5px; }
+
+.order-items-box {
+    background: white;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 10px;
+    margin-top: 15px;
+    max-height: 180px; /* Giới hạn chiều cao để cuộn nếu menu quá dài */
+    overflow-y: auto;
+}
+.item-list { list-style: none; padding: 0; margin: 0; }
+.item-list li {
+    display: flex; justify-content: space-between; padding: 6px 0;
+    border-bottom: 1px dashed #e2e8f0; font-size: 14px; color: #334155; font-weight: 500;
+}
+.item-list li:last-child { border-bottom: none; }
+.item-qty { font-weight: bold; color: #153b5c; margin-right: 8px; }
+.item-note { font-size: 12px; color: #ef4444; font-style: italic; }
+
+/* --- KHU TÍNH TIỀN THỐI & NÚT SUBMIT --- */
+.calculation-box { background: #fffbeb; border: 1px dashed #fcd34d; padding: 15px; border-radius: 6px; margin-bottom: 20px; }
+.calculation-box p { font-size: 15px; margin-bottom: 8px; color: #444; display: flex; justify-content: space-between; }
+.lime-text { color: #2e7d32; font-weight: bold; }
+.red-text { color: #c62828; font-weight: bold; }
+
+.btn-submit-pay { 
+    width: 100%; padding: 16px; background: #0f3460; color: white; 
+    border: none; border-radius: 6px; font-size: 18px; font-weight: bold; 
+    cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: 0.2s;
+}
+.btn-submit-pay:hover { background: #164275; }
+
+/* --- CÁC PHƯƠNG THỨC THANH TOÁN (BÊN PHẢI) --- */
+.method-box { background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; }
+.box-title { font-size: 13px; font-weight: bold; color: #546e7a; margin-bottom: 12px; letter-spacing: 0.3px; }
+
+.input-row { display: flex; gap: 10px; margin-bottom: 12px; }
+.txt-input-money { 
+    flex: 1; padding: 10px 15px; font-size: 20px; font-weight: bold; 
+    border: 1px solid #ccc; border-radius: 6px; color: #000; 
+}
+.btn-cash-action { padding: 0 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+.btn-exact { background: #e3f2fd; color: #1565c0; border: 1px solid #bbdefb; }
+.btn-exact:hover { background: #bbdefb; }
+.btn-clear { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+.btn-clear:hover { background: #ffcdd2; }
+
+.quick-cash-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.btn-cash-quick { padding: 12px; background: white; border: 1px solid #e0e0e0; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+.btn-cash-quick:hover { background: #f5f5f5; }
+
+.buttons-grid-2x2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.buttons-grid-2x1 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.btn-method { 
+    display: flex; align-items: center; justify-content: center; padding: 14px; 
+    background: white; border: 1px solid #e0e0e0; border-radius: 6px; 
+    font-weight: bold; color: #333; cursor: pointer; text-align: center; font-size: 14px;
+    transition: all 0.2s;
+}
+.btn-method:hover { background: #fafafa; border-color: #bbb; }
+.btn-full-width { width: 100%; }
+
+/* Trạng thái được chọn kích hoạt phương thức */
+.btn-method.active { background: #e8f0fe; border: 2px solid #1a73e8; color: #1a73e8; }
