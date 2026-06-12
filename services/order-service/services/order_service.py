@@ -1,5 +1,5 @@
 import requests
-from datetime import datetime
+from datetime import datetime, time
 from Models.order_model import (
     create_order_db, get_order_by_id, get_order_by_code, get_all_orders,
     update_order_status, update_order_total, cancel_order_db,
@@ -8,6 +8,31 @@ from Models.order_model import (
     delete_order_item_db, cancel_order_item_db,
     add_status_history, get_order_history, search_orders, calculate_order_total
 )
+
+# Delivery time constraints
+DELIVERY_START_TIME = time(10, 0)  # 10:00 AM
+DELIVERY_END_TIME = time(20, 0)    # 8:00 PM
+
+
+def validate_delivery_time(delivery_time_str):
+    try:
+        if not delivery_time_str:
+            return True, None, None  # Optional field
+        
+        # Extract start time from range (e.g., "10:00 - 10:30" -> "10:00")
+        time_str = delivery_time_str.split('-')[0].strip()
+        
+        # Parse time
+        delivery_time = datetime.strptime(time_str, "%H:%M").time()
+        
+        # Check if within delivery hours
+        if delivery_time < DELIVERY_START_TIME or delivery_time > DELIVERY_END_TIME:
+            return False, f"Thời gian giao hàng phải trong khung giờ {DELIVERY_START_TIME.strftime('%H:%M')} - {DELIVERY_END_TIME.strftime('%H:%M')}", None
+        
+        return True, None, delivery_time
+        
+    except Exception as e:
+        return False, f"Định dạng thời gian không hợp lệ", None
 
 
 # ==================== EXTERNAL SERVICE CALLS ====================
@@ -129,6 +154,36 @@ def create_order_service(data, user_id):
                 "success": False,
                 "message": "Loại đơn hàng không hợp lệ"
             }, 400
+        
+        # DELIVERY bắt buộc có delivery_address
+        delivery_address = data.get("delivery_address")
+        if order_type == "DELIVERY":
+            if not delivery_address:
+                return {
+                    "success": False,
+                    "message": "Đơn giao hàng phải có địa chỉ giao hàng"
+                }, 400
+            
+            # Validate delivery time from note field (if exists)
+            # Note format: "item_note | Thời gian giao: 10:00 - 10:30 | PTTT: xxx | Ghi chú: xxx"
+            items_data = data.get("items", [])
+            if items_data and len(items_data) > 0:
+                first_note = items_data[0].get("note", "")
+                
+                # Extract delivery time from note
+                if "Thời gian giao:" in first_note:
+                    parts = first_note.split("|")
+                    for part in parts:
+                        if "Thời gian giao:" in part:
+                            delivery_time_str = part.replace("Thời gian giao:", "").strip()
+                            
+                            # Validate delivery time
+                            is_valid, error_msg, _ = validate_delivery_time(delivery_time_str)
+                            if not is_valid:
+                                return {
+                                    "success": False,
+                                    "message": error_msg
+                                }, 400
         
         # EAT_IN bắt buộc có table_id
         table_id = data.get("table_id")

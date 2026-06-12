@@ -377,19 +377,19 @@ function openCheckoutModal() {
                 <!-- Contact Info Grid -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
                     <div class="flex flex-col gap-2">
-                        <label class="font-label-lg text-label-lg text-on-surface-variant" for="recipient-name">Họ và tên</label>
+                        <label class="font-label-lg text-label-lg text-on-surface-variant" for="recipient-name">Họ và tên <span class="text-red-600">*</span></label>
                         <input class="form-input w-full p-4 rounded-lg border border-surface-variant focus:outline-none focus:border-primary transition-all font-body-md text-body-md"
                             id="recipient-name" placeholder="VD: Nguyễn Văn A" type="text" required />
                     </div>
                     <div class="flex flex-col gap-2">
-                        <label class="font-label-lg text-label-lg text-on-surface-variant" for="recipient-phone">Số điện thoại</label>
+                        <label class="font-label-lg text-label-lg text-on-surface-variant" for="recipient-phone">Số điện thoại <span class="text-red-600">*</span></label>
                         <input class="form-input w-full p-4 rounded-lg border border-surface-variant focus:outline-none focus:border-primary transition-all font-body-md text-body-md"
                             id="recipient-phone" placeholder="+84 XXX XXX XXX" type="tel" required />
                     </div>
                 </div>
                 <!-- Address -->
                 <div class="flex flex-col gap-2 text-left">
-                    <label class="font-label-lg text-label-lg text-on-surface-variant" for="delivery-address">Địa chỉ giao hàng</label>
+                    <label class="font-label-lg text-label-lg text-on-surface-variant" for="delivery-address">Địa chỉ giao hàng <span class="text-red-600">*</span></label>
                     <div class="relative">
                         <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">location_on</span>
                         <input class="form-input w-full p-4 pl-12 rounded-lg border border-surface-variant focus:outline-none focus:border-primary transition-all font-body-md text-body-md"
@@ -399,15 +399,32 @@ function openCheckoutModal() {
                 <!-- Time & Notes -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
                     <div class="flex flex-col gap-2">
-                        <label class="font-label-lg text-label-lg text-on-surface-variant" for="delivery-time">Thời gian giao hàng</label>
+                        <label class="font-label-lg text-label-lg text-on-surface-variant" for="delivery-time">Thời gian giao hàng <span class="text-red-600">*</span></label>
                         <select class="form-input w-full p-4 rounded-lg border border-surface-variant focus:outline-none focus:border-primary transition-all font-body-md text-body-md appearance-none bg-white text-left"
-                            id="delivery-time">
-                            <option>Giao ngay khi có thể</option>
-                            <option>11:30 - 12:00</option>
-                            <option>12:00 - 12:30</option>
-                            <option>18:00 - 18:30</option>
-                            <option>18:30 - 19:00</option>
+                            id="delivery-time" required>
+                            <option value="">-- Chọn khung giờ --</option>
+                            <option value="10:00 - 10:30">10:00 - 10:30</option>
+                            <option value="10:30 - 11:00">10:30 - 11:00</option>
+                            <option value="11:00 - 11:30">11:00 - 11:30</option>
+                            <option value="11:30 - 12:00">11:30 - 12:00</option>
+                            <option value="12:00 - 12:30">12:00 - 12:30</option>
+                            <option value="12:30 - 13:00">12:30 - 13:00</option>
+                            <option value="13:00 - 13:30">13:00 - 13:30</option>
+                            <option value="13:30 - 14:00">13:30 - 14:00</option>
+                            <option value="14:00 - 14:30">14:00 - 14:30</option>
+                            <option value="14:30 - 15:00">14:30 - 15:00</option>
+                            <option value="15:00 - 15:30">15:00 - 15:30</option>
+                            <option value="15:30 - 16:00">15:30 - 16:00</option>
+                            <option value="16:00 - 16:30">16:00 - 16:30</option>
+                            <option value="16:30 - 17:00">16:30 - 17:00</option>
+                            <option value="17:00 - 17:30">17:00 - 17:30</option>
+                            <option value="17:30 - 18:00">17:30 - 18:00</option>
+                            <option value="18:00 - 18:30">18:00 - 18:30</option>
+                            <option value="18:30 - 19:00">18:30 - 19:00</option>
+                            <option value="19:00 - 19:30">19:00 - 19:30</option>
+                            <option value="19:30 - 20:00">19:30 - 20:00</option>
                         </select>
+                        <p class="text-xs text-on-surface-variant mt-1">⏰ Giờ giao hàng: 10:00 - 20:00</p>
                     </div>
                     <div class="flex flex-col gap-2">
                         <label class="font-label-lg text-label-lg text-on-surface-variant" for="delivery-notes">Ghi chú</label>
@@ -417,7 +434,7 @@ function openCheckoutModal() {
                 </div>
                 <!-- Payment Selection -->
                 <div class="pt-6 border-t border-surface-variant text-left">
-                    <h3 class="font-label-lg text-label-lg text-primary mb-4 uppercase tracking-widest font-bold">Chọn phương thức thanh toán</h3>
+                    <h3 class="font-label-lg text-label-lg text-primary mb-4 uppercase tracking-widest font-bold">Chọn phương thức thanh toán <span class="text-red-600">*</span></h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <label class="relative flex items-center p-4 border rounded-xl cursor-pointer hover:bg-surface-container-low transition-colors border-surface-variant group has-[:checked]:border-secondary-container has-[:checked]:bg-secondary-container/10">
                             <input checked="" class="hidden peer" name="payment" type="radio" value="bank" />
@@ -445,7 +462,7 @@ function openCheckoutModal() {
                 </div>
                 <div class="pt-8 flex justify-center gap-4">
                     <button type="button" onclick="closeCheckoutModal()" class="px-8 py-4 border border-outline text-primary font-bold rounded-lg hover:bg-surface-container-low transition-colors">Hủy</button>
-                    <button type="submit" class="px-10 py-4 bg-secondary text-primary font-bold rounded-lg hover:brightness-110 active:scale-95 transition-all shadow-md">Xác nhận giao hàng</button>
+                    <button type="submit" id="delivery-submit-btn" class="px-10 py-4 bg-secondary text-primary font-bold rounded-lg hover:brightness-110 active:scale-95 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:brightness-100" disabled>Xác nhận giao hàng</button>
                 </div>
             </form>
         </div>
@@ -465,8 +482,38 @@ function openCheckoutModal() {
         }
     }
 
+    // Form validation logic
+    const deliveryForm = document.getElementById('delivery-details-form');
+    const deliverySubmitBtn = document.getElementById('delivery-submit-btn');
+    const requiredDeliveryFields = ['recipient-name', 'recipient-phone', 'delivery-address', 'delivery-time'];
+
+    function validateDeliveryForm() {
+        const allFilled = requiredDeliveryFields.every(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (fieldId === 'delivery-time') {
+                // Ensure a time slot is selected (not the placeholder option)
+                return field && field.value && field.value !== '';
+            }
+            return field && field.value.trim() !== '';
+        });
+        
+        deliverySubmitBtn.disabled = !allFilled;
+    }
+
+    // Add event listeners to all required fields
+    requiredDeliveryFields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.addEventListener('input', validateDeliveryForm);
+            field.addEventListener('change', validateDeliveryForm);
+        }
+    });
+
+    // Initial validation check
+    validateDeliveryForm();
+
     // Bind form submit
-    document.getElementById('delivery-details-form').addEventListener('submit', handleOrderSubmit);
+    deliveryForm.addEventListener('submit', handleOrderSubmit);
 }
 
 window.closeCheckoutModal = () => {
