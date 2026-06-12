@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Pizza 4P's | Omotenashi &amp; Pizza Thủ Công</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@600;700&amp;family=Hanken+Grotesk:wght@400;500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@100..900&amp;family=Source+Serif+4:wght@100..900&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error-container": "#ffdad6",
+                        "surface-container": "#ebeef3",
+                        "primary": "#00254e",
+                        "on-tertiary-container": "#a3a5a6",
+                        "tertiary": "#232627",
+                        "tertiary-fixed-dim": "#c5c7c8",
+                        "on-surface": "#181c20",
+                        "on-primary-container": "#84a6df",
+                        "surface-dim": "#d7dadf",
+                        "surface-variant": "#e0e3e8",
+                        "on-surface-variant": "#43474f",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#f1f4f9",
+                        "primary-container": "#123b6d",
+                        "on-primary-fixed-variant": "#22477a",
+                        "surface-tint": "#3c5f93",
+                        "surface-bright": "#f7f9ff",
+                        "surface-container-high": "#e5e8ee",
+                        "inverse-on-surface": "#eef1f6",
+                        "primary-fixed-dim": "#a8c8ff",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed": "#001b3c",
+                        "tertiary-container": "#383b3c",
+                        "secondary": "#dded4e",
+                        "secondary-more": "#5b6400",
+                        "on-tertiary-fixed": "#191c1d",
+                        "on-error-container": "#93000a",
+                        "surface-container-highest": "#e0e3e8",
+                        "background": "#f7f9ff",
+                        "on-tertiary-fixed-variant": "#454748",
+                        "inverse-surface": "#2d3135",
+                        "primary-fixed": "#d5e3ff",
+                        "on-tertiary": "#ffffff",
+                        "on-background": "#181c20",
+                        "inverse-primary": "#a8c8ff",
+                        "surface": "#f7f9ff",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed": "#e1e3e4",
+                        "outline-variant": "#c3c6d0",
+                        "outline": "#737780",
+                        "error": "#ba1a1a",
+                        "on-error": "#ffffff",
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "8px",
+                        "stack-lg": "48px",
+                        "stack-sm": "8px",
+                        "container-max": "1280px",
+                        "margin-mobile": "20px",
+                        "margin-desktop": "64px",
+                        "stack-md": "24px",
+                        "gutter": "24px",
+                        "stack-xl": "80px"
+                    },
+                    "fontFamily": {
+                        "display-lg-mobile": ["Source Serif 4"],
+                        "label-lg": ["Hanken Grotesk"],
+                        "body-md": ["Hanken Grotesk"],
+                        "headline-md": ["Source Serif 4"],
+                        "headline-lg": ["Source Serif 4"],
+                        "label-sm": ["Hanken Grotesk"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "display-lg": ["Source Serif 4"],
+                        "headline-lg-mobile": ["Source Serif 4"]
+                    },
+                    "fontSize": {
+                        "display-lg-mobile": ["40px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "label-lg": ["14px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-md": ["28px", { "lineHeight": "1.3", "fontWeight": "600" }],
+                        "headline-lg": ["40px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "1", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "display-lg": ["64px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "600" }]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .glass-nav {
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .shadow-ambient {
+            box-shadow: 0 10px 30px rgba(0, 37, 78, 0.05);
+        }
+
+        .masonry-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-auto-rows: 200px;
+        }
+    </style>
+</head>
+
+<body class="bg-white text-on-surface selection:bg-secondary selection:text-on-secondary-fixed">
+    <!-- Top Navigation Bar -->
+    <nav
+        class="sticky top-0 w-full z-50 bg-white/90 dark:bg-primary/90 backdrop-blur-md shadow-sm dark:shadow-none h-20">
+        <div class="flex justify-between items-center w-full px-margin-desktop max-w-container-max mx-auto h-full">
+            <div class="font-display-lg text-headline-md text-primary dark:text-primary-fixed">Pizza 4P's</div>
+            <div class="hidden md:flex gap-8 items-center">
+                <a class="font-label-lg text-label-lg text-primary dark:text-primary-fixed border-b-2 border-secondary font-bold pb-1"
+                    href="home.html">Trang chủ</a>
+                <a class="font-label-lg text-label-lg text-on-surface-variant dark:text-surface-variant hover:text-secondary transition-colors duration-300"
+                    href="menu.html">Thực đơn</a>
+                <a class="font-label-lg text-label-lg text-on-surface-variant dark:text-surface-variant hover:text-secondary transition-colors duration-300"
+                    href="reserveATable.html">Đặt bàn</a>
+                <a class="font-label-lg text-label-lg text-on-surface-variant dark:text-surface-variant hover:text-secondary transition-colors duration-300"
+                    href="career.html">Tuyển dụng</a>
+            </div>
+            <button
+                class="bg-secondary text-primary px-8 py-3 rounded-lg font-label-lg text-label-lg font-bold hover:brightness-110 active:scale-95 transition-all shadow-md">
+                Đăng Nhập
+            </button>
+        </div>
+    </nav>
+    <!-- Hero Section -->
+    <header class="relative h-[600px] flex items-center overflow-hidden">
+        <div class="absolute inset-0 z-0">
+            <div class="w-full h-full bg-cover bg-center"
+                data-alt="High-angle, gourmet photography of a steaming artisanal Margherita pizza on a dark rustic table. The lighting is dramatic and warm, highlighting the vibrant red tomato sauce, melted creamy mozzarella, and fresh green basil leaves. The surrounding environment is a minimalist, luxury restaurant setting with soft bokeh of warm interior lights, emphasizing a premium dining atmosphere."
+                style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBReAbDWLiLu6IBlrLH-Sy8SfvMF1Me0N3vCiynzyK4y_8RbVlHz4X7-7lgEj3cXKm2FDFXT4sifnXir248gmAosT3XDvLL7bJcfJzup5r7bBLrdtI12L3SWXYbzTDzuYYRDbHoxecSq802J0F-Wn9Fs2FePZfDLmVWsYDo_jRwlRPuAoxDnbFwlin3nEmisBg4_2fHXIz53M_hOkMf6z6JRahAlcpijXNCdfn8wOyRX8Wi_Wv-pWY0ABzRcDSPxmBvVaTeyNBtUbYc')">
+            </div>
+            <div class="absolute inset-0 bg-gradient-to-r from-primary/60 to-transparent"></div>
+        </div>
+        <div class="relative z-10 px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto w-full">
+            <div class="max-w-2xl text-white">
+                <h1 class="font-display-lg text-display-lg-mobile md:text-display-lg mb-stack-sm animate-fade-in">Lan
+                    tỏa bất ngờ, Chia sẻ hạnh phúc.</h1>
+                <p class="font-body-lg text-body-lg mb-stack-lg opacity-90 leading-relaxed">Khám phá sự kết hợp độc bản
+                    giữa lòng hiếu khách "Omotenashi" của Nhật Bản và nghệ thuật pizza củi truyền thống của Ý.</p>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <button onclick="window.location.href='reserveATable.html'"
+                        class="bg-secondary text-primary px-10 py-4 rounded-lg font-label-lg text-label-lg font-bold hover:brightness-110 active:scale-95 transition-all shadow-xl">
+                        Đặt bàn ngay
+                    </button>
+                    <button onclick="window.location.href='menu.html'"
+                        class="border-2 border-white text-white px-10 py-4 rounded-lg font-label-lg text-label-lg font-bold hover:bg-white hover:text-primary active:scale-95 transition-all">
+                        Đặt giao hàng
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- About Section (Philosophy) -->
+    <section class="py-stack-xl bg-white px-margin-mobile md:px-margin-desktop">
+        <div class="max-w-container-max mx-auto grid grid-cols-1 md:grid-cols-2 gap-stack-xl items-center">
+            <div class="space-y-stack-md">
+                <span class="text-secondary-more font-label-lg tracking-widest uppercase">Triết lý của chúng tôi</span>
+                <h2 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary">Từ Nông trại đến
+                    Bàn ăn, Từ Trái tim đến Trái tim.</h2>
+                <p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">
+                    Tại Pizza 4P's, chúng tôi tin rằng ẩm thực không chỉ là sự nuôi dưỡng. Đó là nhịp cầu kết nối con
+                    người, văn hóa và thiên nhiên. Triết lý "Earth-to-People" thôi thúc chúng tôi tìm nguồn nguyên liệu
+                    trực tiếp từ nông dân địa phương và tự sản xuất phô mai tươi, đảm bảo mỗi miếng ăn đều là minh chứng
+                    cho sự thuần khiết và bền vững.
+                </p>
+            </div>
+            <div class="relative h-[500px] rounded-2xl overflow-hidden shadow-ambient"
+                data-alt="A serene, minimalist scene showing a dedicated cheesemaker in a sun-drenched, white-tiled kitchen, gently handling fresh mozzarella balls. The lighting is soft, natural daylight coming from high windows, creating a peaceful, artisanal mood. The aesthetic is clean, modern, and clinical yet warm, reflecting a Japanese minimalist approach to high-quality food production."
+                style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDDAEqB7AI2Hb_4o3xnH5zAnq2nn0JuSRiMZaF3LzFkCBpIYzBvGDtH3j-uQH5daYg43xfTNGQsoo7uslY-FjPKxq6GwBzkrC149_IvqHexJdwriCStuADtariz4BAgU7geI6DxGgNQMhGu_h9yncxt5O1fZZDROM1y7FpPY5sxW40tF75CbcYZ85Zc6M_kPRFFFc6sORaEB-InDHn6PNcu9P1Layoh2wwFOkhl75lYIky9XITFo33cK36u5vYR66oIjCFWRajo0yQ-')">
+            </div>
+        </div>
+    </section>
+    <!-- Signature Menu Section -->
+    <section class="py-stack-xl bg-surface-container-low px-margin-mobile md:px-margin-desktop">
+        <div class="max-w-container-max mx-auto">
+            <div class="text-center mb-stack-xl">
+                <h2 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary">Thực Đơn Nổi Bật
+                </h2>
+                <div class="w-24 h-1 bg-secondary mx-auto mt-4 rounded-full"></div>
+            </div>
+            <div id="featured-menu-container" class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+                <!-- Card 1 -->
+                <div
+                    class="bg-white rounded-xl overflow-hidden shadow-ambient hover:-translate-y-2 transition-all duration-300 group">
+                    <div class="h-64 bg-cover bg-center"
+                        data-alt="Close-up of a Burrata Prosciutto Pizza served on a sleek white ceramic plate. The pizza features a whole, creamy white burrata cheese in the center, surrounded by thin slices of artisanal prosciutto and fresh arugula. The lighting is sophisticated and bright, highlighting the glossy textures of the oil and cheese, set against a clean, minimalist white background."
+                        style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCDTLBx_iAHd75NaW-ytRoMu10Ol1VXf0zBzP3n8j2My483p4s_qaBVrDbyTPvMi23-08CkaO9EE_VIjzBHoKTiCy60--3h6KScPkNlKyMR_F47xVILO8Z7QKcAdz72nHIcMkTgGZuBNRxvMQ2Q-9xJCDz1ZzkQonwrQlrFAMqVpqjFHuGsfEpkjBDi2D5p56K4hC3g6WI6mDUVa3iOlY_JL85lu8-wcoTX0gyAm3kZe7MCiBSltujz1b2FjTIX_A36tlxUZ3BGJpuE')">
+                    </div>
+                    <div class="p-stack-md">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-headline-md text-headline-md text-primary">Burrata Prosciutto</h3>
+                            <span class="font-bold text-primary">420.000đ</span>
+                        </div>
+                        <p class="font-body-md text-body-md text-on-surface-variant mb-stack-md">Phô mai burrata tươi tự
+                            làm, thịt nguội prosciutto cao cấp, cải xoăn wild arugula và cà chua bi.</p>
+                    </div>
+                </div>
+                <!-- Card 2 -->
+                <div
+                    class="bg-white rounded-xl overflow-hidden shadow-ambient hover:-translate-y-2 transition-all duration-300 group">
+                    <div class="h-64 bg-cover bg-center"
+                        data-alt="Overhead shot of a 4-Cheese Pizza with Honey, featuring a perfect blistered crust and a melting blend of white and yellow artisanal cheeses. The pizza is drizzled with golden honey, creating a glistening surface. The photography is bright and high-key, emphasizing the warm tones of the cheese and honey against a minimalist, light-colored wooden table."
+                        style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCM39BG3rBmKCxuEIXDISEcN_0xyYWhZefgMeIkYFrkMzGsh2noi5bzihmTgfE-W52EAfNioZG2CJMy1LWzB_xsTHx8f5btqjFVd1-qDhRlfzmHBiBbTIRXJpfJyqVA5_E5n_LdL2g91qHTeO-oUgvVpOORat-3T3NMUmxBgZ8bCwfi-AUl4zN0jPCPyjb4DvvGFzwRMsb_yl2hA1irEHtk-QDvzdJPY9slhFIPxiY3heZqozIOwEN_09K70cnIBsvtiBXcwKC4WZiD')">
+                    </div>
+                    <div class="p-stack-md">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-headline-md text-headline-md text-primary">Pizza 4 Loại Phô Mai</h3>
+                            <span class="font-bold text-primary">380.000đ</span>
+                        </div>
+                        <p class="font-body-md text-body-md text-on-surface-variant mb-stack-md">Sự kết hợp của
+                            Mozzarella, Camembert, Gorgonzola và Parmesan, dùng kèm mật ong nguyên chất.</p>
+                    </div>
+                </div>
+                <!-- Card 3 -->
+                <div
+                    class="bg-white rounded-xl overflow-hidden shadow-ambient hover:-translate-y-2 transition-all duration-300 group">
+                    <div class="h-64 bg-cover bg-center"
+                        data-alt="A contemporary Salmon Sashimi Pizza, presenting thin slices of vibrant orange salmon, capers, and dill on a crisp, white-sauce pizza base. The colors are fresh and pop against the white plate. The lighting is clean and cool-toned, echoing a modern Japanese-Italian fusion aesthetic in a bright, upscale restaurant environment."
+                        style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAyc8DCttvUNjQIvALk-c_T6W2SMeOnz-sWi_slcEI1T7j9KOpFjhhIb5ttoHSj2mGqDxPhIYa3CTobHOhBrzEbTLAq-1E1HsjDpKac4orVJKeJ2_glfsyhmPRrp4dd13ttzDDdBC_SijyDZlX378E-JYuzvFQ10qgG-hB245_wgPZ-Y5GsLH10Gz6BvKS_iToq0NvQbENNMxE4kMwaCSU_4sgD2oxNA-jWIBl_bNexLmMLjMm9PlFxugEIYH8jeYwuG5S9M02l97yL')">
+                    </div>
+                    <div class="p-stack-md">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-headline-md text-headline-md text-primary">Sashimi Cá Hồi</h3>
+                            <span class="font-bold text-primary">450.000đ</span>
+                        </div>
+                        <p class="font-body-md text-body-md text-on-surface-variant mb-stack-md">Sự giao thoa độc đáo
+                            giữa cá hồi tươi sống, phô mai ricotta và củ cải muối trên nền xốt trắng.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-stack-lg">
+                <button onclick="window.location.href='menu.html'"
+                    class="border-2 border-primary text-primary px-12 py-3 rounded-lg font-label-lg text-label-lg font-bold hover:bg-primary hover:text-white transition-all active:scale-95">
+                    Xem thực đơn đầy đủ
+                </button>
+            </div>
+        </div>
+    </section>
+    <!-- Services Section -->
+    <section class="py-stack-xl px-margin-mobile md:px-margin-desktop bg-white">
+        <div class="max-w-container-max mx-auto grid grid-cols-1 md:grid-cols-3 gap-gutter">
+            <!-- Reservation -->
+            <div
+                class="text-center p-stack-lg border border-surface-container rounded-2xl hover:border-secondary transition-colors duration-300">
+                <div
+                    class="w-16 h-16 bg-primary-container text-on-primary-container rounded-full flex items-center justify-center mx-auto mb-stack-md">
+                    <span class="material-symbols-outlined text-3xl">event_available</span>
+                </div>
+                <h4 class="font-headline-md text-headline-md text-primary mb-2">Đặt bàn</h4>
+                <p class="font-body-md text-body-md text-on-surface-variant mb-stack-md">Đảm bảo vị trí của bạn cho một
+                    trải nghiệm ẩm thực đáng nhớ trong không gian thanh bình.</p>
+                <button onclick="window.location.href='reserveATable.html'"
+                    class="bg-secondary text-primary px-6 py-2 rounded-lg font-label-lg text-label-lg font-bold hover:brightness-105 transition-all">Đặt
+                    bàn ngay</button>
+            </div>
+            <!-- Delivery -->
+            <div
+                class="text-center p-stack-lg border border-surface-container rounded-2xl hover:border-secondary transition-colors duration-300">
+                <div
+                    class="w-16 h-16 bg-primary-container text-on-primary-container rounded-full flex items-center justify-center mx-auto mb-stack-md">
+                    <span class="material-symbols-outlined text-3xl">delivery_dining</span>
+                </div>
+                <h4 class="font-headline-md text-headline-md text-primary mb-2">Giao hàng</h4>
+                <p class="font-body-md text-body-md text-on-surface-variant mb-stack-md">Mang trải nghiệm 4P's về ngôi
+                    nhà của bạn với dịch vụ giao hàng cao cấp của chúng tôi.</p>
+                <button onclick="window.location.href='menu.html'"
+                    class="bg-secondary text-primary px-6 py-2 rounded-lg font-label-lg text-label-lg font-bold hover:brightness-105 transition-all">Đặt
+                    trực tuyến</button>
+            </div>
+            <!-- Careers -->
+            <div
+                class="text-center p-stack-lg border border-surface-container rounded-2xl hover:border-secondary transition-colors duration-300">
+                <div
+                    class="w-16 h-16 bg-primary-container text-on-primary-container rounded-full flex items-center justify-center mx-auto mb-stack-md">
+                    <span class="material-symbols-outlined text-3xl">work</span>
+                </div>
+                <h4 class="font-headline-md text-headline-md text-primary mb-2">Gia nhập đội ngũ</h4>
+                <p class="font-body-md text-body-md text-on-surface-variant mb-stack-md">Trở thành một phần của cộng
+                    đồng trân trọng tay nghề, sự bền vững và hạnh phúc.</p>
+                <button onclick="window.location.href='career.html'"
+                    class="bg-secondary text-primary px-6 py-2 rounded-lg font-label-lg text-label-lg font-bold hover:brightness-105 transition-all">Xem
+                    vị trí tuyển dụng</button>
+            </div>
+        </div>
+    </section>
+    <!-- Gallery Section (Masonry Style) -->
+    <section class="py-stack-xl bg-surface-container-low px-margin-mobile md:px-margin-desktop overflow-hidden">
+        <div class="max-w-container-max mx-auto">
+            <div class="text-center mb-stack-lg">
+                <h2 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary">Khám phá Pizza
+                    4P's</h2>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 h-[600px]">
+                <div class="col-span-2 row-span-2 rounded-2xl overflow-hidden group">
+                    <div class="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-700"
+                        data-alt="Interior of a modern, upscale restaurant with high ceilings and architectural lighting. The space features large windows, minimalist furniture in light wood, and lush green plants hanging from the ceiling. The atmosphere is bright, airy, and sophisticated, reflecting a blend of Japanese minimalism and contemporary design."
+                        style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDOfrIaNFpRryKmfVGyoc1dnHjIUEpmwV2kW37SDgtGeNUJlaS1DWoD5BOxAXtb3k6WiGWvCq5h-Ijdd_TQrqcadyDpsOaOeyiqjW0sqSIYKAi7G13e3GhKQBOsmCtr0w18KAxU1Bim_r83BZTHhSz55_yNgEZN0tTj-YN7VU2Tx3XrdFuxnJjKaYpwDWjgI3o3g7wufhe1_O8256gKxk2owoJFPzG3GPTryoZ843wKb_NSm52hNFdQ9d0p_Cgm8UULDeR3ki31R8rj')">
+                    </div>
+                </div>
+                <div class="col-span-1 row-span-1 rounded-2xl overflow-hidden group">
+                    <div class="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-700"
+                        data-alt="A close-up action shot of a professional chef using a long wooden peel to place a pizza into a roaring wood-fired stone oven. The orange glow of the fire illuminates the textures of the stone and the chef's hands. The image captures heat, authenticity, and the craft of traditional pizza making."
+                        style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAcaF1f6I-zB41bBX1G7rIRyiolyKlI2x2PCI1kOCtZvdmWQ_DutV9JslXeUe2agQAL7PIs5vPCJRpxnhWp5MLJBDXa8bWS6Wq4z09ylY23BGjBVDROf1PycgMuNPi75fvzJrIfS5CmfSGXhnSV-ppsx29rGq34RiK53uLz3OjIu7kfIiKttXC_mrvhPeOPkIjxBJoPT2B6Ul-M0Xogl9w4REJp_kkF3CdRSJlcwTCM__YFcRELuvXtYkJ-ruWpMBW76ur7GzghmSsD')">
+                    </div>
+                </div>
+                <div class="col-span-1 row-span-2 rounded-2xl overflow-hidden group">
+                    <div class="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-700"
+                        data-alt="A group of smiling friends enjoying dinner at a long wooden table in a dimly lit, high-end restaurant. The scene is filled with laughter, sparkling glasses of wine, and various gourmet pizzas. The mood is warm, celebratory, and communal, perfectly representing the 'Sharing Happiness' motto."
+                        style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBByJ5Aite2cwn-sCfzsr3GgQKPeB3GAPMXHDJLMvVeGAIQkhYVdPZl80F9kArZtmb1Mn2ShSbCuhoukxwMP1sbOrISMo-X4G6iFdTWj5T8c--QyVX0AD0ysiiYaPvTrICDo_NHa-ZrOef-sI_Ch7aY_xR2qbQhC0PITDuM1_B3al2vvIF7LOQnlNdRhLpoPiPTIKikHdrnj-FEn4e4R4S3FYYCUlnTF0s7i2FERyHd-nEeSTZYas9jkcbUoaRw0EjXufPpskiQ-Zmz')">
+                    </div>
+                </div>
+                <div class="col-span-1 row-span-1 rounded-2xl overflow-hidden group">
+                    <div class="w-full h-full bg-cover bg-center group-hover:scale-105 transition-transform duration-700"
+                        data-alt="Delicate appetizer plating featuring a single fresh burrata cheese on a dark ceramic dish, decorated with edible flowers and herb-infused oil. The lighting is artistic and shadowy, emphasizing the pure white texture of the cheese and the vibrant colors of the garnish."
+                        style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAvkHhlCPJHj3fV29NJPGguGmiexZCd_JBpBPh5R2pCKT_WdhO00Ub75DSXJRQV8mKNIJdS9GolndvWiR1tFg8LgqrHVLOhw3R_tMu0PVQrQS3wNZ5lxM9r5WQ0n_OQ0ehr6OdRr9envUDx5wC7siwkpeCN2qyYmvosw5n3REGzOsmrJfYOEOsVX3WLV0Pq3Rg1SE4R-bBgvuL8VuNOQiZ4yem10ivKUqROaGcrbGBbedCJIUpnClPhj9F_PxylEY0_84elWB-Hl7P4')">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-tertiary-container w-full transition-colors duration-300">
+        <div
+            class="grid grid-cols-1 md:grid-cols-2 gap-gutter py-stack-xl px-margin-desktop max-w-container-max mx-auto">
+            <div class="space-y-6">
+                <div class="font-display-lg text-headline-md text-primary">Pizza 4P's</div>
+                <p class="font-body-md text-body-md text-on-surface-variant dark:text-on-tertiary-container">Lan tỏa bất
+                    ngờ, Chia sẻ hạnh phúc. Cam kết về sự bền vững và nghệ thuật thủ công định hình mọi hoạt động của
+                    chúng tôi.</p>
+            </div>
+            <div class="space-y-6">
+                <h5
+                    class="font-label-lg text-label-lg text-primary dark:text-primary-fixed font-semibold uppercase tracking-wider">
+                    Liên hệ</h5>
+                <ul class="space-y-2 font-body-md text-body-md text-on-surface-variant dark:text-on-tertiary-container">
+                    <li>Địa chỉ: 70 Tô Ký, phường Trung Mỹ Tây, tp.HCM</li>
+                    <li>Điện thoại: +84 123 456 789</li>
+                    <li>Email: contact@pizza4ps.com</li>
+                </ul>
+            </div>
+        </div>
+        <div
+            class="border-t border-surface-container-high py-6 px-margin-desktop max-w-container-max mx-auto text-center">
+            <p class="font-body-md text-body-md text-on-surface-variant dark:text-on-tertiary-container">© 2026 Pizza
+                4P's.</p>
+        </div>
+    </footer>
+    <!-- Shared Customer Scripts -->
+    <script src="../../static/js/customer/customer-common.js"></script>
+    <script src="../../static/js/customer/home.js"></script>
+</body>
+
+</html>

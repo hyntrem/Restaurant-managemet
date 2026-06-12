@@ -1,4 +1,4 @@
-const USER_API = "http://localhost:5001";
+const USER_API = "http://localhost:8080/api/users";
 
 async function customerRegister() {
   const data = {
