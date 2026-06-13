@@ -1,5 +1,6 @@
 USE restaurant_management;
-
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
 INSERT INTO categories (name, description, status) VALUES
 ('Pizza', 'Các món pizza', 'ACTIVE'),
 ('Khai vị', 'Món khai vị', 'ACTIVE'),

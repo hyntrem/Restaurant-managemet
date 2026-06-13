@@ -17,7 +17,7 @@
     const token = globalThis.localStorage.getItem("staff_token");
     const user = getStaffUser();
     if (!token || !user) {
-      // globalThis.location.href = "login.html";
+      globalThis.location.href = "login.html";
       return null;
     }
     return user;
@@ -146,8 +146,13 @@
   };
 
   /* ── CATEGORIES ── */
-  function showMenuByCategory(categoryId) {
-    renderMenu(menuItems.filter(item => Number(item.category_id) === Number(categoryId)));
+  async function showMenuByCategory(categoryId) {
+    // Nếu menuItems chưa load thì load trước
+    if (!menuItems || menuItems.length === 0) {
+      await globalThis.loadMenu();
+    }
+    const filtered = menuItems.filter(item => Number(item.category_id) === Number(categoryId));
+    renderMenu(filtered);
   }
 
   function renderCategories() {
@@ -163,9 +168,10 @@
     allBtn.type = "button";
     allBtn.className = "category-btn active";
     allBtn.textContent = "All Menu";
-    allBtn.addEventListener("click", function () {
+    allBtn.addEventListener("click", async function () {
       categoryList.querySelectorAll(".category-btn").forEach(b => b.classList.remove("active"));
       allBtn.classList.add("active");
+      if (!menuItems || menuItems.length === 0) await globalThis.loadMenu();
       renderMenu(menuItems);
     });
     categoryList.appendChild(allBtn);
@@ -175,10 +181,10 @@
       btn.type = "button";
       btn.className = "category-btn";
       btn.textContent = category.name;
-      btn.addEventListener("click", function () {
+      btn.addEventListener("click", async function () {
         categoryList.querySelectorAll(".category-btn").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
-        showMenuByCategory(category.id);
+        await showMenuByCategory(category.id);
       });
       categoryList.appendChild(btn);
     });

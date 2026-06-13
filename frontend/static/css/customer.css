@@ -1,0 +1,164 @@
+@charset "UTF-8";
+@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&display=swap');
+ 
+/* ─────────────────────────────────────────
+   customer.css  —  Pizza 4P's Customer Web
+   Dùng cho: login.html, register.html
+   Không đụng đến staff.css
+───────────────────────────────────────── */
+ 
+:root {
+  --primary:       #00254e;
+  --primary-c:     #123b6d;
+  --secondary:     #dded4e;
+  --surface:       #f7f9ff;
+  --surface-low:   #f1f4f9;
+  --surface-var:   #e0e3e8;
+  --on-surface:    #181c20;
+  --on-surf-var:   #43474f;
+  --outline:       #737780;
+  --error:         #ba1a1a;
+  --white:         #ffffff;
+  --shadow:        rgba(0, 37, 78, 0.10);
+}
+ 
+* { margin: 0; padding: 0; box-sizing: border-box; }
+ 
+body {
+  font-family: 'Hanken Grotesk', 'Segoe UI', Tahoma, Arial, sans-serif;
+  background: var(--surface);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--on-surface);
+}
+ 
+/* ── Auth Container ── */
+.auth-container {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-c) 60%, #1a4a80 100%);
+}
+ 
+.auth-box {
+  background: var(--white);
+  border-radius: 20px;
+  padding: 48px 40px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 24px 60px rgba(0, 37, 78, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+ 
+.auth-box h1 {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--primary);
+  text-align: center;
+  letter-spacing: -0.5px;
+  margin-bottom: 0;
+}
+ 
+.auth-box h2 {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--on-surf-var);
+  text-align: center;
+  margin-bottom: 8px;
+}
+ 
+/* ── Inputs ── */
+.auth-box input {
+  width: 100%;
+  padding: 13px 16px;
+  border: 1.5px solid var(--surface-var);
+  border-radius: 10px;
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--on-surface);
+  background: var(--surface-low);
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+ 
+.auth-box input:focus {
+  border-color: var(--primary);
+  background: var(--white);
+  box-shadow: 0 0 0 3px rgba(0, 37, 78, 0.08);
+}
+ 
+.auth-box input::placeholder { color: #aab0bc; }
+ 
+/* ── Button ── */
+.auth-box button {
+  width: 100%;
+  padding: 14px;
+  background: var(--secondary);
+  color: var(--primary);
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: filter .2s, transform .1s;
+  margin-top: 4px;
+  letter-spacing: 0.3px;
+}
+ 
+.auth-box button:hover  { filter: brightness(1.08); }
+.auth-box button:active { transform: scale(0.98); }
+ 
+/* ── Links ── */
+.auth-box p {
+  font-size: 13px;
+  color: var(--on-surf-var);
+  text-align: center;
+}
+ 
+.auth-box a {
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+ 
+.auth-box a:hover { text-decoration: underline; }
+ 
+/* ── Message (success/error) ── */
+#message {
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  min-height: 18px;
+  color: var(--error);
+}
+ 
+/* ── Divider ── */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--outline);
+  font-size: 13px;
+}
+ 
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--surface-var);
+}
+ 
+@media (max-width: 480px) {
+  .auth-box { padding: 36px 24px; }
+}
+ 

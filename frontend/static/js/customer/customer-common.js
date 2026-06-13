@@ -33,7 +33,7 @@ function initializeNavigationLinks() {
     logos.forEach(logo => {
         logo.style.cursor = 'pointer';
         logo.addEventListener('click', () => {
-            window.location.href = 'home.html';
+            globalThis.location.href = 'home.html';
         });
     });
 }
@@ -95,7 +95,7 @@ function updateNavbarAuthState() {
         // Ensure guest behavior: redirect to login
         authButton.addEventListener('click', (e) => {
             e.preventDefault();
-            window.location.href = 'login.html';
+            globalThis.location.href = 'login.html';
         });
     }
 }
@@ -104,7 +104,7 @@ function logoutCustomer() {
     localStorage.removeItem('customer_token');
     localStorage.removeItem('customer_user');
     localStorage.removeItem('customer_cart');
-    window.location.href = 'home.html';
+    globalThis.location.href = 'home.html';
 }
 
 // 3. Cart State Management
@@ -129,7 +129,7 @@ function addToCartService(item) {
     if (!token) {
         showNotificationModal(false, 'Yêu cầu đăng nhập', 'Vui lòng đăng nhập để thêm món vào giỏ hàng và đặt giao hàng.');
         setTimeout(() => {
-            window.location.href = 'login.html';
+            globalThis.location.href = 'login.html';
         }, 2000);
         return false;
     }
@@ -339,11 +339,11 @@ function renderCartItems() {
 }
 
 // Global functions registered on window so inline onclick handlers work
-window.changeQuantity = (id, newQty) => {
+globalThis.changeQuantity = (id, newQty) => {
     updateCartQuantity(id, newQty);
 };
 
-window.updateNote = (id, note) => {
+globalThis.updateNote = (id, note) => {
     updateCartNote(id, note);
 };
 
@@ -469,7 +469,7 @@ function openCheckoutModal() {
     document.getElementById('delivery-details-form').addEventListener('submit', handleOrderSubmit);
 }
 
-window.closeCheckoutModal = () => {
+globalThis.closeCheckoutModal = () => {
     const modal = document.getElementById('checkout-modal');
     if (modal) modal.remove();
 };
@@ -581,7 +581,7 @@ function showNotificationModal(success, title, htmlContent) {
     document.body.appendChild(modal);
 }
 
-window.closeGlobalNotification = () => {
+globalThis.closeGlobalNotification = () => {
     const modal = document.getElementById('global-notification-modal');
     if (modal) modal.remove();
 };

@@ -1,20 +1,16 @@
-// API Configuration
-const API_BASE_URL = 'http://localhost:8080/api/menu'; // API Gateway URL
-
-// Default image for menu items
-const DEFAULT_MENU_IMAGE = 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&q=80';
-
+// API_BASE_URL và DEFAULT_MENU_IMAGE được khai báo trong customer-common.js
+ 
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
     loadFeaturedMenu();
     initializeNavigation();
     initializeScrollEffects();
 });
-
+ 
 // Load featured menu items from API
 async function loadFeaturedMenu() {
     try {
-        const res = await fetch(`${API_BASE_URL}/menu`);
+        const res = await fetch(`${API_BASE_URL}/api/menu/menu`);
         if (!res.ok) {
             throw new Error('Failed to fetch menu items');
         }
@@ -36,7 +32,7 @@ async function loadFeaturedMenu() {
         console.log('Keeping static menu content as fallback');
     }
 }
-
+ 
 // Render featured menu items
 function renderFeaturedMenu(items) {
     const container = document.getElementById('featured-menu-container');
@@ -47,7 +43,7 @@ function renderFeaturedMenu(items) {
     // Re-apply hover animations
     initializeCardAnimations();
 }
-
+ 
 // Create menu card HTML
 function createMenuCard(item) {
     const price = formatPrice(item.price);
@@ -74,7 +70,7 @@ function createMenuCard(item) {
         </div>
     `;
 }
-
+ 
 // Get tags for menu item
 function getItemTags(item) {
     const tags = [];
@@ -110,7 +106,7 @@ function getItemTags(item) {
     
     return tags;
 }
-
+ 
 // Format price
 function formatPrice(price) {
     if (!price) return 'Liên hệ';
@@ -120,14 +116,14 @@ function formatPrice(price) {
         minimumFractionDigits: 0
     }).format(price);
 }
-
+ 
 // Escape HTML to prevent XSS
 function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
 }
-
+ 
 // Initialize card animations
 function initializeCardAnimations() {
     const cards = document.querySelectorAll('.group');
@@ -140,7 +136,7 @@ function initializeCardAnimations() {
         });
     });
 }
-
+ 
 // Initialize navigation
 function initializeNavigation() {
     // Menu button
@@ -161,7 +157,7 @@ function initializeNavigation() {
         });
     });
 }
-
+ 
 // Initialize scroll effects
 function initializeScrollEffects() {
     // Navigation bar scroll effect
@@ -175,12 +171,12 @@ function initializeScrollEffects() {
             nav.classList.remove('h-16', 'bg-white/95');
         }
     });
-
+ 
     // Intersection Observer for fade-in animations
     const observerOptions = {
         threshold: 0.1
     };
-
+ 
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -189,12 +185,12 @@ function initializeScrollEffects() {
             }
         });
     }, observerOptions);
-
+ 
     document.querySelectorAll('section').forEach(section => {
         observer.observe(section);
     });
 }
-
+ 
 // Utility function to show notification
 function showNotification(message, type = 'info') {
     // Create notification element
