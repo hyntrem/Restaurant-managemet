@@ -179,70 +179,89 @@
                         <p class="text-on-surface-variant font-body-md">Vui lòng điền thông tin chi tiết dưới đây để giữ
                             chỗ cho bữa tiệc của bạn.</p>
                     </div>
-                    <form class="space-y-6" onsubmit="event.preventDefault();">
+                    <form id="reservation-form" class="space-y-6" onsubmit="event.preventDefault();">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
                             <div class="space-y-2">
                                 <label class="text-label-sm font-label-sm text-primary uppercase tracking-wider">Họ và
-                                    tên</label>
+                                    tên <span class="text-red-600">*</span></label>
                                 <input
+                                    id="res-name"
                                     class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 focus:ring-2 focus:ring-secondary/50 text-on-surface"
-                                    placeholder="Nguyễn Văn A" type="text" />
+                                    placeholder="Nguyễn Văn A" type="text" required />
                             </div>
                             <div class="space-y-2">
                                 <label class="text-label-sm font-label-sm text-primary uppercase tracking-wider">Số điện
-                                    thoại</label>
+                                    thoại <span class="text-red-600">*</span></label>
                                 <input
+                                    id="res-phone"
                                     class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 focus:ring-2 focus:ring-secondary/50 text-on-surface"
-                                    placeholder="+84 --- --- ---" type="tel" />
+                                    placeholder="+84 --- --- ---" type="tel" required />
                             </div>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
                             <div class="space-y-2">
                                 <label
-                                    class="text-label-sm font-label-sm text-primary uppercase tracking-wider">Ngày</label>
+                                    class="text-label-sm font-label-sm text-primary uppercase tracking-wider">Ngày <span class="text-red-600">*</span></label>
                                 <div class="relative">
                                     <input
+                                        id="res-date"
                                         class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 focus:ring-2 focus:ring-secondary/50 text-on-surface appearance-none"
-                                        type="date" />
+                                        type="date" required />
                                 </div>
                             </div>
                             <div class="space-y-2">
                                 <label
-                                    class="text-label-sm font-label-sm text-primary uppercase tracking-wider">Giờ</label>
+                                    class="text-label-sm font-label-sm text-primary uppercase tracking-wider">Giờ <span class="text-red-600">*</span></label>
                                 <select
-                                    class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 focus:ring-2 focus:ring-secondary/50 text-on-surface">
-                                    <option>18:00</option>
-                                    <option>18:30</option>
-                                    <option>19:00</option>
-                                    <option>19:30</option>
-                                    <option>20:00</option>
-                                    <option>20:30</option>
+                                    id="res-time"
+                                    class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 focus:ring-2 focus:ring-secondary/50 text-on-surface"
+                                    required>
+                                    <option value="10:00">10:00</option>
+                                    <option value="10:30">10:30</option>
+                                    <option value="11:00">11:00</option>
+                                    <option value="11:30">11:30</option>
+                                    <option value="12:00">12:00</option>
+                                    <option value="12:30">12:30</option>
+                                    <option value="13:00">13:00</option>
+                                    <option value="17:00">17:00</option>
+                                    <option value="17:30">17:30</option>
+                                    <option value="18:00" selected>18:00</option>
+                                    <option value="18:30">18:30</option>
+                                    <option value="19:00">19:00</option>
+                                    <option value="19:30">19:30</option>
+                                    <option value="20:00">20:00</option>
+                                    <option value="20:30">20:30</option>
+                                    <option value="21:00">21:00</option>
                                 </select>
                             </div>
                             <div class="space-y-2">
                                 <label class="text-label-sm font-label-sm text-primary uppercase tracking-wider">Số
-                                    khách</label>
-                                <select
-                                    class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 focus:ring-2 focus:ring-secondary/50 text-on-surface">
-                                    <option>2 người</option>
-                                    <option>4 người</option>
-                                    <option>6 người</option>
-                                    <option>Trên 8 người</option>
-                                </select>
+                                    người <span class="text-red-600">*</span></label>
+                                <input
+                                    id="res-guests"
+                                    class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 focus:ring-2 focus:ring-secondary/50 text-on-surface"
+                                    type="number"
+                                    min="1"
+                                    max="40"
+                                    placeholder="Nhập số người"
+                                    required />
                             </div>
                         </div>
                         <div class="space-y-2">
                             <label class="text-label-sm font-label-sm text-primary uppercase tracking-wider">Ghi chú đặc
                                 biệt</label>
                             <textarea
+                                id="res-notes"
                                 class="w-full bg-surface-container-low border-none rounded-lg px-4 py-3 focus:ring-2 focus:ring-secondary/50 text-on-surface"
                                 placeholder="Dị ứng thực phẩm, tiệc sinh nhật, hoặc yêu cầu chỗ ngồi..."
                                 rows="3"></textarea>
                         </div>
                         <div class="flex justify-center">
                             <button
-                                class="px-8 py-3 bg-secondary text-primary font-semibold rounded-lg shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2"
-                                type="submit">
+                                id="reservation-submit-btn"
+                                class="px-8 py-3 bg-secondary text-primary font-semibold rounded-lg shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-lg disabled:hover:translate-y-0"
+                                type="submit"
+                                disabled>
                                 <span class="font-label-lg text-label-lg">Đặt bàn</span>
                             </button>
                         </div>
@@ -281,34 +300,115 @@
     <!-- Shared Customer Scripts -->
     <script src="../../static/js/customer/customer-common.js"></script>
     <script>
-        // Form interactivity
-        const reservationForm = document.querySelector('form');
-        reservationForm.addEventListener('submit', (e) => {
+        // API Configuration
+        const API_BASE_URL = 'http://localhost:8080/api/tables';
+
+        // Form interactivity and validation
+        const reservationForm = document.getElementById('reservation-form');
+        const submitBtn = document.getElementById('reservation-submit-btn');
+        const requiredFields = ['res-name', 'res-phone', 'res-date', 'res-time', 'res-guests'];
+
+        // Function to check if all required fields are filled
+        function validateReservationForm() {
+            const allFilled = requiredFields.every(fieldId => {
+                const field = document.getElementById(fieldId);
+                return field && field.value.trim() !== '';
+            });
+            
+            submitBtn.disabled = !allFilled;
+        }
+
+        // Add event listeners to all required fields
+        requiredFields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                field.addEventListener('input', validateReservationForm);
+                field.addEventListener('change', validateReservationForm);
+            }
+        });
+
+        // Set minimum date to today
+        const dateInput = document.getElementById('res-date');
+        if (dateInput) {
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.min = today;
+        }
+
+        // Initial validation check
+        validateReservationForm();
+
+        reservationForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = e.target.querySelector('button');
-            const originalContent = btn.innerHTML;
-            btn.innerHTML = `<span class="animate-spin inline-block border-2 border-primary border-t-transparent rounded-full w-4 h-4 mr-2"></span> Đang xử lý...`;
-            btn.disabled = true;
+            
+            const originalContent = submitBtn.innerHTML;
+            submitBtn.innerHTML = `<span class="animate-spin inline-block border-2 border-primary border-t-transparent rounded-full w-4 h-4 mr-2"></span> Đang xử lý...`;
+            submitBtn.disabled = true;
 
-            const name = reservationForm.querySelector('input[placeholder="Nguyễn Văn A"]').value;
-            const phone = reservationForm.querySelector('input[placeholder="+84 --- --- ---"]').value;
-            const date = reservationForm.querySelector('input[type="date"]').value;
-            const selects = reservationForm.querySelectorAll('select');
-            const timeVal = selects[0] ? selects[0].value : '18:00';
-            const guestsVal = selects[1] ? selects[1].value : '2 người';
+            const name = document.getElementById('res-name').value.trim();
+            const phone = document.getElementById('res-phone').value.trim();
+            const date = document.getElementById('res-date').value;
+            const time = document.getElementById('res-time').value;
+            const guests = parseInt(document.getElementById('res-guests').value);
+            const notes = document.getElementById('res-notes').value.trim();
 
-            setTimeout(() => {
-                btn.innerHTML = originalContent;
-                btn.disabled = false;
+            // Prepare request data
+            const reservationData = {
+                customer_name: name,
+                customer_phone: phone,
+                number_of_guests: guests,
+                reservation_date: date,
+                reservation_time: time,
+                special_notes: notes
+            };
+
+            try {
+                // Call API
+                const response = await fetch(`${API_BASE_URL}/reservations`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(reservationData)
+                });
+
+                const result = await response.json();
+
+                submitBtn.innerHTML = originalContent;
+                submitBtn.disabled = false;
+
+                if (response.ok && result.success) {
+                    // Success
+                    const reservationCode = result.data.reservation_code;
+                    const reservationDate = result.data.reservation_date;
+                    const reservationTime = result.data.reservation_time;
+
+                    showNotificationModal(
+                        true,
+                        'Đặt bàn thành công!',
+                        `Cảm ơn <b>${name}</b> (${phone}). Mã đặt bàn của bạn là: <b class="text-secondary">${reservationCode}</b><br><br>Thời gian: <b>${reservationDate} lúc ${reservationTime}</b><br>Số người: <b>${guests} người</b><br><br>Chúng tôi sẽ sớm liên hệ xác nhận. Vui lòng giữ mã đặt bàn để tra cứu.`
+                    );
+
+                    reservationForm.reset();
+                    validateReservationForm(); // Re-validate after reset
+                } else {
+                    // Error from backend
+                    showNotificationModal(
+                        false,
+                        'Đặt bàn thất bại',
+                        result.message || 'Có lỗi xảy ra khi đặt bàn. Vui lòng thử lại sau.'
+                    );
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                submitBtn.innerHTML = originalContent;
+                submitBtn.disabled = false;
 
                 showNotificationModal(
-                    true,
-                    'Đặt bàn thành công!',
-                    `Cảm ơn Quý khách <b>${name}</b> (${phone}). Pizza 4P's đã ghi nhận yêu cầu đặt bàn vào ngày <b>${date}</b> lúc <b>${timeVal}</b> dành cho <b>${guestsVal}</b>. Chúng tôi sẽ sớm liên hệ xác nhận.`
+                    false,
+                    'Lỗi kết nối',
+                    'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng và thử lại.'
                 );
-
-                reservationForm.reset();
-            }, 1200);
+            }
         });
 
         // Header scroll effect

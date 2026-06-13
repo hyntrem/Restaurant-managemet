@@ -226,33 +226,58 @@
   }
 
   /* ── ACTIONS ── */
-  globalThis.createOrder = async function () {
+ globalThis.createOrder = async function () {
     if (!currentOrderType) { setMessage("Vui lòng chọn loại order trước."); return; }
     if (currentCart.length === 0) { setMessage("Vui lòng chọn ít nhất một món."); return; }
-    const tableId = document.getElementById("selectedTableId").value;
+    
+    // Đã bọc thêm check an toàn phòng trường hợp giao diện không có ô nhập mã bàn
+    const tableEl = document.getElementById("selectedTableId");
+    const tableId = tableEl ? tableEl.value : null;
+    
     if (currentOrderType === "EAT_IN" && !tableId) {
-      setMessage("Order Eat In cần chọn hoặc nhập mã bàn."); return;
+        setMessage("Order Eat In cần chọn hoặc nhập mã bàn."); return;
     }
-    if (["GRAB", "SHOPEEFOOD", "PARTY"].includes(currentOrderType)) {
-      setMessage("Loại order này đang cập nhật phiên bản mới."); return;
+
+    // ĐÃ SỬA: Loại bỏ "GRAB" và "SHOPEEFOOD" để hệ thống mở khóa, cho phép tạo đơn bình thường
+    if (["PARTY"].includes(currentOrderType)) {
+        setMessage("Loại order này đang cập nhật phiên bản mới."); return;
     }
+
     const data = {
-      order_type: currentOrderType,
-      table_id: currentOrderType === "EAT_IN" ? Number(tableId) : null,
-      items: currentCart.map(item => ({
-        menu_item_id: item.menu_item_id,
-        quantity: item.quantity,
-        note: item.note
-      }))
+        order_type: currentOrderType,
+        table_id: currentOrderType === "EAT_IN" ? Number(tableId) : null,
+        items: currentCart.map(item => ({
+            menu_item_id: item.menu_item_id,
+            quantity: item.quantity,
+            note: item.note
+        }))
     };
+    
     const result = await globalThis.apiPost("/api/orders/", data);
     if (!result.success) { setMessage(result.message || "Tạo order thất bại."); return; }
-    document.getElementById("orderCode").textContent = result.data.order_code || "Đã tạo";
-    setMessage("Tạo order thành công.");
+    
+    // chuyển sang payment-dashboard.html với thông tin order vừa tạo để tiến hành thanh toán
+    // 1. Lấy thông tin ID đơn hàng và Tổng tiền trả về từ API Backend
+    const orderId = result.data.id || result.data.order_id || result.data.order_code;
+    let rawTotalAmount = result.data.total_amount || result.data.total_price || calculateSubtotal();
+
+    // Loại bỏ hoàn toàn mọi kí tự chữ, dấu chấm, dấu phẩy trước khi ném vào localStorage
+    let cleanTotalAmount = parseInt(rawTotalAmount.toString().replace(/[^0-9]/g, '')) || 0;
+
+    // 2. Lưu thông tin SẠCH vào localStorage để trang payment-dashboard.html đọc chuẩn xác
+    globalThis.localStorage.setItem("currentInvoiceId", orderId);
+    globalThis.localStorage.setItem("currentTotal", cleanTotalAmount.toString());
+    globalThis.localStorage.setItem("currentItems", JSON.stringify(currentCart));
+    setMessage("Tạo order thành công. Đang chuyển sang màn hình thanh toán...");
+    
+    // 3. Reset giỏ hàng hiện tại
     currentCart = [];
     selectedItemIndex = null;
     renderCart();
-  };
+
+    // 4. Lệnh chuyển trang ngay lập tức sang giao diện thanh toán
+    globalThis.location.href = "payment-dashboard.html"; 
+};
 
   globalThis.changeQuantity = function () {
     if (selectedItemIndex === null || !currentCart[selectedItemIndex]) {

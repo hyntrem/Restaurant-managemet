@@ -133,8 +133,28 @@ CREATE TABLE restaurant_tables (
     area_id BIGINT,
     table_number VARCHAR(50) NOT NULL UNIQUE,
     capacity INT NOT NULL,
-    status ENUM('AVAILABLE', 'OCCUPIED', 'RESERVED') DEFAULT 'AVAILABLE',
+    status ENUM('AVAILABLE', 'OCCUPIED', 'RESERVED', 'CLEANING') DEFAULT 'AVAILABLE',
+    current_order_id BIGINT,
     FOREIGN KEY (area_id) REFERENCES table_areas(id)
+);
+
+-- Bảng đặt bàn cho khách hàng
+CREATE TABLE table_reservations (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    reservation_code VARCHAR(50) NOT NULL UNIQUE,
+    customer_name VARCHAR(150) NOT NULL,
+    customer_phone VARCHAR(20) NOT NULL,
+    number_of_guests INT NOT NULL,
+    reservation_date DATE NOT NULL,
+    reservation_time TIME NOT NULL,
+    special_notes TEXT,
+    tables_assigned VARCHAR(255),
+    status ENUM('PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'NO_SHOW') DEFAULT 'PENDING',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_date_time (reservation_date, reservation_time),
+    INDEX idx_phone (customer_phone),
+    INDEX idx_status (status)
 );
 
 -- =========================
@@ -304,3 +324,31 @@ INSERT INTO roles (name) VALUES
 ('ADMIN');
 INSERT INTO users (full_name, email, phone, username, password_hash, role_id, branch_id, status) VALUES 
 ('Quản Trị Viên', 'admin@restaurant.com', '0123456789', 'admin', '$2b$12$K399lzW8gUe10MtkA66Abe0779Qf69xW2gW1iJp54A1wF5.A3zG6a', 5, NULL, 'ACTIVE');
+
+-- Thêm khu vực mặc định
+INSERT INTO table_areas (area_name, description) VALUES 
+('Khu vực chính', 'Khu vực chính của nhà hàng'),
+('Khu vực VIP', 'Khu vực dành cho khách VIP');
+
+-- Thêm 20 bàn mặc định, mỗi bàn 2 chỗ ngồi
+INSERT INTO restaurant_tables (area_id, table_number, capacity, status) VALUES
+(1, 'B01', 2, 'AVAILABLE'),
+(1, 'B02', 2, 'AVAILABLE'),
+(1, 'B03', 2, 'AVAILABLE'),
+(1, 'B04', 2, 'AVAILABLE'),
+(1, 'B05', 2, 'AVAILABLE'),
+(1, 'B06', 2, 'AVAILABLE'),
+(1, 'B07', 2, 'AVAILABLE'),
+(1, 'B08', 2, 'AVAILABLE'),
+(1, 'B09', 2, 'AVAILABLE'),
+(1, 'B10', 2, 'AVAILABLE'),
+(1, 'B11', 2, 'AVAILABLE'),
+(1, 'B12', 2, 'AVAILABLE'),
+(1, 'B13', 2, 'AVAILABLE'),
+(1, 'B14', 2, 'AVAILABLE'),
+(1, 'B15', 2, 'AVAILABLE'),
+(2, 'V01', 2, 'AVAILABLE'),
+(2, 'V02', 2, 'AVAILABLE'),
+(2, 'V03', 2, 'AVAILABLE'),
+(2, 'V04', 2, 'AVAILABLE'),
+(2, 'V05', 2, 'AVAILABLE');
