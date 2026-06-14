@@ -1,7 +1,6 @@
 from common.database import SessionLocal
 from sqlalchemy import text
 import datetime
-
 def safe_dict(row):
     """Hàm chuyển dữ liệu Row từ MySQL sang Dict của Python, xử lý ép kiểu Decimal và Date"""
     if not row:
@@ -110,15 +109,30 @@ def get_recipes_for_menu_items(menu_item_ids):
     """Lấy định lượng nguyên liệu của một danh sách các món ăn từ bảng recipes"""
     if not menu_item_ids:
         return []
+    
     db = SessionLocal()
-    # Chuyển mảng ID thành chuỗi dạng (1, 2, 3) để đưa vào câu lệnh IN của SQL
-    id_tokens = ",".join([str(i) for i in menu_item_ids])
+    
+    # BƯỚC CHUẨN HÓA: Kiểm tra xem data truyền vào là số hay là chữ (tên món)
+    # Nếu là chữ, nó sẽ tự thêm dấu nháy đơn thành: 'Pizza Tôm Xốt Tỏi Cay', 'Pizza Tôm...'
+    formatted_tokens = []
+    for item in menu_item_ids:
+        item_str = str(item).strip()
+        if item_str.isdigit():
+            formatted_tokens.append(item_str)  # Nếu là số: giữ nguyên 1, 2, 3
+        else:
+            # Nếu là chuỗi chữ: bọc dấu nháy đơn và xử lý tránh lỗi dấu nháy đơn nội bộ
+            escaped_str = item_str.replace("'", "''")
+            formatted_tokens.append(f"'{escaped_str}'")
+            
+    id_tokens = ",".join(formatted_tokens)
+    
     query = text(f"""
         SELECT r.menu_item_id, r.ingredient_id, r.quantity_required, i.name, i.quantity as current_stock, i.unit
         FROM recipes r
         JOIN ingredients i ON r.ingredient_id = i.id
         WHERE r.menu_item_id IN ({id_tokens})
     """)
+    
     results = db.execute(query).mappings().all()
     db.close()
     return [safe_dict(row) for row in results]

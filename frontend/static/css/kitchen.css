@@ -1,0 +1,481 @@
+
+/* =========================
+        RESET
+========================= */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+
+    font-family:"Segoe UI",sans-serif;
+
+    background:white;
+
+    min-height:100vh;
+
+    display:flex;
+
+    flex-direction:column;
+}
+
+
+
+/* =========================
+        HEADER
+========================= */
+
+header{
+
+    background:#002147;
+
+    color:white;
+
+    border-bottom:5px solid #dfff00;
+
+    padding:20px 30px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+}
+
+
+.header-right{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+}
+
+
+#clock{
+
+    font-size:22px;
+
+    font-weight:bold;
+}
+
+
+
+/* =========================
+        MENU BUTTON
+========================= */
+
+.nav-btn{
+
+    background:#dfff00;
+
+    color:#002147;
+
+    border:none;
+
+    padding:12px 18px;
+
+    border-radius:12px;
+
+    cursor:pointer;
+
+    font-size:16px;
+
+    font-weight:bold;
+
+    transition:.3s;
+}
+
+
+.nav-btn:hover{
+
+    transform:translateY(-2px);
+
+    background:white;
+}
+
+
+
+.active{
+
+    background:white;
+
+    border:3px solid #dfff00;
+}
+
+
+
+/* =========================
+        DASHBOARD
+========================= */
+
+#dashboard-section{
+
+    padding:20px;
+}
+
+
+.stats-container{
+
+    display:flex;
+
+    justify-content:center;
+
+    gap:20px;
+
+    flex-wrap:wrap;
+}
+
+
+.stat-card{
+
+    width:180px;
+
+    background:white;
+
+    border:3px solid #002147;
+
+    border-left:10px solid #dfff00;
+
+    border-radius:20px;
+
+    padding:20px;
+
+    text-align:center;
+
+    box-shadow:0 4px 10px rgba(0,0,0,.1);
+}
+
+
+.stat-card h2{
+
+    color:#002147;
+
+    font-size:42px;
+
+    margin-bottom:10px;
+}
+
+
+.stat-card p{
+
+    font-size:18px;
+
+    font-weight:bold;
+}
+
+
+
+/* =========================
+        BOARD
+========================= */
+
+.board{
+
+    display:grid;
+
+    grid-template-columns:repeat(4,1fr);
+
+    gap:20px;
+
+    padding:20px;
+
+    flex:1;
+}
+
+
+
+/* =========================
+        COLUMN
+========================= */
+
+.column{
+
+    background:white;
+
+    border:3px solid black;
+
+    border-radius:20px;
+
+    overflow:auto;
+}
+
+
+.column-header{
+
+    text-align:center;
+
+    padding:18px;
+
+    font-size:24px;
+
+    font-weight:bold;
+
+    color:white;
+}
+
+
+.pending-header{
+
+    background:#FFD600;
+
+    color:black;
+}
+
+
+.preparing-header{
+
+    background:#2196F3;
+}
+
+
+.completed-header{
+
+    background:#4CAF50;
+}
+
+
+.cancelled-header{
+
+    background:#E53935;
+}
+
+
+
+/* =========================
+        ORDER CARD
+========================= */
+
+.order-card{
+
+    width:92%;
+
+    margin:15px auto;
+
+    background:white;
+
+    border:3px solid #002147;
+
+    border-left:10px solid #dfff00;
+
+    border-radius:18px;
+
+    padding:15px;
+
+    box-shadow:0 5px 10px rgba(0,0,0,.1);
+
+    transition:.3s;
+}
+
+
+.order-card:hover{
+
+    transform:translateY(-2px);
+}
+
+
+
+/* =========================
+        ORDER ID
+========================= */
+
+.order-id{
+
+    color:#002147;
+
+    font-size:22px;
+
+    font-weight:bold;
+}
+
+
+
+/* =========================
+        TYPE
+========================= */
+
+.order-type{
+
+    margin-top:10px;
+
+    font-size:16px;
+
+    font-weight:bold;
+}
+
+
+
+/* =========================
+        ITEMS
+========================= */
+
+.order-items{
+
+    margin-top:15px;
+
+    line-height:28px;
+
+    font-size:15px;
+}
+
+
+
+/* =========================
+        TOTAL
+========================= */
+
+.order-total{
+
+    margin-top:15px;
+
+    font-size:18px;
+
+    font-weight:bold;
+
+    color:#002147;
+}
+
+
+
+/* =========================
+        TIMER
+========================= */
+
+.timer{
+
+    margin-top:15px;
+
+    color:red;
+
+    font-size:18px;
+
+    font-weight:bold;
+}
+
+
+
+/* =========================
+    WARNING 10 PHÚT
+========================= */
+
+.warning{
+
+    background:#FFF59D;
+}
+
+
+
+/* =========================
+    DANGER 15 PHÚT
+========================= */
+
+.danger{
+
+    background:#FF8A80;
+}
+
+
+
+/* =========================
+        BUTTON
+========================= */
+
+.btn{
+
+    width:100%;
+
+    margin-top:15px;
+
+    border:none;
+
+    border-radius:12px;
+
+    padding:14px;
+
+    cursor:pointer;
+
+    font-size:16px;
+
+    font-weight:bold;
+}
+
+
+.start-btn{
+
+    background:#dfff00;
+
+    color:#002147;
+}
+
+
+.complete-btn{
+
+    background:#4CAF50;
+
+    color:white;
+}
+
+
+.cancel-btn{
+
+    background:#E53935;
+
+    color:white;
+}
+
+
+
+/* =========================
+        FOOTER
+========================= */
+
+footer{
+
+    background:#002147;
+
+    color:white;
+
+    border-top:5px solid #dfff00;
+
+    height:60px;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    margin-top:auto;
+}
+
+
+
+/* =========================
+        RESPONSIVE
+========================= */
+
+@media(max-width:1400px){
+
+    .board{
+
+        grid-template-columns:repeat(2,1fr);
+
+    }
+
+}
+
+
+@media(max-width:900px){
+
+    .board{
+
+        grid-template-columns:1fr;
+
+    }
+
+}
+

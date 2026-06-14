@@ -667,7 +667,7 @@ def start_preparing_service(order_id, user_id):
                 "message": "Không tìm thấy đơn hàng đã order"
             }, 404
 
-        if order["status"] != "CONFIRMED":
+        if order["status"] != "CONFIRMED"and order["status"] != "PENDING":
             return {
                 "success": False,
                 "message": f"Không thể chế biến đơn hàng đang ở trạng thái {order['status']}"

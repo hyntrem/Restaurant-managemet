@@ -1,0 +1,206 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Pizza 4P's Kitchen Display System</title>
+
+    <link rel="stylesheet"
+          href="../../static/css/kitchen.css">
+</head>
+<body>
+
+<!-- HEADER -->
+
+<header>
+
+    <div class="header-left">
+        <h1>
+             Pizza 4P's Kitchen Display System
+        </h1>
+    </div>
+
+    <div class="header-right">
+        <button class="nav-btn back-admin-btn" onclick="goToAdminDashboard()">
+            ⬅  Admin Dashboard
+        </button>
+        <button class="nav-btn active" onclick="showKitchenBoard()">
+            Kitchen Board
+        </button>
+
+        <button class="nav-btn" onclick="showDashboard()">
+            Dashboard
+        </button>
+
+        <div id="clock">
+            00:00:00
+        </div>
+    </div>
+
+</header>
+
+<!-- DASHBOARD -->
+
+<section id="dashboard-section">
+
+    <div class="stats-container">
+
+        <div class="stat-card">
+
+            <h2 id="total-orders">
+                0
+            </h2>
+
+            <p>Total Orders</p>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <h2 id="pending-count">
+                0
+            </h2>
+
+            <p>New Orders</p>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <h2 id="preparing-count">
+                0
+            </h2>
+
+            <p>Preparing</p>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <h2 id="completed-count">
+                0
+            </h2>
+
+            <p>Completed</p>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <h2 id="cancelled-count">
+                0
+            </h2>
+
+            <p>Cancelled</p>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- KITCHEN BOARD -->
+
+<section id="kitchen-section">
+
+    <div class="board">
+
+        <!-- NEW ORDERS -->
+
+        <div class="column">
+
+            <div class="column-header pending-header">
+
+                🟡 New Orders
+
+            </div>
+
+            <div id="pending-list"></div>
+
+        </div>
+
+
+
+        <!-- PREPARING -->
+
+        <div class="column">
+
+            <div class="column-header preparing-header">
+
+                🔵 Preparing
+
+            </div>
+
+            <div id="preparing-list"></div>
+
+        </div>
+
+
+
+        <!-- COMPLETED -->
+
+        <div class="column">
+
+            <div class="column-header completed-header">
+
+                🟢 Completed
+
+            </div>
+
+            <div id="completed-list"></div>
+
+        </div>
+
+
+
+        <!-- CANCELLED -->
+
+        <div class="column">
+
+            <div class="column-header cancelled-header">
+
+                🔴 Cancelled
+
+            </div>
+
+            <div id="cancelled-list"></div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- FOOTER -->
+
+<footer>
+
+    Pizza 4P's © 2026
+
+</footer>
+
+
+<!-- API -->
+
+<script src="../../static/js/staff/order-api.js"></script>
+
+
+<!-- KITCHEN JS -->
+
+<script src="../../static/js/staff/kitchen.js"></script>
+
+
+</body>
+</html>
+

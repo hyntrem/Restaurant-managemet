@@ -5,7 +5,7 @@ from Models.inventory_model import (
     get_expired_and_low_stock_ingredients,
     delete_ingredient_from_db 
 )
-
+from common.database import SessionLocal
 def list_inventory():
     ingredients = get_all_ingredients()
     return {"success": True, "message": "Lấy danh sách tồn kho thành công", "data": ingredients}, 200
