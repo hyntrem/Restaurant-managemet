@@ -30,6 +30,20 @@
         .back-to-admin:hover { 
             background: #0f3156; 
         }
+        .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        .status-online { background-color: #10b981; animation: pulse 2s infinite; }
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        
     </style>
 </head>
 <body>
@@ -61,26 +75,83 @@
                 </div>
             </div>
 
-            <div class="predict-panel" style="background: #ffffff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
-                <h3 style="margin: 0 0 5px 0; color: #123c69; font-size: 18px; font-weight: 700;"> Kết Quả Phân Tích & Dự Đoán </h3>
-                <p style="color: #64748b; font-size: 13px; margin: 0 0 20px 0;">Mô hình máy học tự động tính toán lượng tiêu thụ món ăn dự kiến dựa trên các hóa đơn đã chốt trong ngày.</p>
-                
-                <table class="predict-table" style="width: 100%; border-collapse: collapse; text-align: left;">
-                    <thead>
-                        <tr style="background: #f8fafc; border-bottom: 2px solid #edf2f7;">
-                            <th style="padding: 14px; color: #123c69; font-weight: 600; font-size: 14px;">Tên Món Ăn</th>
-                            <th style="padding: 14px; color: #123c69; font-weight: 600; font-size: 14px;">Số Lượng Dự Kiến</th>
-                            <th style="padding: 14px; color: #123c69; font-weight: 600; font-size: 14px;">Tỷ Lệ Chính Xác</th>
-                            <th style="padding: 14px; color: #123c69; font-weight: 600; font-size: 14px;">Trạng Thái Kho</th>
-                        </tr>
-                    </thead>
-                    <tbody id="adminAiPredictRows">
-                        </tbody>
-                </table>
+            <div class="report-header" style="margin-top: 10px;">
+                <h3 style="margin: 0; color: #123c69; font-size: 18px; font-weight: 700;"> Hoạt Động Buôn Bán Thực Tế </h3>
+                <p style="margin: 5px 0 0 0; color: #64748b; font-size: 13px;">Theo dõi khối lượng đơn hàng luân chuyển qua hệ thống</p>
             </div>
+
+            <div class="sales-activity-cards" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
+                <div class="dash-card" style="background: #ffffff; padding: 18px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-top: 4px solid #475569; text-align: center;">
+                    <h5 style="margin: 0; color: #64748b; font-size: 13px; font-weight: 500;">Tổng Đơn Đã Nhận</h5>
+                    <div class="card-val" id="salesTotalOrders" style="font-size: 28px; font-weight: 700; color: #1e293b; margin-top: 6px;">0</div>
+                </div>
+                <div class="dash-card" style="background: #ffffff; padding: 18px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-top: 4px solid #eab308; text-align: center;">
+                    <h5 style="margin: 0; color: #64748b; font-size: 13px; font-weight: 500;">Đơn Đang Chờ / Làm</h5>
+                    <div class="card-val" id="salesActiveOrders" style="font-size: 28px; font-weight: 700; color: #eab308; margin-top: 6px;">0</div>
+                </div>
+                <div class="dash-card" style="background: #ffffff; padding: 18px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-top: 4px solid #10b981; text-align: center;">
+                    <h5 style="margin: 0; color: #64748b; font-size: 13px; font-weight: 500;">Đơn Hoàn Thành (DONE)</h5>
+                    <div class="card-val" id="salesCompletedOrders" style="font-size: 28px; font-weight: 700; color: #10b981; margin-top: 6px;">0</div>
+                </div>
+                <div class="dash-card" style="background: #ffffff; padding: 18px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-top: 4px solid #ef4444; text-align: center;">
+                    <h5 style="margin: 0; color: #64748b; font-size: 13px; font-weight: 500;">Đơn Đã Hủy (CANCELLED)</h5>
+                    <div class="card-val" id="salesCancelledOrders" style="font-size: 28px; font-weight: 700; color: #ef4444; margin-top: 6px;">0</div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+                <div class="predict-panel" style="background: #ffffff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                    <h3 style="margin: 0 0 5px 0; color: #123c69; font-size: 18px; font-weight: 700;"> Kết Quả Phân Tích & Dự Đoán </h3>
+                    <p style="color: #64748b; font-size: 13px; margin: 0 0 20px 0;">Mô hình máy học tính toán lượng tiêu thụ dự kiến dựa trên hóa đơn trong ngày.</p>
+                    
+                    <table class="predict-table" style="width: 100%; border-collapse: collapse; text-align: left;">
+                        <thead>
+                            <tr style="background: #f8fafc; border-bottom: 2px solid #edf2f7;">
+                                <th style="padding: 14px; color: #123c69; font-weight: 600; font-size: 14px;">Tên Món Ăn</th>
+                                <th style="padding: 14px; color: #123c69; font-weight: 600; font-size: 14px;">Số Lượng</th>
+                                <th style="padding: 14px; color: #123c69; font-weight: 600; font-size: 14px;">Độ Chính Xác</th>
+                                <th style="padding: 14px; color: #123c69; font-weight: 600; font-size: 14px;">Kho Kho hàng</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminAiPredictRows"></tbody>
+                    </table>
+                </div>
+
+                <div class="system-status-panel" style="background: #ffffff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <h3 style="margin: 0 0 15px 0; color: #123c69; font-size: 18px; font-weight: 700;"> Tình Trạng Vận Hành </h3>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 15px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #e2e8f0; padding-bottom: 10px;">
+                                <span style="font-size: 14px; color: #475569; font-weight: 500;">Phân hệ Bếp (KDS)</span>
+                                <span id="statusKitchen" style="font-size: 13px; color: #64748b; font-weight: 600;"><span class="status-dot"></span>Đang kiểm tra...</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #e2e8f0; padding-bottom: 10px;">
+                                <span style="font-size: 14px; color: #475569; font-weight: 500;">Hệ thống Thanh Toán</span>
+                                <span id="statusPayment" style="font-size: 13px; color: #64748b; font-weight: 600;"><span class="status-dot"></span>Đang kiểm tra...</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #e2e8f0; padding-bottom: 10px;">
+                                <span style="font-size: 14px; color: #475569; font-weight: 500;">Dữ liệu Chi Nhánh</span>
+                                <span id="statusBranch" style="font-size: 13px; color: #64748b; font-weight: 600;"><span class="status-dot"></span>Đang kiểm tra...</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #e2e8f0; padding-bottom: 10px;">
+                                <span style="font-size: 14px; color: #475569; font-weight: 500;">Quản lý Kho hàng</span>
+                                <span id="statusInventory" style="font-size: 13px; color: #64748b; font-weight: 600;"><span class="status-dot"></span>Đang kiểm tra...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="background: #f1f5f9; padding: 12px; border-radius: 8px; font-size: 12px; color: #64748b; margin-top: 15px;">
+                        <strong>Log kiểm tra hoạt động:</strong> <span id="lastSysCheckTime">00:00:00</span> <br>
+                        Hệ thống tự động quét dữ liệu phân hệ thời gian thực.
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
+    <script src="../../static/js/staff/order-api.js"></script>
     <script src="../../static/js/admin-report.js"></script>
 </body>
 </html>

@@ -63,7 +63,7 @@ def call_menu_service(endpoint, method="GET", data=None):
 
 
 def call_inventory_service(endpoint, method="POST", data=None, headers=None):
-    base_url = "http://inventory-service:5003"
+    base_url = "http://inventory-service:5003/api/inventory"
     url = f"{base_url}{endpoint}"
 
     if headers is None:
@@ -393,7 +393,7 @@ def search_orders_service(keyword, filters):
 
 # ==================== ORDER ITEMS MANAGEMENT ====================
 
-def add_item_to_order_service(order_id, data):
+def add_item_to_order_service(order_id, user_id, data):
     """Thêm món vào đơn hàng"""
     try:
         # Kiểm tra order tồn tại
@@ -465,7 +465,7 @@ def add_item_to_order_service(order_id, data):
         }, 500
 
 
-def update_item_service(order_id, item_id, data):
+def update_item_service(order_id, item_id, user_id, data):
     """Cập nhật món trong đơn"""
     try:
         # Kiểm tra order
@@ -523,7 +523,7 @@ def update_item_service(order_id, item_id, data):
         }, 500
 
 
-def remove_item_service(order_id, item_id):
+def remove_item_service(order_id, item_id, user_id):
     """Xóa món khỏi đơn"""
     try:
         # Kiểm tra order
@@ -690,7 +690,7 @@ def start_preparing_service(order_id, user_id):
             })
 
         inventory_result = call_inventory_service(
-            "/deduct",
+            "/deduct-internal",
             method="POST",
             data={
                 "items": inventory_items
@@ -861,7 +861,7 @@ def cancel_order_service(order_id, user_id, reason):
 
 # ==================== HISTORY ====================
 
-def get_order_history_service(order_id):
+def get_order_history_service(order_id, user_id=None, user_role=None):
     """Lấy lịch sử trạng thái đơn hàng"""
     try:
         order = get_order_by_id(order_id)

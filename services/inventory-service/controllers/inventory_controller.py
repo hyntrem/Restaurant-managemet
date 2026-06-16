@@ -53,8 +53,26 @@ def check_ingredient_by_menu(menu_item_id):
 
 
 def deduct_stock_internal():
-    res, status_code = check_and_deduct_order_stock(request.json, is_deduct=True)
-    return jsonify(res), status_code
+    try:
+        print("REQUEST =", request.json)
+
+        res, status_code = check_and_deduct_order_stock(
+            request.json,
+            is_deduct=True
+        )
+
+        print("RESULT =", res)
+
+        return jsonify(res), status_code
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+
+        return jsonify({
+            "success": False,
+            "message": str(e)
+        }), 500
 
 
 def get_alerts_controller():

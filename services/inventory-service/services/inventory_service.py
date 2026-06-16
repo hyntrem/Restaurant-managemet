@@ -87,6 +87,19 @@ def check_and_deduct_order_stock(data, is_deduct=True):
     Hàm gộp: Dùng để Kiểm tra kho (is_deduct=False) HOẶC Trừ kho (is_deduct=True) cho một danh sách món ăn.
     Dữ liệu đầu vào kỳ vọng: {"items": [{"menu_item_id": 1, "quantity": 2}]}
     """
+    print("DATA =", data)
+
+    items = data.get('items', [])
+
+    print("ITEMS =", items)
+
+    menu_item_ids = [item['menu_item_id'] for item in items]
+
+    print("MENU IDS =", menu_item_ids)
+
+    recipes = get_recipes_for_menu_items(menu_item_ids)
+
+    print("RECIPES =", recipes)
     items = data.get('items', [])
     if not items:
         return {"success": False, "message": "Danh sách món ăn trống"}, 400

@@ -43,12 +43,18 @@
 
   /* ── HELPERS ── */
   function getAuthHeaders() {
-    const token = globalThis.localStorage.getItem("staff_token");
+
+    const token = localStorage.getItem("staff_token");
+
+    console.log("STAFF TOKEN =", token);
+
     return {
-      "Content-Type": "application/json",
-      ...(token ? { "Authorization": "Bearer " + token } : {})
+        "Content-Type": "application/json",
+        ...(token
+            ? { Authorization: "Bearer " + token }
+            : {})
     };
-  }
+}
 
   /* ── PUBLIC API ── */
   globalThis.apiGet = async function (path) {

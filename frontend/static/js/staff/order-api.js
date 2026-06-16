@@ -4,11 +4,13 @@ function getOrderHeaders() {
 
     const token = localStorage.getItem("staff_token");
 
+    console.log("ORDER TOKEN =", token);
+
     return {
         "Content-Type": "application/json",
-        ...(token ? {
-            "Authorization": `Bearer ${token}`
-        } : {})
+        ...(token
+            ? { Authorization: `Bearer ${token}` }
+            : {})
     };
 }
 

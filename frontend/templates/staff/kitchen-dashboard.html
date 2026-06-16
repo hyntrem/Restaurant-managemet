@@ -189,7 +189,15 @@
     Pizza 4P's © 2026
 
 </footer>
-
+<script>
+    // Đọc token từ URL param (trường hợp redirect từ admin)
+    const urlParams = new URLSearchParams(window.location.search);
+    const tokenFromUrl = urlParams.get("token");
+    if (tokenFromUrl) {
+        localStorage.setItem("staff_token", tokenFromUrl);
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+</script>
 
 <!-- API -->
 
