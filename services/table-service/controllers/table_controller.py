@@ -1,5 +1,5 @@
 from flask import request, jsonify
-from Services.table_service import (
+from services.table_service import (
     list_table_map,
     get_table_detail,
     add_new_table,

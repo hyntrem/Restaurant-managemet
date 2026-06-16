@@ -1,5 +1,5 @@
 from flask import Blueprint
-from Controllers.table_controller import (
+from controllers.table_controller import (
     get_table_map_controller,
     get_single_table_controller,
     post_table_controller,
@@ -10,7 +10,7 @@ from Controllers.table_controller import (
     post_transfer_table_controller,
     assign_order_controller
 )
-from Controllers.reservation_controller import (
+from controllers.reservation_controller import (
     check_availability_controller,
     create_reservation_controller,
     get_reservation_controller,

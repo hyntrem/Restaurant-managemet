@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <title>Pizza 4P's - Delivery Management</title>
+  <link rel="stylesheet" href="../../static/css/staff.css">
+  <link rel="stylesheet" href="../../static/css/delivery.css">
+</head>
+ 
+<body>
+  <header class="staff-header">
+    <div class="logo-box">
+      <img src="../../static/images/pizza4ps_logo.jpg" alt="Pizza 4P's" class="logo-img">
+      <span class="logo-country">VIETNAM</span>
+    </div>
+    <div class="staff-user">
+       <span id="staffUserInfo" class="user-pill">User</span>
+      <button type="button" class="logout-btn" onclick="globalThis.logoutStaff()">Đăng xuất</button>
+    </div>
+  </header>
+ 
+  <main class="staff-main">
+    <button type="button" class="back-btn" onclick="globalThis.location.href='../../templates/staff/cashier-dashboard.html'">← Cashier Dashboard</button>
+    <h1 class="page-title">Delivery Hub</h1>
+    <p class="page-subtitle">Quản lý và điều phối các đơn hàng giao đi trực tiếp của chi nhánh.</p>
+ 
+    <div class="delivery-layout-grid">
+        
+        <section class="panel delivery-sidebar-panel">
+            <div class="panel-title">Danh Sách Đơn Hàng</div>
+            <div class="delivery-filter-bar">
+                <button onclick="changeDeliveryFilter('PENDING')" class="filter-tab-btn active" id="tabPending">Đơn Mới</button>
+                <button onclick="changeDeliveryFilter('CONFIRMED')" class="filter-tab-btn" id="tabConfirmed">Đã Nhận</button>
+            </div>
+            <div id="deliveryCardsContainer" class="cards-list-box">
+                </div>
+        </section>
+
+        <section class="delivery-main-contents">
+            
+            <div class="panel invoice-sub-panel">
+                <div class="panel-title">Chi Tiết Hóa Đơn Món Ăn</div>
+                <div class="invoice-table-scroll">
+                    <table class="pizza-invoice-table">
+                        <thead>
+                            <tr>
+                                <th>Tên Món Ăn</th>
+                                <th style="text-align: center;">SL</th>
+                                <th style="text-align: right;">Đơn Giá</th>
+                            </tr>
+                        </thead>
+                        <tbody id="deliveryInvoiceItemsBody">
+                            <tr>
+                                <td colspan="3" class="empty-invoice-text">Vui lòng chọn đơn hàng bên trái để xem hóa đơn.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="invoice-total-summary">
+                    <span>Thành tiền cần thu:</span>
+                    <strong id="lblDeliveryTotal">0 VNĐ</strong>
+                </div>
+            </div>
+
+            <div class="panel detail-sub-panel">
+                <div class="panel-title">Thông Tin Giao Nhận</div>
+                <div class="customer-info-box">
+                    <div class="info-row"><strong>Hình thức đơn:</strong> <span class="delivery-tag">🛵 DELIVERY</span></div>
+                    <div class="info-row"><strong>Mã đơn hàng:</strong> <span id="valOrderCode" class="txt-blue">-</span></div>
+                    <div class="info-row"><strong>Tên khách hàng:</strong> <span id="valCustomerName">-</span></div>
+                    <div class="info-row"><strong>Số điện thoại:</strong> <span id="valCustomerPhone">-</span></div>
+                    <div class="info-row"><strong>Địa chỉ giao:</strong> <span id="valAddress" class="txt-address">-</span></div>
+                    <div class="info-row"><strong>Hình thức thanh toán:</strong> <span id="valPaymentMethod">-</span></div>
+                    <div class="info-row"><strong>Thời gian tạo đơn:</strong> <span id="valCreatedAt">-</span></div>
+                </div>
+
+                <div class="delivery-action-group">
+                    <button id="btnAccept" onclick="processStatusUpdate('CONFIRMED')" class="action-btn-item btn-accept-color">Nhận Đơn (Gửi Bếp)</button>
+                    <button id="btnModify" onclick="processModifyRedirect()" class="action-btn-item btn-modify-color">Sửa Đơn (Chuyển Cashier)</button>
+                    <button id="btnCancel" onclick="processStatusUpdate('CANCELLED')" class="action-btn-item btn-cancel-color">Hủy Đơn (Từ Chối)</button>
+                </div>
+            </div>
+
+        </section>
+    </div>
+  </main>
+ 
+  <footer class="staff-footer">Pizza 4P's © 2026 - Delivery Management POS</footer>
+ 
+  <script src="../../static/js/delivery/delivery.js"></script>
+</body>
+</html>

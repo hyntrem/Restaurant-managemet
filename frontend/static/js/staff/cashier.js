@@ -54,6 +54,11 @@
     buttons.forEach(function (button) {
       button.addEventListener("click", function () {
         currentOrderType = button.dataset.orderType;
+        if (currentOrderType === "DELIVERY") {
+            console.log("🛵 Thực hiện đổi hướng về giao diện Quản lý Delivery Hub...");
+            globalThis.location.href = '../delivery/delivery.html';
+            return; // Chặn chặn không cho chạy luồng mở POS chọn món tại quầy
+        }
 
         // Show in order header
         document.getElementById("currentOrderType").textContent = currentOrderType.replace("_", " ");
@@ -340,3 +345,48 @@
     renderCart();
   });
 }());
+(async function XuLyDonGiaoHangLienThong() {
+        const urlParams = new URLSearchParams(globalThis.location.search);
+        const modifyOrderId = urlParams.get('modify_order_id');
+        const isDelivery = urlParams.get('type') === 'DELIVERY';
+
+        if (modifyOrderId && isDelivery) {
+            currentOrderType = "DELIVERY";
+            const typeTag = document.getElementById("currentOrderType");
+            if (typeTag) typeTag.textContent = "DELIVERY";
+            showScreen("pos");
+
+            const btnCreate = document.querySelector(".primary-btn");
+            if (btnCreate) {
+                btnCreate.textContent = "Nhận Đơn Delivery";
+                btnCreate.style.background = "#10b981";
+                
+                btnCreate.onclick = async function() {
+                    // Cập nhật trạng thái động xuống DB tổng của nhóm bồ
+                    const resPut = await globalThis.apiPut(`/api/orders/${modifyOrderId}/status`, { status: "CONFIRMED" });
+                    alert(`🟢 Đã cập nhật và xác nhận nhận đơn Delivery #${modifyOrderId} thành công!`);
+                    globalThis.location.href = '../delivery/delivery.html';
+                };
+            }
+
+            // Gọi API động bốc chi tiết đơn từ MySQL Workbench lên màn hình Cashier POS
+            const result = await globalThis.apiGet(`/api/orders/${modifyOrderId}`);
+            if (result && result.success && result.data) {
+                // Đọc mảng items thật dướt DB nếu backend có cấu trúc lưu chi tiết món
+                if (result.data.items && result.data.items.length > 0) {
+                    currentCart = result.data.items.map(item => ({
+                        menu_item_id: item.menu_item_id,
+                        name: item.name,
+                        price: Number(item.price),
+                        quantity: item.quantity,
+                        note: item.note || ""
+                    }));
+                } else {
+                    currentCart = [
+                        { menu_item_id: 999, name: `Đơn gốc #${result.data.order_code || modifyOrderId}`, price: Number(result.data.total_amount), quantity: 1, note: "" }
+                    ];
+                }
+                renderCart();
+            }
+        }
+    })();
