@@ -1,281 +1,322 @@
+:root {
+  --marine: #163B6D;
+  --marine-hover: #0f2a4d;
+  --cream: #F7F3E8;
+  --cream-dark: #ece5d6;
+  --gold: #d9b54a;       /* vàng kem pastel thay cho vàng neon */
+  --gold-dark: #b8933a;
+  --white: #ffffff;
+  --border: #d7d0c2;
+  --success: #2d7a46;
+  --danger: #c0392b;
+  --info: #2c6fa8;
+}
+
 /* =========================
         RESET
 ========================= */
-*{
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-body{
-    font-family: "Segoe UI", sans-serif;
-    background: white;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: var(--cream);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 /* =========================
         HEADER
 ========================= */
-header{
-    background: #002147;
-    color: white;
-    border-bottom: 5px solid #dfff00;
-    padding: 20px 30px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+header {
+  background: var(--marine);
+  color: var(--white);
+  border-bottom: 4px solid var(--marine-hover);
+  padding: 18px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.header-right{
-    display: flex;
-    align-items: center;
-    gap: 15px;
+.header-left h1 {
+  font-size: 20px;
+  font-weight: 700;
 }
 
-#clock{
-    font-size: 22px;
-    font-weight: bold;
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+#clock {
+  font-size: 20px;
+  font-weight: bold;
+  background: rgba(255,255,255,0.12);
+  padding: 6px 14px;
+  border-radius: 8px;
 }
 
 /* =========================
         MENU BUTTON
 ========================= */
-.nav-btn{
-    background: #dfff00;
-    color: #002147;
-    border: none;
-    padding: 12px 18px;
-    border-radius: 12px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
-    transition: .3s;
+.nav-btn {
+  background: var(--cream);
+  color: var(--marine);
+  border: 2px solid transparent;
+  padding: 11px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  transition: .2s;
 }
 
-.nav-btn:hover{
-    transform: translateY(-2px);
-    background: white;
+.nav-btn:hover {
+  transform: translateY(-2px);
+  background: var(--white);
 }
 
-.active{
-    background: white;
-    border: 3px solid #dfff00;
+.nav-btn.active {
+  background: var(--gold);
+  color: var(--marine);
+  border: 2px solid var(--gold-dark);
+}
+
+.back-admin-btn {
+  background: transparent;
+  color: var(--white);
+  border: 1.5px solid rgba(255,255,255,0.5);
+}
+
+.back-admin-btn:hover {
+  background: rgba(255,255,255,0.15);
+  color: var(--white);
 }
 
 /* =========================
         DASHBOARD
 ========================= */
-#dashboard-section{
-    padding: 20px;
+#dashboard-section {
+  padding: 24px;
 }
 
-.stats-container{
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    flex-wrap: wrap;
+.stats-container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
-.stat-card{
-    width: 180px;
-    background: white;
-    border: 3px solid #002147;
-    border-left: 10px solid #dfff00;
-    border-radius: 20px;
-    padding: 20px;
-    text-align: center;
-    box-shadow: 0 4px 10px rgba(0,0,0,.1);
+.stat-card {
+  width: 180px;
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-left: 8px solid var(--gold);
+  border-radius: 14px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(22,59,109,.08);
 }
 
-.stat-card h2{
-    color: #002147;
-    font-size: 42px;
-    margin-bottom: 10px;
+.stat-card h2 {
+  color: var(--marine);
+  font-size: 38px;
+  margin-bottom: 8px;
 }
 
-.stat-card p{
-    font-size: 18px;
-    font-weight: bold;
+.stat-card p {
+  font-size: 15px;
+  font-weight: 700;
+  color: #5b6472;
 }
 
 /* =========================
-   BOARD-CONTAINER / KITCHEN-SECTION 
-   (Khung bọc ngoài cùng chịu trách nhiệm cuộn ngang nếu tràn hình)
+   BOARD-CONTAINER / KITCHEN-SECTION
 ========================= */
 #kitchen-section {
-    flex: 1;
-    overflow-x: auto; /* TỰ ĐỘNG XUẤT HIỆN THANH CUỘN NGANG NẾU 4 CỘT BỊ TRÀN */
-    overflow-y: hidden; /* Chặn cuộn dọc toàn trang để giữ cố định layout */
-    display: flex;
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: hidden;
+  display: flex;
 }
 
 /* =========================
-        BOARD (Luôn dàn hàng ngang chứa 4 cột)
+        BOARD
 ========================= */
 .board {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr); /* Ép buộc chia 4 cột đứng cạnh nhau */
-    gap: 20px;
-    padding: 20px;
-    flex: 1;
-    width: 100%;
-    min-width: 1200px; /* Độ rộng tối thiểu để đảm bảo 4 cột không bị ép dẹp lép khi màn hình bé */
-    height: calc(100vh - 170px); /* Cố định chiều cao vừa khít màn hình */
-    min-height: 500px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  padding: 20px;
+  flex: 1;
+  width: 100%;
+  min-width: 1200px;
+  height: calc(100vh - 170px);
+  min-height: 500px;
 }
 
 /* =========================
-        COLUMN (Cấu trúc khung từng cột)
+        COLUMN
 ========================= */
 .column {
-    background: white;
-    border: 3px solid black;
-    border-radius: 20px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-shadow: 0 3px 10px rgba(22,59,109,.06);
 }
 
 .column-header {
-    text-align: center;
-    padding: 18px;
-    font-size: 24px;
-    font-weight: bold;
-    color: white;
-    flex-shrink: 0;
+  text-align: center;
+  padding: 16px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--white);
+  flex-shrink: 0;
 }
 
-.pending-header { background: #FFD600; color: black; }
-.preparing-header { background: #2196F3; }
-.completed-header { background: #4CAF50; }
-.cancelled-header { background: #E53935; }
+/* Pastel hóa 4 màu trạng thái — vẫn phân biệt rõ nhưng dịu hơn, hài hòa marine/cream */
+.pending-header   { background: var(--gold); color: var(--marine); }
+.preparing-header { background: var(--info); }
+.completed-header { background: var(--success); }
+.cancelled-header { background: var(--danger); }
 
-/* VÙNG CHỨA ĐƠN HÀNG - LƯỚT XUỐNG NỘI BỘ TỪNG CỘT */
 #pending-list, #preparing-list, #completed-list, #cancelled-list {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    padding: 15px 8px 15px 15px;
-    overflow-y: auto; /* TỰ ĐỘNG XUẤT HIỆN THANH CUỘN DỌC KHI ĐƠN TRONG CỘT QUÁ NHIỀU */
-    flex-grow: 1;
-    background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 15px 8px 15px 15px;
+  overflow-y: auto;
+  flex-grow: 1;
+  background: var(--cream);
 }
 
-/* Tùy chỉnh thanh cuộn dọc (Scrollbar) */
-#pending-list::-webkit-scrollbar, 
-#preparing-list::-webkit-scrollbar, 
-#completed-list::-webkit-scrollbar, 
+#pending-list::-webkit-scrollbar,
+#preparing-list::-webkit-scrollbar,
+#completed-list::-webkit-scrollbar,
 #cancelled-list::-webkit-scrollbar {
-    width: 6px;
+  width: 6px;
 }
+
 #pending-list::-webkit-scrollbar-thumb,
 #preparing-list::-webkit-scrollbar-thumb,
 #completed-list::-webkit-scrollbar-thumb,
 #cancelled-list::-webkit-scrollbar-thumb {
-    background-color: #cbd5e1;
-    border-radius: 10px;
+  background-color: var(--border);
+  border-radius: 10px;
 }
 
 /* =========================
         ORDER CARD
 ========================= */
 .order-card {
-    width: 100%;
-    margin: 0;
-    background: white;
-    border: 3px solid #002147;
-    border-left: 10px solid #dfff00;
-    border-radius: 18px;
-    padding: 15px;
-    box-shadow: 0 5px 10px rgba(0,0,0,.1);
-    transition: .3s;
-    flex-shrink: 0;
+  width: 100%;
+  margin: 0;
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-left: 8px solid var(--gold);
+  border-radius: 14px;
+  padding: 15px;
+  box-shadow: 0 4px 10px rgba(22,59,109,.08);
+  transition: .2s;
+  flex-shrink: 0;
 }
 
-.order-card:hover{
-    transform: translateY(-2px);
+.order-card:hover {
+  transform: translateY(-2px);
+  border-left-color: var(--marine);
 }
 
 /* =========================
         ORDER DETAILS
 ========================= */
-.order-id{
-    color: #002147;
-    font-size: 22px;
-    font-weight: bold;
+.order-id {
+  color: var(--marine);
+  font-size: 19px;
+  font-weight: 700;
 }
 
-.order-type{
-    margin-top: 10px;
-    font-size: 16px;
-    font-weight: bold;
+.order-type {
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gold-dark);
 }
 
-.order-items{
-    margin-top: 15px;
-    line-height: 28px;
-    font-size: 15px;
+.order-items {
+  margin-top: 12px;
+  line-height: 26px;
+  font-size: 14px;
+  color: #334155;
 }
 
-.order-total{
-    margin-top: 15px;
-    font-size: 18px;
-    font-weight: bold;
-    color: #002147;
+.order-total {
+  margin-top: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--marine);
 }
 
-.timer{
-    margin-top: 15px;
-    color: red;
-    font-size: 18px;
-    font-weight: bold;
+.timer {
+  margin-top: 12px;
+  color: var(--danger);
+  font-size: 16px;
+  font-weight: 700;
 }
 
-.warning{ background: #FFF59D; }
-.danger{ background: #FF8A80; }
+.warning { background: #fbeec1; }
+.danger  { background: #f6c9c2; }
 
 /* =========================
         BUTTONS
 ========================= */
-.btn{
-    width: 100%;
-    margin-top: 15px;
-    border: none;
-    border-radius: 12px;
-    padding: 14px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
+.btn {
+  width: 100%;
+  margin-top: 14px;
+  border: none;
+  border-radius: 10px;
+  padding: 13px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+  transition: filter .15s;
 }
 
-.start-btn{ background: #dfff00; color: #002147; }
-.complete-btn{ background: #4CAF50; color: white; }
-.cancel-btn{ background: #E53935; color: white; }
+.btn:hover { filter: brightness(1.06); }
+
+.start-btn    { background: var(--gold); color: var(--marine); }
+.complete-btn { background: var(--success); color: var(--white); }
+.cancel-btn   { background: var(--danger); color: var(--white); }
 
 /* =========================
         FOOTER
 ========================= */
-footer{
-    background: #002147;
-    color: white;
-    border-top: 5px solid #dfff00;
-    height: 60px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-top: auto;
+footer {
+  background: var(--marine);
+  color: rgba(255,255,255,0.85);
+  border-top: 4px solid var(--marine-hover);
+  height: 56px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: auto;
+  font-size: 13px;
 }
 
 /* =========================
-        RESPONSIVE (ĐÃ LOẠI BỎ VIỆC ĐẨY HÀNG DỌC)
+        RESPONSIVE
 ========================= */
-/* Khi màn hình siêu nhỏ, giữ nguyên 4 cột xếp ngang, chỉ kích hoạt lướt ngang ở thanh cuộn tổng */
-@media(max-width: 768px){
-    .board {
-        gap: 10px;
-        padding: 10px;
-    }
+@media (max-width: 768px) {
+  .board {
+    gap: 10px;
+    padding: 10px;
+  }
 }

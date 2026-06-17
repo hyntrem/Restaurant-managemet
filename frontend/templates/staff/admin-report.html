@@ -3,33 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <title>Pizza 4P's - Payment Revenue & Dashboard</title>
-    <link rel="stylesheet" href="../../static/css/payment.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../static/css/payment.css">
     <style>
-        body { 
-            background-color: #f8fafc; 
-            font-family: 'Be Vietnam Pro', sans-serif; 
-            margin: 0; 
-            padding: 20px; 
+        :root {
+            --marine: #163B6D;
+            --marine-hover: #0f2a4d;
+            --cream: #F7F3E8;
+            --cream-dark: #ece5d6;
+            --gold: #d9b54a;
+            --white: #ffffff;
+            --border: #d7d0c2;
+            --success: #2d7a46;
+            --danger: #c0392b;
+            --info: #2c6fa8;
+            --indigo: #5b5fc7;
+            --muted: #64748b;
         }
-        .admin-container { 
-            max-width: 1200px; 
-            margin: 0 auto; 
+
+        body {
+            background-color: var(--cream);
+            font-family: 'Be Vietnam Pro', 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 20px;
+            color: #334155;
         }
-        .back-to-admin { 
-            background: #123c69; 
-            color: white; 
-            border: none; 
-            padding: 10px 18px; 
-            border-radius: 6px; 
-            font-weight: 600; 
-            cursor: pointer; 
-            margin-bottom: 20px; 
-            transition: background 0.2s; 
+
+        .admin-container { max-width: 1200px; margin: 0 auto; }
+
+        .back-to-admin {
+            background: var(--marine);
+            color: var(--white);
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: background 0.2s;
         }
-        .back-to-admin:hover { 
-            background: #0f3156; 
+        .back-to-admin:hover { background: var(--marine-hover); }
+
+        .admin-report-container { display: flex; flex-direction: column; gap: 25px; }
+
+        .report-header h2 {
+            margin: 0; color: var(--marine); font-size: 24px; font-weight: 700;
         }
+        .report-header h3 {
+            margin: 0; color: var(--marine); font-size: 18px; font-weight: 700;
+        }
+        .report-header p {
+            margin: 5px 0 0 0; color: var(--muted); font-size: 14px;
+        }
+
+        .dashboard-cards {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+        }
+        .sales-activity-cards {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
+        }
+
+        .dash-card {
+            background: var(--white);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(22,59,109,0.06);
+            border: 1.5px solid var(--border);
+            text-align: left;
+        }
+        .dash-card.cash    { border-left: 5px solid var(--success); }
+        .dash-card.transfer{ border-left: 5px solid var(--info); }
+        .dash-card.digital { border-left: 5px solid var(--indigo); }
+
+        .dash-card.center {
+            text-align: center;
+            border-left: none;
+        }
+        .dash-card.total     { border-top: 4px solid var(--marine); }
+        .dash-card.active    { border-top: 4px solid var(--gold); }
+        .dash-card.completed { border-top: 4px solid var(--success); }
+        .dash-card.cancelled { border-top: 4px solid var(--danger); }
+
+        .dash-card h5 {
+            margin: 0; color: var(--muted); font-size: 13px; font-weight: 500;
+        }
+        .card-val {
+            font-size: 26px; font-weight: 700; color: var(--marine); margin-top: 8px;
+        }
+        .card-val.lg { font-size: 28px; margin-top: 6px; }
+        .card-val.gold { color: var(--gold); }
+        .card-val.success { color: var(--success); }
+        .card-val.danger { color: var(--danger); }
+        .card-val.dark { color: #1e293b; }
+
+        .two-col-grid {
+            display: grid; grid-template-columns: 2fr 1fr; gap: 20px;
+        }
+
+        .predict-panel, .system-status-panel {
+            background: var(--white);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(22,59,109,0.06);
+            border: 1.5px solid var(--border);
+        }
+        .system-status-panel {
+            display: flex; flex-direction: column; justify-content: space-between;
+        }
+
+        .predict-table { width: 100%; border-collapse: collapse; text-align: left; }
+        .predict-table thead tr {
+            background: var(--cream); border-bottom: 2px solid var(--border);
+        }
+        .predict-table th {
+            padding: 14px; color: var(--marine); font-weight: 600; font-size: 14px;
+        }
+
+        .status-row {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px dashed var(--cream-dark); padding-bottom: 10px;
+        }
+        .status-row span:first-child {
+            font-size: 14px; color: #475569; font-weight: 500;
+        }
+        .status-value {
+            font-size: 13px; color: var(--muted); font-weight: 600;
+        }
+
         .status-dot {
             display: inline-block;
             width: 8px;
@@ -37,13 +139,22 @@
             border-radius: 50%;
             margin-right: 6px;
         }
-        .status-online { background-color: #10b981; animation: pulse 2s infinite; }
+        .status-online { background-color: var(--success); animation: pulse 2s infinite; }
         @keyframes pulse {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(45, 122, 70, 0.6); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(45, 122, 70, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(45, 122, 70, 0); }
         }
-        
+
+        .sys-log-box {
+            background: var(--cream);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 15px;
+            border: 1px solid var(--border);
+        }
     </style>
 </head>
 <body>
@@ -51,97 +162,97 @@
     <div class="admin-container">
         <button class="back-to-admin" onclick="globalThis.location.href='admin-dashboard.html'">← Admin Dashboard</button>
 
-        <div class="admin-report-container" style="display: flex; flex-direction: column; gap: 25px;">
-            
+        <div class="admin-report-container">
+
             <div class="report-header">
-                <h2 style="margin: 0; color: #123c69; font-size: 24px; font-weight: 700;"> Hệ Thống Báo Cáo Doanh Thu & Dự Báo </h2>
-                <p style="margin: 5px 0 0 0; color: #64748b; font-size: 14px;">Số liệu doanh thu tổng hợp thời gian thực từ các phương thức thanh toán tại quầy</p>
+                <h2>Hệ Thống Báo Cáo Doanh Thu &amp; Dự Báo</h2>
+                <p>Số liệu doanh thu tổng hợp thời gian thực từ các phương thức thanh toán tại quầy</p>
             </div>
 
-            <div class="dashboard-cards" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
-                <div class="dash-card" style="background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-left: 5px solid #10b981; text-align: left;">
-                    <h5 style="margin: 0; color: #64748b; font-size: 13px; font-weight: 500;">Tổng Tiền Mặt (Cash)</h5>
-                    <div class="card-val" id="adminDashCash" style="font-size: 26px; font-weight: 700; color: #123c69; margin-top: 8px;">0 VNĐ</div>
+            <div class="dashboard-cards">
+                <div class="dash-card cash">
+                    <h5>Tổng Tiền Mặt (Cash)</h5>
+                    <div class="card-val" id="adminDashCash">0 VNĐ</div>
                 </div>
-                
-                <div class="dash-card" style="background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-left: 5px solid #3b82f6; text-align: left;">
-                    <h5 style="margin: 0; color: #64748b; font-size: 13px; font-weight: 500;">Tổng Chuyển Khoản Ngân Hàng</h5>
-                    <div class="card-val" id="adminDashTransfer" style="font-size: 26px; font-weight: 700; color: #123c69; margin-top: 8px;">0 VNĐ</div>
+
+                <div class="dash-card transfer">
+                    <h5>Tổng Chuyển Khoản Ngân Hàng</h5>
+                    <div class="card-val" id="adminDashTransfer">0 VNĐ</div>
                 </div>
-                
-                <div class="dash-card" style="background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-left: 5px solid #6366f1; text-align: left;">
-                    <h5 style="margin: 0; color: #64748b; font-size: 13px; font-weight: 500;">Tổng Thẻ & Food App (Grab/Shopee)</h5>
-                    <div class="card-val" id="adminDashDigital" style="font-size: 26px; font-weight: 700; color: #123c69; margin-top: 8px;">0 VNĐ</div>
+
+                <div class="dash-card digital">
+                    <h5>Tổng Thẻ &amp; Food App (Grab/Shopee)</h5>
+                    <div class="card-val" id="adminDashDigital">0 VNĐ</div>
                 </div>
             </div>
 
             <div class="report-header" style="margin-top: 10px;">
-                <h3 style="margin: 0; color: #123c69; font-size: 18px; font-weight: 700;"> Hoạt Động Buôn Bán Thực Tế </h3>
-                <p style="margin: 5px 0 0 0; color: #64748b; font-size: 13px;">Theo dõi khối lượng đơn hàng luân chuyển qua hệ thống</p>
+                <h3>Hoạt Động Buôn Bán Thực Tế</h3>
+                <p>Theo dõi khối lượng đơn hàng luân chuyển qua hệ thống</p>
             </div>
 
-            <div class="sales-activity-cards" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
-                <div class="dash-card" style="background: #ffffff; padding: 18px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-top: 4px solid #475569; text-align: center;">
-                    <h5 style="margin: 0; color: #64748b; font-size: 13px; font-weight: 500;">Tổng Đơn Đã Nhận</h5>
-                    <div class="card-val" id="salesTotalOrders" style="font-size: 28px; font-weight: 700; color: #1e293b; margin-top: 6px;">0</div>
+            <div class="sales-activity-cards">
+                <div class="dash-card center total">
+                    <h5>Tổng Đơn Đã Nhận</h5>
+                    <div class="card-val lg dark" id="salesTotalOrders">0</div>
                 </div>
-                <div class="dash-card" style="background: #ffffff; padding: 18px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-top: 4px solid #eab308; text-align: center;">
-                    <h5 style="margin: 0; color: #64748b; font-size: 13px; font-weight: 500;">Đơn Đang Chờ / Làm</h5>
-                    <div class="card-val" id="salesActiveOrders" style="font-size: 28px; font-weight: 700; color: #eab308; margin-top: 6px;">0</div>
+                <div class="dash-card center active">
+                    <h5>Đơn Đang Chờ / Làm</h5>
+                    <div class="card-val lg gold" id="salesActiveOrders">0</div>
                 </div>
-                <div class="dash-card" style="background: #ffffff; padding: 18px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-top: 4px solid #10b981; text-align: center;">
-                    <h5 style="margin: 0; color: #64748b; font-size: 13px; font-weight: 500;">Đơn Hoàn Thành (DONE)</h5>
-                    <div class="card-val" id="salesCompletedOrders" style="font-size: 28px; font-weight: 700; color: #10b981; margin-top: 6px;">0</div>
+                <div class="dash-card center completed">
+                    <h5>Đơn Hoàn Thành (DONE)</h5>
+                    <div class="card-val lg success" id="salesCompletedOrders">0</div>
                 </div>
-                <div class="dash-card" style="background: #ffffff; padding: 18px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-top: 4px solid #ef4444; text-align: center;">
-                    <h5 style="margin: 0; color: #64748b; font-size: 13px; font-weight: 500;">Đơn Đã Hủy (CANCELLED)</h5>
-                    <div class="card-val" id="salesCancelledOrders" style="font-size: 28px; font-weight: 700; color: #ef4444; margin-top: 6px;">0</div>
+                <div class="dash-card center cancelled">
+                    <h5>Đơn Đã Hủy (CANCELLED)</h5>
+                    <div class="card-val lg danger" id="salesCancelledOrders">0</div>
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
-                <div class="predict-panel" style="background: #ffffff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
-                    <h3 style="margin: 0 0 5px 0; color: #123c69; font-size: 18px; font-weight: 700;"> Kết Quả Phân Tích & Dự Đoán </h3>
-                    <p style="color: #64748b; font-size: 13px; margin: 0 0 20px 0;">Mô hình máy học tính toán lượng tiêu thụ dự kiến dựa trên hóa đơn trong ngày.</p>
-                    
-                    <table class="predict-table" style="width: 100%; border-collapse: collapse; text-align: left;">
+            <div class="two-col-grid">
+                <div class="predict-panel">
+                    <h3 style="margin: 0 0 5px 0;">Kết Quả Phân Tích &amp; Dự Đoán</h3>
+                    <p style="color: var(--muted); font-size: 13px; margin: 0 0 20px 0;">Mô hình máy học tính toán lượng tiêu thụ dự kiến dựa trên hóa đơn trong ngày.</p>
+
+                    <table class="predict-table">
                         <thead>
-                            <tr style="background: #f8fafc; border-bottom: 2px solid #edf2f7;">
-                                <th style="padding: 14px; color: #123c69; font-weight: 600; font-size: 14px;">Tên Món Ăn</th>
-                                <th style="padding: 14px; color: #123c69; font-weight: 600; font-size: 14px;">Số Lượng</th>
-                                <th style="padding: 14px; color: #123c69; font-weight: 600; font-size: 14px;">Độ Chính Xác</th>
-                                <th style="padding: 14px; color: #123c69; font-weight: 600; font-size: 14px;">Kho Kho hàng</th>
+                            <tr>
+                                <th>Tên Món Ăn</th>
+                                <th>Số Lượng</th>
+                                <th>Độ Chính Xác</th>
+                                <th>Kho Hàng</th>
                             </tr>
                         </thead>
                         <tbody id="adminAiPredictRows"></tbody>
                     </table>
                 </div>
 
-                <div class="system-status-panel" style="background: #ffffff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between;">
+                <div class="system-status-panel">
                     <div>
-                        <h3 style="margin: 0 0 15px 0; color: #123c69; font-size: 18px; font-weight: 700;"> Tình Trạng Vận Hành </h3>
-                        
+                        <h3 style="margin: 0 0 15px 0;">Tình Trạng Vận Hành</h3>
+
                         <div style="display: flex; flex-direction: column; gap: 15px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #e2e8f0; padding-bottom: 10px;">
-                                <span style="font-size: 14px; color: #475569; font-weight: 500;">Phân hệ Bếp (KDS)</span>
-                                <span id="statusKitchen" style="font-size: 13px; color: #64748b; font-weight: 600;"><span class="status-dot"></span>Đang kiểm tra...</span>
+                            <div class="status-row">
+                                <span>Phân hệ Bếp (KDS)</span>
+                                <span id="statusKitchen" class="status-value"><span class="status-dot"></span>Đang kiểm tra...</span>
                             </div>
-                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #e2e8f0; padding-bottom: 10px;">
-                                <span style="font-size: 14px; color: #475569; font-weight: 500;">Hệ thống Thanh Toán</span>
-                                <span id="statusPayment" style="font-size: 13px; color: #64748b; font-weight: 600;"><span class="status-dot"></span>Đang kiểm tra...</span>
+                            <div class="status-row">
+                                <span>Hệ thống Thanh Toán</span>
+                                <span id="statusPayment" class="status-value"><span class="status-dot"></span>Đang kiểm tra...</span>
                             </div>
-                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #e2e8f0; padding-bottom: 10px;">
-                                <span style="font-size: 14px; color: #475569; font-weight: 500;">Dữ liệu Chi Nhánh</span>
-                                <span id="statusBranch" style="font-size: 13px; color: #64748b; font-weight: 600;"><span class="status-dot"></span>Đang kiểm tra...</span>
+                            <div class="status-row">
+                                <span>Dữ liệu Chi Nhánh</span>
+                                <span id="statusBranch" class="status-value"><span class="status-dot"></span>Đang kiểm tra...</span>
                             </div>
-                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #e2e8f0; padding-bottom: 10px;">
-                                <span style="font-size: 14px; color: #475569; font-weight: 500;">Quản lý Kho hàng</span>
-                                <span id="statusInventory" style="font-size: 13px; color: #64748b; font-weight: 600;"><span class="status-dot"></span>Đang kiểm tra...</span>
+                            <div class="status-row">
+                                <span>Quản lý Kho hàng</span>
+                                <span id="statusInventory" class="status-value"><span class="status-dot"></span>Đang kiểm tra...</span>
                             </div>
                         </div>
                     </div>
 
-                    <div style="background: #f1f5f9; padding: 12px; border-radius: 8px; font-size: 12px; color: #64748b; margin-top: 15px;">
+                    <div class="sys-log-box">
                         <strong>Log kiểm tra hoạt động:</strong> <span id="lastSysCheckTime">00:00:00</span> <br>
                         Hệ thống tự động quét dữ liệu phân hệ thời gian thực.
                     </div>
