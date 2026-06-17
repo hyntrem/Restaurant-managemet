@@ -39,7 +39,7 @@ def get_order_by_id(order_id):
     db = SessionLocal()
     
     query = text("""
-        SELECT o.id, o.order_code, o.customer_id, o.table_id, o.branch_id,
+        SELECT o.id, o.order_code, o.customer_id, o.customer_phone, o.table_id, o.branch_id,
                o.order_type, o.status, o.pickup_time, o.delivery_address,
                o.total_amount, o.created_at,
                u.full_name AS customer_name,

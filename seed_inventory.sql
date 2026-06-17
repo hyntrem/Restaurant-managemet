@@ -148,7 +148,7 @@ INSERT INTO recipes (menu_item_id, ingredient_id, quantity_required) VALUES
 -- 29. Trái Cây, Burrata Và Thịt Nguội Lớn
 (29, 202, 1), (29, 406, 100), (29, 302, 60),
 -- 30. Salad Tôm Và Bơ
-(30, 301, 4), (403, 50), (30, 401, 60),
+(30, 301, 4), (30, 403, 50), (30, 401, 60),
 -- 31. Salad Rau Xanh Với Xốt Nhà Làm
 (31, 401, 100), (31, 403, 40),
 -- 32. Mozzarella Nhà Làm Và Cà Chua Đà Lạt

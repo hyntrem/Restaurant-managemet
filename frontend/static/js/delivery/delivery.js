@@ -4,7 +4,7 @@
   let currentActiveFilter = 'PENDING';
 
   // ========================================================
-  // ── 🛡️ AUTH & PROTECT (Khớp hoàn toàn từ phân hệ tổng) ──
+  // ── 🛡️ AUTH & PROTECT
   // ========================================================
   function getStaffUser() {
     const userText = globalThis.localStorage.getItem("staff_user");
@@ -17,11 +17,10 @@
     const token = globalThis.localStorage.getItem("staff_token");
     const user = getStaffUser();
     
-    // Tự động giữ phiên đăng nhập giả lập nếu bồ đang chạy kiểm thử local qua Live Server
     if (!token || !user) {
         if (globalThis.location.hostname === "127.0.0.1" || globalThis.location.hostname === "localhost") {
             globalThis.localStorage.setItem("staff_token", "mock_token");
-            globalThis.localStorage.setItem("staff_user", JSON.stringify({ username: "Nguyen Van B", full_name: "Nguyen Van B", role: "ADMIN" }));
+            globalThis.localStorage.setItem("staff_user", JSON.stringify({ username: "admin", full_name: "Quản Trị Viên", role: "ADMIN" }));
             return getStaffUser();
         }
         globalThis.location.href = "../staff/login.html";
@@ -41,7 +40,7 @@
   }
 
   // ========================================================
-  // ── 📦 CORE API HELPERS (Bao vây lỗi CORS Preflight) ──
+  // ── 📦 CORE API HELPERS (Bọc xuyệt chéo né bẫy Nginx 301)
   // ========================================================
   async function apiGet(endpoint) {
     const token = globalThis.localStorage.getItem("staff_token");
@@ -51,8 +50,6 @@
         headers["Authorization"] = `Bearer ${token}`;
     }
 
-    // 🟢 THẦN CHÚ: Tách chuỗi để chèn chính xác dấu xuyệt vào trước dấu hỏi chấm (?) của query string
-    // Biến đổi: "/api/orders?order_type=DELIVERY" -> "/api/orders/?order_type=DELIVERY"
     let correctUrl = endpoint;
     if (endpoint.includes("?")) {
         const parts = endpoint.split("?");
@@ -64,7 +61,6 @@
     }
 
     try {
-      // Gọi trực tiếp qua Gateway cổng 8080 với URL chuẩn chỉnh khớp ren Nginx 100%
       const res = await fetch(`http://127.0.0.1:8080${correctUrl}`, {
         method: "GET",
         headers: headers
@@ -85,9 +81,9 @@
     if (token && token !== "mock_token" && token.length > 20) {
         headers["Authorization"] = `Bearer ${token}`;
     }
-
+    let correctUrl = endpoint.endsWith("/") ? endpoint : endpoint + "/";
     try {
-      const res = await fetch(`http://localhost:8080${endpoint}`, {
+      const res = await fetch(`http://127.0.0.1:8080${correctUrl}`, {
         method: "PUT",
         headers: headers,
         body: JSON.stringify(data)
@@ -100,28 +96,45 @@
   }
 
   // ========================================================
-  // ── LOGIC HIỂN THỊ VÀ ĐIỀU PHỐI ĐƠN HÀNG THỰC TẾ ──
+  // ── LOGIC HIỂN THỊ DANH SÁCH ĐƠN HÀNG TỔNG
   // ========================================================
   async function loadDeliveryDashboard() {
-    // Gọi API động lấy đơn hàng giao đi trực tiếp
     const result = await apiGet("/api/orders?order_type=DELIVERY");
     
-    // Giải bọc linh hoạt cấu trúc JSON đầu ra của Docker Backend tổng
     let ordersList = result.success ? (result.data || result.orders || result) : (Array.isArray(result) ? result : []);
     if (!ordersList || !Array.isArray(ordersList)) {
         ordersList = [];
     }
 
-    // 🔥 CHUẨN HÓA DỮ LIỆU THỰC TẾ: Ép kiểu chữ hoa trạng thái, xử lý khoảng trắng (Chống lỗi CHAR dướt DB)
     deliveryOrdersCache = ordersList.map(order => {
+        let finalPhone = order.customer_phone || order.phone || "-";
+        let finalAddress = order.delivery_address || "-";
+
+        // 🟢 CỨU HỘ THÔNG MINH CARD TRÁI: Nếu SĐT từ user chưa có mà địa chỉ bị dồn cục
+        if ((finalPhone === "-" || !finalPhone) && finalAddress.includes("(") && finalAddress.includes(")")) {
+            try {
+                const startP = finalAddress.indexOf("(");
+                const endP = finalAddress.indexOf(")");
+                const extracted = finalAddress.substring(startP + 1, endP).trim();
+                // Chỉ cứu hộ bốc ra nếu dướt dấu ngoặc thực sự là Số điện thoại (chuỗi số)
+                if (extracted && !isNaN(extracted.replace(/[\s-+]/g, ""))) {
+                    finalPhone = extracted;
+                }
+            } catch (e) {
+                console.error("Lỗi phân chẻ card trái:", e);
+            }
+        }
+
         return {
-            id: order.id || order.orderId || order.order_id || 999,
-            order_code: order.order_code || order.orderCode || `ORD-#${order.id}`,
-            customer_id: order.customer_id || order.customerId || 1,
+            id: order.id || 999,
+            order_code: order.order_code || `ORD-#${order.id}`,
+            customer_id: order.customer_id || null,
+            customer_name: order.customer_name || null,
             status: (order.status || 'PENDING').toString().trim().toUpperCase(),
-            delivery_address: order.delivery_address || order.deliveryAddress || "-",
-            total_amount: order.total_amount || order.totalAmount || order.total_price || 0,
-            created_at: order.created_at || order.createdAt || '-'
+            total_amount: order.total_amount || 0,
+            created_at: order.created_at || '-',
+            customer_phone: finalPhone,
+            delivery_address: finalAddress
         };
     });
 
@@ -139,7 +152,6 @@
     if (!box) return;
     box.innerHTML = '';
     
-    // Lọc đơn an toàn theo chữ in hoa đã được trim sạch khoảng trắng
     const listFiltered = deliveryOrdersCache.filter(o => o.status === filterStatus.trim().toUpperCase());
     if (listFiltered.length === 0) {
         box.innerHTML = `<p class="empty-invoice-text">Không có đơn hàng ở trạng thái này.</p>`;
@@ -149,22 +161,21 @@
     listFiltered.forEach(order => {
         const card = document.createElement('div');
         card.className = 'pizza-delivery-card';
+        if (currentSelectedOrder && String(currentSelectedOrder.id) === String(order.id)) {
+            card.style.borderLeft = "5px solid #123c69";
+        }
         card.onclick = () => showOrderDetails(order);
 
-        // Map thông tin tên hiển thị động theo ID khách hàng kết nối bảng khách dướt DB
-        const mappingUser = { 
-            1: { name: "Lê Vũ Nguyên", tel: "0901234567" }, 
-            2: { name: "Nguyễn Văn Nam", tel: "0912345678" } 
-        };
-        const userData = mappingUser[order.customer_id] || { name: `Khách hàng VIP #${order.customer_id}`, tel: "-" };
+        const displayName = order.customer_name || `Khách hàng VIP #${order.customer_id || '?'}`;
+        const displayPhone = order.customer_phone || "-";
 
         card.innerHTML = `
             <div style="display:flex; justify-content:space-between; font-weight:700; color:#123c69;">
                 <span>${order.order_code}</span>
                 <span style="font-size:12px; color:#64748b;">${order.status}</span>
             </div>
-            <div style="margin-top:6px; font-size:13px;"><strong>Khách:</strong> ${userData.name}</div>
-            <div style="margin-top:2px; font-size:12px; color:#64748b;"><strong>SĐT:</strong> ${userData.tel}</div>
+            <div style="margin-top:6px; font-size:13px;"><strong>Khách:</strong> ${displayName}</div>
+            <div style="margin-top:2px; font-size:12px; color:#64748b;"><strong>SĐT:</strong> ${displayPhone}</div>
         `;
         box.appendChild(card);
     });
@@ -177,15 +188,14 @@
     renderDeliveryCards(status);
   };
 
-  function showOrderDetails(order) {
+  // ========================================================
+  // ── 🎯 XEM CHI TIẾT ĐƠN HÀNG (AN TOÀN TUYỆT ĐỐI)
+  // ========================================================
+  async function showOrderDetails(order) {
     currentSelectedOrder = order;
-    const mappingUser = { 1: { name: "Lê Vũ Nguyên", tel: "0901234567" }, 2: { name: "Nguyễn Văn Nam", tel: "0912345678" } };
-    const userData = mappingUser[order.customer_id] || { name: "Khách hàng", tel: "-" };
 
     document.getElementById('valOrderCode').innerText = order.order_code;
-    document.getElementById('valCustomerName').innerText = userData.name;
-    document.getElementById('valCustomerPhone').innerText = userData.tel;
-    document.getElementById('valAddress').innerText = order.delivery_address;
+    document.getElementById('valCustomerName').innerText = order.customer_name || `Khách hàng VIP #${order.customer_id || '?'}`;
     document.getElementById('valPaymentMethod').innerText = order.id % 2 === 0 ? 'Thẻ Ngân hàng QR' : 'Tiền mặt (CASH)';
     
     if (order.created_at && order.created_at !== '-') {
@@ -196,17 +206,74 @@
 
     const tbody = document.getElementById('deliveryInvoiceItemsBody');
     if (tbody) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#64748b;">🔄 Đang lấy món ăn và địa chỉ...</td></tr>';
+        
+        let freshItems = [];
+        let displayAddress = order.delivery_address || "-";
+        let displayPhone = order.customer_phone || "-";
+
+        try {
+            const token = globalThis.localStorage.getItem("staff_token");
+            const headers = { "Content-Type": "application/json" };
+            if (token && token !== "mock_token") headers["Authorization"] = `Bearer ${token}`;
+
+            const responseText = await fetch(`http://127.0.0.1:8080/api/orders/${order.id}`, { method: "GET", headers: headers });
+            if (responseText.ok) {
+                const detailRes = await responseText.json();
+                const detailObj = detailRes.data || detailRes.order || detailRes;
+                
+                if (detailObj) {
+                    displayAddress = detailObj.delivery_address || "-";
+                    displayPhone = detailObj.customer_phone || detailObj.phone || "-";
+
+                    if (detailObj.items && Array.isArray(detailObj.items)) {
+                        freshItems = detailObj.items;
+                    }
+                }
+            }
+        } catch (e) {
+            console.error("Lỗi gọi API chi tiết thuộc tính:", e);
+        }
+
+        // 🟢 CỨU HỘ DYNAMIC BẢNG PHẢI: Nếu SĐT trống hoặc bằng dấu gạch ngang mà địa chỉ dính ngoặc đơn số
+        if ((displayPhone === "-" || !displayPhone) && displayAddress.includes("(") && displayAddress.includes(")")) {
+            try {
+                const startP = displayAddress.indexOf("(");
+                const endP = displayAddress.indexOf(")");
+                const extracted = displayAddress.substring(startP + 1, endP).trim();
+                
+                // Nếu dướt dấu ngoặc thực sự là con số (SĐT dồn cục), bốc hộ khẩu ra riêng biệt lập tức
+                if (extracted && !isNaN(extracted.replace(/[\s-+]/g, ""))) {
+                    displayPhone = extracted;
+                    if (displayAddress.includes(" - ")) {
+                        displayAddress = displayAddress.split(" - ").slice(1).join(" - ").trim();
+                    }
+                }
+            } catch (e) {
+                console.error("Lỗi phân chẻ chi tiết bảng phải:", e);
+            }
+        }
+
+        // Đổ dữ liệu phân chia hợp lý, vuông vức lên giao diện bên phải
+        document.getElementById('valAddress').innerText = displayAddress;
+        document.getElementById('valCustomerPhone').innerText = displayPhone;
+
         tbody.innerHTML = '';
-        // Map động danh sách món ăn chi tiết từ API dướt DB lên nếu có mảng items bọc kèm
-        if (order.items && order.items.length > 0) {
-            order.items.forEach(item => {
+
+        if (freshItems && freshItems.length > 0) {
+            freshItems.forEach(item => {
                 const tr = document.createElement('tr');
-                tr.innerHTML = `<td><strong>${item.name || 'Pizza / Món Ăn'}</strong></td><td style="text-align:center;">${item.quantity}</td><td style="text-align:right;">${formatCurrency(item.price)}</td>`;
+                const itemName = item.menu_item_name || item.name || 'Pizza / Món Ăn';
+                tr.innerHTML = `
+                    <td><strong>${itemName}</strong></td>
+                    <td style="text-align:center;">${item.quantity || 1}</td>
+                    <td style="text-align:right;">${formatCurrency(item.price)}</td>
+                `;
                 tbody.appendChild(tr);
             });
         } else {
             const tr = document.createElement('tr');
-            tr.innerHTML = `<td><strong>Đơn hàng giao đi (Tổng trị giá hóa đơn gốc)</strong></td><td style="text-align:center;">1</td><td style="text-align:right;">${formatCurrency(order.total_amount)}</td>`;
+            tr.innerHTML = `<td><strong>Đơn hàng giao đi (Hóa đơn gốc)</strong></td><td style="text-align:center;">1</td><td style="text-align:right;">${formatCurrency(order.total_amount)}</td>`;
             tbody.appendChild(tr);
         }
     }
@@ -223,10 +290,9 @@
     if (!currentSelectedOrder) return;
     const result = await apiPut(`/api/orders/${currentSelectedOrder.id}/status`, { status: nextStatus });
     if (result && result.success) {
-        alert(`🟢 Cập nhật trạng thái sang [${nextStatus}] thành công xuống DB tổng!`);
+        alert(`🟢 Cập nhật trạng thái sang [${nextStatus}] thành công!`);
         loadDeliveryDashboard();
     } else {
-        // Fallback cập nhật UI lập tức nếu bộ lọc CORS Preflight dướt local chặn lệnh PUT phản hồi
         alert(`🟢 Hệ thống xác nhận yêu cầu chuyển trạng thái: ${nextStatus}`);
         currentSelectedOrder.status = nextStatus;
         loadDeliveryDashboard();
@@ -235,7 +301,6 @@
 
   globalThis.processModifyRedirect = function() {
     if (!currentSelectedOrder) return;
-    alert(`🔄 Chuyển hướng luồng: Đồng bộ đơn ${currentSelectedOrder.order_code} sang Cashier POS.`);
     globalThis.location.href = '../staff/cashier-dashboard.html?modify_order_id=' + currentSelectedOrder.id + '&type=DELIVERY';
   };
 
@@ -246,13 +311,13 @@
   };
 
   // ========================================================
-  // ── INIT KHỞI CHẠY KHÉP KÍN LuỒNG ──
+  // ── INIT KHỞI CHẠY KHÉP KÍN LUỒNG
   // ========================================================
   globalThis.addEventListener("DOMContentLoaded", function () {
     const user = protectPage();
     if (user) setUserInfo(user);
 
     loadDeliveryDashboard();
-    setInterval(loadDeliveryDashboard, 7000); // Tự động đồng bộ hóa cơ sở dữ liệu sau mỗi 7 giây
+    setInterval(loadDeliveryDashboard, 7000); 
   });
 }());
