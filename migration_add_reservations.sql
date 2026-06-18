@@ -1,7 +1,5 @@
 USE restaurant_management;
 
-ALTER TABLE restaurant_tables 
-ADD COLUMN IF NOT EXISTS current_order_id BIGINT DEFAULT NULL;
 
 ALTER TABLE restaurant_tables 
 MODIFY COLUMN status ENUM('AVAILABLE', 'OCCUPIED', 'RESERVED', 'CLEANING') DEFAULT 'AVAILABLE';
