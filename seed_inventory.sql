@@ -24,7 +24,7 @@ INSERT INTO ingredients (id, name, unit, quantity, expiry_date, status) VALUES
 (208, 'Phô mai Hun Khói', 'Gram', 5000.00, '2026-09-30', 'AVAILABLE'),
 
 -- Nhóm 3xx: Nhóm Đạm (Thịt, Cá, Hải sản)
-(301, 'Tôm tươi bóc vỏ', 'Con', 1000.00, '2026-07-20', 'AVAILABLE'),
+(301, 'Tôm tươi bóc vỏ', 'Gram', 1000.00, '2026-07-20', 'AVAILABLE'),
 (302, 'Thịt nguội Prosciutto (Ý)', 'Gram', 15000.00, '2026-10-01', 'AVAILABLE'),
 (303, 'Thịt gà phi lê', 'Gram', 20000.00, '2026-07-01', 'AVAILABLE'),
 (304, 'Sò điệp tươi', 'Gram', 5000.00, '2026-06-30', 'AVAILABLE'),
@@ -148,7 +148,7 @@ INSERT INTO recipes (menu_item_id, ingredient_id, quantity_required) VALUES
 -- 29. Trái Cây, Burrata Và Thịt Nguội Lớn
 (29, 202, 1), (29, 406, 100), (29, 302, 60),
 -- 30. Salad Tôm Và Bơ
-(30, 301, 4), (403, 50), (30, 401, 60),
+(30, 301, 4), (30, 403, 50), (30, 401, 60),
 -- 31. Salad Rau Xanh Với Xốt Nhà Làm
 (31, 401, 100), (31, 403, 40),
 -- 32. Mozzarella Nhà Làm Và Cà Chua Đà Lạt

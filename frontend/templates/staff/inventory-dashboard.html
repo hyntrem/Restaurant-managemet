@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <title>Pizza 4P's - Inventory Management</title>
+  <link rel="stylesheet" href="../../static/css/staff.css">
+  <link rel="stylesheet" href="../../static/css/inventory.css">
+</head>
+
+<body>
+  <header class="staff-header">
+    <div class="logo-box">
+      <img src="../../static/images/pizza4ps_logo.jpg" alt="Pizza 4P's" class="logo-img">
+      <span class="logo-country">VIETNAM</span>
+    </div>
+    <div class="staff-user">
+      <span id="staffUserInfo" class="user-pill">User</span>
+      <button type="button" class="logout-btn" onclick="globalThis.logoutStaff()">Đăng xuất</button>
+    </div>
+  </header>
+
+  <main class="staff-main inv-main">
+    <button type="button" class="back-btn" onclick="globalThis.location.href='admin-dashboard.html'">← Admin Dashboard</button>
+    <h1 class="page-title">Quản Lý Kho Nguyên Liệu</h1>
+    <p class="page-subtitle">Nhập hàng, hủy hàng, theo dõi xuất kho theo hóa đơn và báo cáo sử dụng nguyên liệu.</p>
+
+    <div class="inv-layout">
+
+      <!-- ===== TAB SIDEBAR (LEFT) ===== -->
+      <nav class="inv-tabbar">
+        <button type="button" class="inv-tab active" data-tab="dashboard">
+          <span class="inv-tab-icon">📊</span>
+          <span class="inv-tab-label">Dashboard</span>
+        </button>
+        <button type="button" class="inv-tab" data-tab="import">
+          <span class="inv-tab-icon">📥</span>
+          <span class="inv-tab-label">Nhập Hàng</span>
+        </button>
+        <button type="button" class="inv-tab" data-tab="waste">
+          <span class="inv-tab-icon">🗑️</span>
+          <span class="inv-tab-label">Hủy Hàng</span>
+        </button>
+        <button type="button" class="inv-tab" data-tab="export">
+          <span class="inv-tab-icon">📤</span>
+          <span class="inv-tab-label">Xuất Theo Hóa Đơn</span>
+        </button>
+        <button type="button" class="inv-tab" data-tab="report">
+          <span class="inv-tab-icon">📈</span>
+          <span class="inv-tab-label">Báo Cáo Sử Dụng</span>
+        </button>
+        <button type="button" class="inv-tab" data-tab="ingredients">
+          <span class="inv-tab-icon">🧂</span>
+          <span class="inv-tab-label">Nguyên Liệu &amp; Recipe</span>
+        </button>
+      </nav>
+
+      <!-- ===== CONTENT (RIGHT) ===== -->
+      <div class="inv-content">
+
+        <!-- ───────── TAB 1: DASHBOARD ───────── -->
+        <section class="inv-panel active" id="panel-dashboard">
+          <div class="inv-panel-title">Tổng Quan Kho</div>
+
+          <div class="inv-stat-grid">
+            <div class="inv-stat-card">
+              <h5>Tổng Nguyên Liệu</h5>
+              <div class="inv-stat-val" id="statTotalIngredients">0</div>
+            </div>
+            <div class="inv-stat-card warn">
+              <h5>Sắp Hết Hàng</h5>
+              <div class="inv-stat-val" id="statLowStock">0</div>
+            </div>
+            <div class="inv-stat-card danger">
+              <h5>Đã Hết Hàng</h5>
+              <div class="inv-stat-val" id="statOutOfStock">0</div>
+            </div>
+            <div class="inv-stat-card success">
+              <h5>Nhập Hôm Nay</h5>
+              <div class="inv-stat-val" id="statImportToday">0</div>
+            </div>
+          </div>
+
+          <div class="inv-panel-title sub">Cảnh Báo Tồn Kho Thấp</div>
+          <div class="inv-table-wrap">
+            <table class="inv-table">
+              <thead>
+                <tr>
+                  <th>Nguyên Liệu</th>
+                  <th>Tồn Hiện Tại</th>
+                  <th>Đơn Vị</th>
+                  <th>Trạng Thái</th>
+                  <th>Hạn Sử Dụng</th>
+                </tr>
+              </thead>
+              <tbody id="dashboardLowStockBody">
+                <tr><td colspan="5" class="inv-empty">Đang tải dữ liệu...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ───────── TAB 2: NHẬP HÀNG ───────── -->
+        <section class="inv-panel" id="panel-import">
+          <div class="inv-panel-title">Nhập Hàng Vào Kho</div>
+
+          <form id="importForm" class="inv-form-grid">
+            <div class="inv-form-field">
+              <label for="importIngredientSelect">Nguyên liệu</label>
+              <select id="importIngredientSelect" required>
+                <option value="">— Chọn nguyên liệu —</option>
+              </select>
+            </div>
+            <div class="inv-form-field">
+              <label for="importQuantity">Số lượng nhập</label>
+              <input type="number" id="importQuantity" min="0.01" step="0.01" placeholder="Nhập số lượng" required>
+            </div>
+            <div class="inv-form-field">
+              <label for="importUnit">Đơn vị</label>
+              <input type="text" id="importUnit" placeholder="kg, lít, gói..." readonly>
+            </div>
+            <div class="inv-form-field">
+              <label for="importExpiry">Hạn sử dụng (nếu có)</label>
+              <input type="date" id="importExpiry">
+            </div>
+            <div class="inv-form-field full">
+              <label for="importNote">Ghi chú</label>
+              <input type="text" id="importNote" placeholder="VD: Nhập từ nhà cung cấp ABC, hóa đơn #123...">
+            </div>
+            <div class="inv-form-actions">
+              <button type="submit" class="inv-btn-primary">+ Xác Nhận Nhập Hàng</button>
+            </div>
+          </form>
+
+          <div class="inv-panel-title sub">Lịch Sử Nhập Hàng Gần Đây</div>
+          <div class="inv-table-wrap">
+            <table class="inv-table">
+              <thead>
+                <tr>
+                  <th>Thời Gian</th>
+                  <th>Nguyên Liệu</th>
+                  <th>Số Lượng</th>
+                  <th>Ghi Chú</th>
+                </tr>
+              </thead>
+              <tbody id="importHistoryBody">
+                <tr><td colspan="4" class="inv-empty">Chưa có lịch sử nhập hàng.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ───────── TAB 3: HỦY HÀNG ───────── -->
+        <section class="inv-panel" id="panel-waste">
+          <div class="inv-panel-title">Hủy Hàng / Báo Hao Hụt</div>
+
+          <form id="wasteForm" class="inv-form-grid">
+            <div class="inv-form-field">
+              <label for="wasteIngredientSelect">Nguyên liệu</label>
+              <select id="wasteIngredientSelect" required>
+                <option value="">— Chọn nguyên liệu —</option>
+              </select>
+            </div>
+            <div class="inv-form-field">
+              <label for="wasteQuantity">Số lượng hủy</label>
+              <input type="number" id="wasteQuantity" min="0.01" step="0.01" placeholder="Nhập số lượng" required>
+            </div>
+            <div class="inv-form-field">
+              <label for="wasteReason">Lý do hủy</label>
+              <select id="wasteReason" required>
+                <option value="">— Chọn lý do —</option>
+                <option value="EXPIRED">Hết hạn sử dụng</option>
+                <option value="DAMAGED">Hư hỏng / dập nát</option>
+                <option value="SPOILED">Ôi thiu / hỏng</option>
+                <option value="OTHER">Lý do khác</option>
+              </select>
+            </div>
+            <div class="inv-form-field full">
+              <label for="wasteNote">Ghi chú chi tiết</label>
+              <input type="text" id="wasteNote" placeholder="Mô tả lý do hủy hàng...">
+            </div>
+            <div class="inv-form-actions">
+              <button type="submit" class="inv-btn-danger">🗑️ Xác Nhận Hủy Hàng</button>
+            </div>
+          </form>
+
+          <div class="inv-panel-title sub">Lịch Sử Hủy Hàng</div>
+          <div class="inv-table-wrap">
+            <table class="inv-table">
+              <thead>
+                <tr>
+                  <th>Thời Gian</th>
+                  <th>Nguyên Liệu</th>
+                  <th>Số Lượng</th>
+                  <th>Lý Do</th>
+                  <th>Ghi Chú</th>
+                </tr>
+              </thead>
+              <tbody id="wasteHistoryBody">
+                <tr><td colspan="5" class="inv-empty">Chưa có lịch sử hủy hàng.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ───────── TAB 4: XUẤT KHO (LOG TỰ ĐỘNG) ───────── -->
+        <section class="inv-panel" id="panel-export">
+          <div class="inv-panel-title">Xuất Kho Tự Động</div>
+          <p class="inv-hint">Nguyên liệu được trừ kho tự động ngay khi Cashier xác nhận order (CONFIRMED) gửi xuống Kitchen. Danh sách dưới đây là log xuất kho (EXPORT) gần nhất.</p>
+
+          <div class="inv-table-wrap">
+            <table class="inv-table">
+              <thead>
+                <tr>
+                  <th>Thời Gian</th>
+                  <th>Nguyên Liệu</th>
+                  <th>Số Lượng Xuất</th>
+                  <th>Ghi Chú</th>
+                </tr>
+              </thead>
+              <tbody id="exportLogBody">
+                <tr><td colspan="4" class="inv-empty">Chưa có dữ liệu xuất kho.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ───────── TAB 5: BÁO CÁO % SỬ DỤNG ───────── -->
+        <section class="inv-panel" id="panel-report">
+          <div class="inv-panel-title">Báo Cáo Tỷ Lệ Sử Dụng Nguyên Liệu</div>
+          <p class="inv-hint">Tỷ lệ % = (Tổng đã xuất dùng / Tổng đã nhập kho) × 100. Giúp đánh giá nguyên liệu nào đang được tiêu thụ nhanh hoặc tồn dư nhiều.</p>
+
+          <div class="inv-table-wrap">
+            <table class="inv-table">
+              <thead>
+                <tr>
+                  <th>Nguyên Liệu</th>
+                  <th>Đã Nhập</th>
+                  <th>Đã Xuất Dùng</th>
+                  <th>Đã Hủy</th>
+                  <th>Tồn Hiện Tại</th>
+                  <th>% Sử Dụng</th>
+                </tr>
+              </thead>
+              <tbody id="usageReportBody">
+                <tr><td colspan="6" class="inv-empty">Đang tải báo cáo...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ───────── TAB 6: NGUYÊN LIỆU & RECIPE ───────── -->
+        <section class="inv-panel" id="panel-ingredients">
+          <div class="inv-panel-title">
+            Quản Lý Thẻ Nguyên Liệu
+            <button type="button" class="inv-btn-primary inv-btn-sm" onclick="window.InventoryApp.openIngredientModal()">+ Thêm Nguyên Liệu Mới</button>
+          </div>
+
+          <div class="inv-ingredient-grid" id="ingredientCardsGrid">
+            <p class="inv-empty">Đang tải nguyên liệu...</p>
+          </div>
+
+          <div class="inv-panel-title sub">
+            Kiểm Tra Tồn Kho Theo Món
+          </div>
+          <p class="inv-hint">Chọn món ăn để kiểm tra kho có đủ nguyên liệu đáp ứng không. Recipe (định lượng nguyên liệu) được cấu hình sẵn ở backend, không chỉnh sửa qua giao diện này.</p>
+
+          <div class="inv-form-grid" style="grid-template-columns: 2fr 1fr auto; margin-bottom:18px;">
+            <div class="inv-form-field">
+              <label for="recipeMenuSelect">Chọn món ăn</label>
+              <select id="recipeMenuSelect">
+                <option value="">— Chọn món để kiểm tra —</option>
+              </select>
+            </div>
+            <div class="inv-form-field">
+              <label for="recipeCheckQuantity">Số lượng order thử</label>
+              <input type="number" id="recipeCheckQuantity" min="1" step="1" value="1">
+            </div>
+            <div class="inv-form-field" style="justify-content:flex-end;">
+              <label>&nbsp;</label>
+              <button type="button" class="inv-btn-primary" onclick="window.InventoryApp.checkMenuStock()">Kiểm Tra Kho</button>
+            </div>
+          </div>
+
+          <div id="recipeCheckResultBox"></div>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- ===== MODAL: Thêm / Sửa Nguyên Liệu ===== -->
+  <div class="inv-modal-overlay hidden" id="ingredientModalOverlay">
+    <div class="inv-modal-box">
+      <div class="inv-modal-header">
+        <h3 id="ingredientModalTitle">Thêm Nguyên Liệu Mới</h3>
+        <button type="button" class="inv-modal-close" onclick="window.InventoryApp.closeIngredientModal()">✕</button>
+      </div>
+      <form id="ingredientForm" class="inv-modal-body">
+        <input type="hidden" id="ingredientEditId" value="">
+        <div class="inv-form-field">
+          <label for="ingredientName">Tên nguyên liệu</label>
+          <input type="text" id="ingredientName" placeholder="VD: Bột mì, Phô mai Mozzarella..." required>
+        </div>
+        <div class="inv-form-field">
+          <label for="ingredientUnit">Đơn vị tính</label>
+          <input type="text" id="ingredientUnit" placeholder="kg, lít, gói, cái..." required>
+        </div>
+        <div class="inv-form-field">
+          <label for="ingredientQuantity">Số lượng tồn ban đầu</label>
+          <input type="number" id="ingredientQuantity" min="0" step="0.01" placeholder="0" required>
+        </div>
+        <div class="inv-form-field">
+          <label for="ingredientExpiry">Hạn sử dụng</label>
+          <input type="date" id="ingredientExpiry">
+        </div>
+        <div class="inv-modal-actions">
+          <button type="button" class="inv-btn-secondary" onclick="window.InventoryApp.closeIngredientModal()">Hủy</button>
+          <button type="submit" class="inv-btn-primary">💾 Lưu Nguyên Liệu</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: Thông báo khi tạo món mới từ Menu ===== -->
+  <div class="inv-modal-overlay hidden" id="quickRecipeModalOverlay">
+    <div class="inv-modal-box">
+      <div class="inv-modal-header">
+        <h3>Món Mới Đã Tạo</h3>
+        <button type="button" class="inv-modal-close" onclick="window.InventoryApp.closeQuickRecipeModal()">✕</button>
+      </div>
+      <div class="inv-modal-body">
+        <p class="inv-hint">Món <strong id="quickRecipeMenuName">—</strong> vừa được tạo thành công. Để món này hoạt động đúng khi trừ kho tự động, vui lòng liên hệ Admin/Manager để cấu hình recipe (định lượng nguyên liệu) cho món này ở phía hệ thống.</p>
+        <div class="inv-modal-actions">
+          <button type="button" class="inv-btn-primary" onclick="window.InventoryApp.closeQuickRecipeModal()">Đã Hiểu</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p id="invMessage" class="inv-message"></p>
+
+  <footer class="staff-footer"></footer>
+
+  <script src="../../static/js/staff/staff-api.js"></script>
+  <script src="../../static/js/staff/inventory.js"></script>
+</body>
+</html>

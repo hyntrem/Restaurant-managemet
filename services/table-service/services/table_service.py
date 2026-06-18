@@ -1,4 +1,4 @@
-from models.table_model import (
+from Models.table_model import (
     get_all_tables_with_area,
     create_table_db,
     get_table_by_id,

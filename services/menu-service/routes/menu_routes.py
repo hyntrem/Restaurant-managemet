@@ -1,6 +1,5 @@
 from flask import Blueprint
-
-from controllers.menu_controller import (
+from Controllers.menu_controller import (
     get_categories,
     create_category_controller,
     update_category_controller,
@@ -16,13 +15,11 @@ from controllers.menu_controller import (
 )
 
 menu_bp = Blueprint("menu_bp", __name__)
-
 # Category routes
 menu_bp.route("/categories", methods=["GET"])(get_categories)
 menu_bp.route("/categories", methods=["POST"])(create_category_controller)
 menu_bp.route("/categories/<int:category_id>", methods=["PUT"])(update_category_controller)
 menu_bp.route("/categories/<int:category_id>", methods=["DELETE"])(delete_category_controller)
-
 # Menu item routes
 menu_bp.route("/menu", methods=["GET"])(get_menu_items)
 menu_bp.route("/menu/search", methods=["GET"])(search_menu_controller)

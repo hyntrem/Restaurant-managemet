@@ -1,5 +1,5 @@
 from flask import request, jsonify
-from services.reservation_service import (
+from Services.reservation_service import (
     check_reservation_availability_service,
     create_reservation_service,
     get_reservation_detail_service,

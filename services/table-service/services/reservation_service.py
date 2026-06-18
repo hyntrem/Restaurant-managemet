@@ -1,4 +1,4 @@
-from models.reservation_model import (
+from Models.reservation_model import (
     get_available_tables_count,
     create_reservation,
     get_reservation_by_id,

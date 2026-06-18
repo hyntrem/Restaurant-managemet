@@ -176,6 +176,10 @@ CREATE TABLE recipes (
     menu_item_id BIGINT NOT NULL,
     ingredient_id BIGINT NOT NULL,
     quantity_required DECIMAL(10,2) NOT NULL,
+
+    CONSTRAINT uk_recipe
+        UNIQUE(menu_item_id, ingredient_id),
+
     FOREIGN KEY (menu_item_id) REFERENCES menu_items(id),
     FOREIGN KEY (ingredient_id) REFERENCES ingredients(id)
 );
@@ -189,7 +193,49 @@ CREATE TABLE stock_logs (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (ingredient_id) REFERENCES ingredients(id)
 );
+DELIMITER $$
 
+CREATE TRIGGER trg_deduct_inventory
+AFTER INSERT ON order_items
+FOR EACH ROW
+BEGIN
+
+    UPDATE ingredients i
+    JOIN recipes r
+        ON i.id = r.ingredient_id
+    SET i.quantity =
+        i.quantity - (r.quantity_required * NEW.quantity)
+    WHERE r.menu_item_id = NEW.menu_item_id;
+
+END$$
+
+DELIMITER ;
+----
+DELIMITER $$
+
+CREATE TRIGGER trg_restore_inventory
+AFTER UPDATE ON order_items
+FOR EACH ROW
+BEGIN
+
+    IF OLD.status <> 'CANCELLED'
+       AND NEW.status = 'CANCELLED' THEN
+
+        UPDATE ingredients i
+        JOIN recipes r
+            ON i.id = r.ingredient_id
+        SET i.quantity =
+            i.quantity + (r.quantity_required * NEW.quantity)
+        WHERE r.menu_item_id = NEW.menu_item_id;
+
+    END IF;
+
+END$$
+
+DELIMITER ;
+ALTER TABLE ingredients
+ADD CONSTRAINT chk_quantity_positive
+CHECK (quantity >= 0);
 -- =========================
 -- 6. ORDER / KITCHEN
 -- =========================
@@ -311,6 +357,7 @@ CREATE TABLE order_reports (
     pick_up_orders INT DEFAULT 0,
     FOREIGN KEY (report_id) REFERENCES reports(id)
 );
+
 
 -- =========================
 -- 9. DEFAULT DATA
