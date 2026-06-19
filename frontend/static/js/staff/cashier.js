@@ -363,14 +363,14 @@
                 
                 btnCreate.onclick = async function() {
                     // Cập nhật trạng thái động xuống DB tổng của nhóm bồ
-                    const resPut = await globalThis.apiPut(`/api/orders/${modifyOrderId}/status`, { status: "CONFIRMED" });
+                    const resPut = await globalThis.apiPut(`/${modifyOrderId}/status`, { status: "CONFIRMED" });
                     alert(`🟢 Đã cập nhật và xác nhận nhận đơn Delivery #${modifyOrderId} thành công!`);
                     globalThis.location.href = '../delivery/delivery.html';
                 };
             }
 
             // Gọi API động bốc chi tiết đơn từ MySQL Workbench lên màn hình Cashier POS
-            const result = await globalThis.apiGet(`/api/orders/${modifyOrderId}`);
+            const result = await globalThis.apiGet(`/${modifyOrderId}`);
             if (result && result.success && result.data) {
                 // Đọc mảng items thật dướt DB nếu backend có cấu trúc lưu chi tiết món
                 if (result.data.items && result.data.items.length > 0) {

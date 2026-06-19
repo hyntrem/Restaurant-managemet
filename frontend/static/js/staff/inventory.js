@@ -630,6 +630,62 @@
     document.getElementById("quickRecipeModalOverlay").classList.add("hidden");
     pendingNewMenuItem = null;
   };
+  /* ──────────────────────────────────────
+   TỰ ĐỘNG TRỪ KHO KHI KITCHEN NHẬN ĐƠN
+   POST /api/inventory/deduct-internal {items: [{menu_item_id, quantity}]}
+────────────────────────────────────── */
+globalThis.InventoryApp.deductStockForOrder = async function (orderItems) {
+    if (!orderItems || orderItems.length === 0) return { success: false };
+
+    const itemsPayload = orderItems.map(item => ({
+        menu_item_id: Number(item.menu_item_id || item.item_id || item.id),
+        quantity: Number(item.quantity || 1)
+    }));
+
+    console.log("[Inventory] Tiến hành trừ kho tự động cho các món:", itemsPayload);
+
+    let result;
+
+    if (typeof globalThis.apiPost === "function") {
+        result = await globalThis.apiPost("/api/inventory/deduct-internal", {
+            items: itemsPayload
+        });
+    } else {
+        console.warn("[Inventory] Không tìm thấy globalThis.apiPost tại trang này, kích hoạt fetch thuần...");
+        try {
+            const token = globalThis.localStorage.getItem("staff_token") || globalThis.localStorage.getItem("token");
+            const headers = { "Content-Type": "application/json" };
+            if (token) headers["Authorization"] = `Bearer ${token}`;
+
+            
+            const baseUrl = globalThis.API_BASE_URL || globalThis.BASE_URL || globalThis.ORDER_API_URL || "http://localhost:5004";
+            
+          
+            const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+            const finalUrl = `${cleanBaseUrl}/api/inventory/deduct-internal`;
+            
+            console.log(`[Inventory] Đang gọi fetch tới Backend Flask tại: ${finalUrl}`);
+
+            const response = await fetch(finalUrl, {
+                method: "POST",
+                headers: headers,
+                body: JSON.stringify({ items: itemsPayload })
+            });
+            
+            result = await response.json();
+        } catch (error) {
+            console.error("[Inventory] Lỗi fetch thuần khi trừ kho:", error);
+            result = { success: false, message: "Không thể kết nối đến API Kho (Network Error)" };
+        }
+    }
+
+    if (result && result.success) {
+        console.log("[Inventory] Trừ kho thành công!");
+    } else {
+        console.error("[Inventory] Trừ kho thất bại hoặc lỗi recipe:", result?.message);
+    }
+    return result;
+};
 
   /* ──────────────────────────────────────
      INIT

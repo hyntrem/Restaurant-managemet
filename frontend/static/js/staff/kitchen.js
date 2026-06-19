@@ -118,15 +118,46 @@ function renderOrders(orders) {
 
 // Hàm Nhận đơn / Bắt đầu chế biến
 globalThis.startPreparing = async function(orderId) {
-    const result = await globalThis.orderPut(`/${orderId}/preparing`, { 
-        status: "PREPARING" 
-    });
-    
-    if (result && result.success !== false) {
-        alert("Đã nhận đơn và tiến hành chế biến!");
-        globalThis.loadOrders();
-    } else {
-        alert("Cập nhật thất bại: " + (result?.message || "Lỗi luồng trạng thái"));
+    try {
+        console.log(`[Kitchen] --- Bắt đầu nhận đơn #${orderId} ---`);
+
+        // 1. Lấy chi tiết đơn hàng từ Backend để có danh sách items
+        const orderDetailResult = await globalThis.orderGet(`/${orderId}`);
+        if (!orderDetailResult || !orderDetailResult.success || !orderDetailResult.data) {
+            alert("Không thể tải chi tiết đơn hàng để kiểm tra kho!");
+            return;
+        }
+
+        // Bóc tách mảng items (hỗ trợ mọi kiểu cấu trúc dữ liệu trả về)
+        const orderItems = orderDetailResult.data.items || orderDetailResult.data || [];
+
+        // 2. TÁI SỬ DỤNG HÀM TRỪ KHO CỦA FILE INVENTORY.JS
+        if (orderItems.length > 0) {
+            console.log("[Kitchen] Gọi phân hệ Kho để thực hiện trừ nguyên liệu...");
+            
+            // Gọi trực tiếp hàm xử lý của module Inventory
+            const deductResult = await globalThis.InventoryApp.deductStockForOrder(orderItems);
+
+            // Nếu Kho báo thất bại (Thiếu hàng / Sai công thức recipe) -> Chặn luôn, không cho đổi trạng thái đơn
+            if (!deductResult || !deductResult.success) {
+                alert(`❌ KHÔNG THỂ NHẬN ĐƠN!\nKho phản hồi: ${deductResult?.message || "Lỗi định lượng Recipe hoặc thiếu nguyên liệu!"}`);
+                return; 
+            }
+        }
+
+        // 3. CẬP NHẬT TRẠNG THÁI ĐƠN HÀNG (Chỉ chạy khi kho đã trừ thành công)
+        const result = await globalThis.orderPut(`/${orderId}/preparing`, { status: "PREPARING" });
+        
+        if (result && result.success !== false) {
+            alert("✓ Đã nhận đơn và trừ kho tự động thành công!");
+            globalThis.loadOrders(); // Re-render giao diện bếp
+        } else {
+            alert("Lỗi luồng trạng thái đơn: " + (result?.message || "Không thể chuyển sang Đang chuẩn bị"));
+        }
+
+    } catch (error) {
+        console.error("Lỗi đồng bộ Bếp - Kho:", error);
+        alert("Đã xảy ra lỗi hệ thống khi kết nối liên hệ giữa phân hệ Bếp và phân hệ Kho!");
     }
 };
 // Hàm Hoàn thành món ăn
