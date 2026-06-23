@@ -24,7 +24,6 @@
  
   <main class="staff-main">
  
-    <!-- ── STEP 1: CHỌN LOẠI ORDER ── -->
     <div id="screenOrderType">
       <button type="button" class="back-btn" onclick="globalThis.goBackDashboard()">← Admin Dashboard</button>
       <h1 class="page-title">Cashier / Lobby POS</h1>
@@ -64,13 +63,11 @@
       </div>
     </div>
  
-    <!-- ── STEP 2: POS SCREEN ── -->
     <div id="screenPOS" class="hidden">
       <button type="button" class="back-btn" onclick="globalThis.resetOrderType()">← Đổi loại order</button>
  
       <section id="cashierPOS" class="cashier-layout">
  
-        <!-- Cột 1: Order (2fr) -->
         <section class="panel order-panel">
           <div class="panel-title">Order</div>
  
@@ -86,6 +83,16 @@
                 id="selectedTableId"
                 name="selectedTableId"
                 placeholder="Nhập mã bàn nếu Eat In">
+            </div>
+            <div id="deliveryInputBox" style="display: none; margin-top: 10px;">
+              <div style="margin-bottom: 6px;">
+                <label for="deliveryPhone" style="font-size: 12px; color: #64748b; font-weight: 600; display: block; margin-bottom: 2px;">Số điện thoại khách</label>
+                <input type="text" id="deliveryPhone" placeholder="Nhập SĐT nhận hàng" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px;">
+              </div>
+              <div>
+                <label for="deliveryAddress" style="font-size: 12px; color: #64748b; font-weight: 600; display: block; margin-bottom: 2px;">Địa chỉ giao hàng</label>
+                <input type="text" id="deliveryAddress" placeholder="Nhập địa chỉ nhận hàng" style="width: 100%; padding: 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px;">
+              </div>
             </div>
           </div>
  
@@ -107,7 +114,6 @@
           </div>
         </section>
  
-        <!-- Cột 2: Menu (1fr) -->
         <section class="panel menu-panel">
           <div class="panel-title">Menu</div>
  
@@ -129,7 +135,6 @@
           </div>
         </section>
  
-        <!-- Cột 3: Category (3fr) -->
         <section class="panel category-panel">
           <div class="panel-title">Category</div>
           <div id="categoryList" class="category-list">
@@ -137,23 +142,70 @@
           </div>
         </section>
       </section>
-      <!-- Bottom action bar -->
       <div class="bottom-action-bar">
-        <button type="button" class="btn-lock" onclick="globalThis.lockPOS()"><span class="btn-label">Khóa POS</span>
-        </button>
-        <button type="button" class="btn-promo" onclick="globalThis.showUpdating()"><span class="btn-label">Khuyến mãi</span>
-        </button>
-        <button type="button" class="btn-otype" onclick="globalThis.resetOrderType()"><span class="btn-label">Loại Order</span>
-        </button>
-        <button type="button" class="btn-print" onclick="globalThis.reprintInvoice()"><span class="btn-label">In hóa đơn</span>
-        </button>
-        <button type="button" class="btn-manager" onclick="globalThis.showUpdating()"><span class="btn-label">Manager</span>
-        </button>
-        <button type="button" class="btn-home" onclick="globalThis.goBackDashboard()"><span class="btn-label">Dashboard</span>
-        </button>
+        <button type="button" class="btn-lock" onclick="globalThis.lockPOS()"><span class="btn-label">Khóa POS</span></button>
+        <button type="button" class="btn-promo" onclick="globalThis.showUpdating()"><span class="btn-label">Khuyến mãi</span></button>
+        <button type="button" class="btn-otype" onclick="globalThis.resetOrderType()"><span class="btn-label">Loại Order</span></button>
+        <button type="button" class="btn-print" onclick="globalThis.reprintInvoice()"><span class="btn-label">In hóa đơn</span></button>
+       
+        <button type="button" class="btn-manager" onclick="globalThis.showUpdating()"><span class="btn-label">Manager</span></button>
+        <button type="button" class="btn-home" onclick="globalThis.goBackDashboard()"><span class="btn-label">Dashboard</span></button>
       </div>
  
-    </div><!-- end screenPOS -->
+    </div><div id="screenDeliveryHub" class="hidden" style="margin-top: 20px;">
+      <button type="button" class="back-btn" onclick="globalThis.resetOrderType()">← Quay lại chọn loại đơn</button>
+      <h1 class="page-title">Delivery Management Hub</h1>
+      <p class="page-subtitle">Quản lý và điều phối các đơn hàng giao đi bấm tại quầy.</p>
+
+      <section class="cashier-layout" style="display: flex; gap: 20px; margin-top: 15px;">
+        
+        <section class="panel" style="flex: 2; display: flex; flex-direction: column; gap: 15px; text-align: left;">
+          <div class="panel-title">Danh Sách Đơn Delivery PENDING</div>
+          <div id="deliveryCardsContainer" class="order-list" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+            <p class="empty-text">Đang tải danh sách đơn hàng...</p>
+          </div>
+
+          <div class="panel-title">Chi Tiết Hóa Đơn Món Ăn</div>
+          <div class="order-list" style="flex: 1; min-height: 200px;">
+            <table class="inv-table" style="width: 100%; border-collapse: collapse; font-size: 14px;">
+              <thead>
+                <tr style="border-bottom: 2px solid #cbd5e1; text-align: left;">
+                  <th style="padding: 8px;">Món Ăn</th>
+                  <th style="padding: 8px; text-align: center;">Số Lượng</th>
+                  <th style="padding: 8px; text-align: right;">Giá</th>
+                </tr>
+              </thead>
+              <tbody id="deliveryInvoiceItemsBody">
+                <tr><td colspan="3" style="text-align: center; color: #64748b; padding: 20px;">Chọn một đơn hàng bên trên để xem hóa đơn chi tiết</td></tr>
+              </tbody>
+            </table>
+            <div class="order-total-box" style="margin-top: 15px; text-align: right; border-top: 1px dashed #cbd5e1; padding-top: 10px;">
+              <p style="font-size: 16px;">Tổng tiền đơn hàng: <strong id="lblDeliveryTotal" style="color: #123c69; font-size: 18px;">0 VNĐ</strong></p>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div class="panel-title">Thông Tin Đặt Hàng</div>
+            <div class="order-header" style="font-size: 14px; line-height: 2.2; background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; text-align: left;">
+              <p><strong>Mã Đơn Hàng:</strong> <span id="valOrderCode" style="color: #123c69; font-weight: 700;">-</span></p>
+              <p><strong>Tên Khách Hàng:</strong> <span id="valCustomerName">-</span></p>
+              <p><strong>Số Điện Thoại:</strong> <span id="valCustomerPhone" style="color: #10b981; font-weight: 600;">-</span></p>
+              <p><strong>Địa Chỉ Giao Hàng:</strong> <span id="valAddress" style="color: #64748b;">-</span></p>
+              <p><strong>Hình Thức TT:</strong> <span id="valPaymentMethod">-</span></p>
+            </div>
+          </div>
+
+          <div class="order-actions" style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+            <button type="button" class="primary-btn" id="btnAccept" style="background: #10b981; width: 100%; padding: 12px; color: white; border: none; border-radius: 4px; font-weight: 600; cursor: pointer;" onclick="globalThis.processDeliveryAction('ACCEPT')">✔️ Nhận Đơn (Gửi Xuống Bếp)</button>
+            <button type="button" class="secondary-btn" id="btnModify" style="background: #f59e0b; color: white; width: 100%; padding: 12px; border: none; border-radius: 4px; font-weight: 600; cursor: pointer;" onclick="globalThis.processDeliveryAction('MODIFY')">✏️ Modify (Sửa Đơn Tại POS)</button>
+            <button type="button" class="danger-btn" id="btnCancel" style="background: #ef4444; width: 100%; padding: 12px; color: white; border: none; border-radius: 4px; font-weight: 600; cursor: pointer;" onclick="globalThis.processDeliveryAction('CANCEL')">❌ Cancel (Không Nhận Đơn)</button>
+          </div>
+        </section>
+
+      </section>
+    </div>
  
     <p id="message" class="pos-message"></p>
   </main>
