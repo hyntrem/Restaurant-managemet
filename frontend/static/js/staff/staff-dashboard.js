@@ -63,7 +63,9 @@
 
         kitchen: "kitchen-dashboard.html",
 
-        dashboard: "admin-report.html"
+        dashboard: "admin-report.html",
+        
+        inventory: "inventory-dashboard.html"
 
     };
 

@@ -121,43 +121,68 @@ globalThis.startPreparing = async function(orderId) {
     try {
         console.log(`[Kitchen] --- Bắt đầu nhận đơn #${orderId} ---`);
 
-        // 1. Lấy chi tiết đơn hàng từ Backend để có danh sách items
+        // 1. Lấy chi tiết đơn hàng
         const orderDetailResult = await globalThis.orderGet(`/${orderId}`);
+        console.log("[Kitchen] Chi tiết đơn:", orderDetailResult);
+
         if (!orderDetailResult || !orderDetailResult.success || !orderDetailResult.data) {
             alert("Không thể tải chi tiết đơn hàng để kiểm tra kho!");
             return;
         }
 
-        // Bóc tách mảng items (hỗ trợ mọi kiểu cấu trúc dữ liệu trả về)
-        const orderItems = orderDetailResult.data.items || orderDetailResult.data || [];
+        const rawData = orderDetailResult.data;
+        const orderItems = rawData.items
+            || rawData.order_items
+            || (Array.isArray(rawData) ? rawData : []);
 
-        // 2. TÁI SỬ DỤNG HÀM TRỪ KHO CỦA FILE INVENTORY.JS
+        console.log("[Kitchen] orderItems:", orderItems);
+
+        // 2. Trừ kho qua inventoryPost → port 5003
         if (orderItems.length > 0) {
-            console.log("[Kitchen] Gọi phân hệ Kho để thực hiện trừ nguyên liệu...");
-            
-            // Gọi trực tiếp hàm xử lý của module Inventory
-            const deductResult = await globalThis.InventoryApp.deductStockForOrder(orderItems);
+            const itemsPayload = orderItems.map(item => ({
+                menu_item_id: Number(item.menu_item_id || item.item_id || item.id),
+                quantity: Number(item.quantity || 1)
+            }));
 
-            // Nếu Kho báo thất bại (Thiếu hàng / Sai công thức recipe) -> Chặn luôn, không cho đổi trạng thái đơn
+            console.log("[Kitchen] Payload gửi trừ kho:", itemsPayload);
+
+            const deductResult = await globalThis.inventoryPost(
+                "/api/inventory/deduct-internal",
+                { items: itemsPayload }
+            );
+
+            console.log("[Kitchen] Kết quả trừ kho:", deductResult);
+
             if (!deductResult || !deductResult.success) {
-                alert(`❌ KHÔNG THỂ NHẬN ĐƠN!\nKho phản hồi: ${deductResult?.message || "Lỗi định lượng Recipe hoặc thiếu nguyên liệu!"}`);
-                return; 
+                alert(
+                    `❌ KHÔNG THỂ NHẬN ĐƠN!\n` +
+                    `Kho phản hồi: ${deductResult?.message || "Lỗi Recipe hoặc thiếu nguyên liệu!"}`
+                );
+                return;
             }
+        } else {
+            console.warn("[Kitchen] Không có items trong đơn, bỏ qua trừ kho.");
         }
 
-        // 3. CẬP NHẬT TRẠNG THÁI ĐƠN HÀNG (Chỉ chạy khi kho đã trừ thành công)
-        const result = await globalThis.orderPut(`/${orderId}/preparing`, { status: "PREPARING" });
-        
+        // 3. Cập nhật trạng thái đơn sang PREPARING
+        const result = await globalThis.orderPut(
+            `/${orderId}/preparing`,
+            { status: "PREPARING" }
+        );
+
         if (result && result.success !== false) {
-            alert("✓ Đã nhận đơn và trừ kho tự động thành công!");
-            globalThis.loadOrders(); // Re-render giao diện bếp
+            alert("✓ Đã nhận đơn và trừ kho thành công!");
+            globalThis.loadOrders();
         } else {
-            alert("Lỗi luồng trạng thái đơn: " + (result?.message || "Không thể chuyển sang Đang chuẩn bị"));
+            alert(
+                "Lỗi trạng thái đơn: " +
+                (result?.message || "Không thể chuyển sang Đang chuẩn bị")
+            );
         }
 
     } catch (error) {
-        console.error("Lỗi đồng bộ Bếp - Kho:", error);
-        alert("Đã xảy ra lỗi hệ thống khi kết nối liên hệ giữa phân hệ Bếp và phân hệ Kho!");
+        console.error("[Kitchen] Lỗi đồng bộ Bếp - Kho:", error);
+        alert("Đã xảy ra lỗi hệ thống khi kết nối Bếp và Kho!");
     }
 };
 // Hàm Hoàn thành món ăn

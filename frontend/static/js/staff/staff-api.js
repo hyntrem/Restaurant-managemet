@@ -139,4 +139,24 @@
       return { success: false, message: "Không kết nối được server." };
     }
   };
+  // ── INVENTORY SERVICE (port 5003) ──
+  const INVENTORY_URL = "http://localhost:5003";
+
+  globalThis.inventoryPost = async function(path, body) {
+    try {
+      const res = await fetch(INVENTORY_URL + path, {
+        method: "POST",
+        headers: getAuthHeaders(),
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      if (!res.ok) return { success: false, message: data.detail || data.message || "Lỗi " + res.status };
+      if (data && typeof data.success !== "undefined") return data;
+      return { success: true, data: data };
+    } catch (err) {
+      console.error("inventoryPost error:", err);
+      return { success: false, message: "Không kết nối được Inventory Service." };
+    }
+  };
+
 }());
