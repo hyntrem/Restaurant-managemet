@@ -1,14 +1,23 @@
 from common.database import SessionLocal
 from sqlalchemy import text
 
-def create_user(full_name, username, email, phone, password_hash, role_id):
+
+def create_user(
+    full_name,
+    username,
+    email,
+    phone,
+    password_hash,
+    role_id,
+    branch_id=None
+):
     db = SessionLocal()
 
     query = text("""
         INSERT INTO users 
-        (full_name, username, email, phone, password_hash, role_id)
+        (full_name, username, email, phone, password_hash, role_id, branch_id)
         VALUES 
-        (:full_name, :username, :email, :phone, :password_hash, :role_id)
+        (:full_name, :username, :email, :phone, :password_hash, :role_id, :branch_id)
     """)
 
     db.execute(query, {
@@ -17,7 +26,8 @@ def create_user(full_name, username, email, phone, password_hash, role_id):
         "email": email,
         "phone": phone,
         "password_hash": password_hash,
-        "role_id": role_id
+        "role_id": role_id,
+        "branch_id": branch_id
     })
 
     db.commit()
@@ -28,11 +38,23 @@ def find_user_by_username(username):
     db = SessionLocal()
 
     query = text("""
-        SELECT u.id, u.full_name, u.username, u.email, u.phone,
-               u.password_hash, r.name AS role, u.status
+        SELECT 
+            u.id,
+            u.full_name,
+            u.username,
+            u.email,
+            u.phone,
+            u.password_hash,
+            u.status,
+            u.branch_id,
+            r.name AS role,
+            b.branch_code,
+            b.branch_name AS branch_name
         FROM users u
         JOIN roles r ON u.role_id = r.id
+        LEFT JOIN branches b ON u.branch_id = b.id
         WHERE u.username = :username
+        LIMIT 1
     """)
 
     result = db.execute(query, {"username": username}).mappings().first()
@@ -48,6 +70,7 @@ def find_user_by_email(email):
         SELECT id, email
         FROM users
         WHERE email = :email
+        LIMIT 1
     """)
 
     result = db.execute(query, {"email": email}).mappings().first()
@@ -60,11 +83,22 @@ def find_user_by_id(user_id):
     db = SessionLocal()
 
     query = text("""
-        SELECT u.id, u.full_name, u.username, u.email, u.phone,
-               r.name AS role, u.status
+        SELECT 
+            u.id,
+            u.full_name,
+            u.username,
+            u.email,
+            u.phone,
+            u.status,
+            u.branch_id,
+            r.name AS role,
+            b.branch_code,
+            b.branch_name AS branch_name
         FROM users u
         JOIN roles r ON u.role_id = r.id
+        LEFT JOIN branches b ON u.branch_id = b.id
         WHERE u.id = :user_id
+        LIMIT 1
     """)
 
     result = db.execute(query, {"user_id": user_id}).mappings().first()
@@ -77,10 +111,22 @@ def get_all_users():
     db = SessionLocal()
 
     query = text("""
-        SELECT u.id, u.full_name, u.username, u.email, u.phone,
-               r.name AS role, u.status, u.created_at
+        SELECT 
+            u.id,
+            u.full_name,
+            u.username,
+            u.email,
+            u.phone,
+            u.status,
+            u.created_at,
+            u.branch_id,
+            r.name AS role,
+            b.branch_code,
+            b.branch_name AS branch_name
         FROM users u
         JOIN roles r ON u.role_id = r.id
+        LEFT JOIN branches b ON u.branch_id = b.id
+        ORDER BY u.id DESC
     """)
 
     result = db.execute(query).mappings().all()
@@ -132,7 +178,11 @@ def verify_otp(email, otp_code):
             SET is_used = TRUE
             WHERE id = :id
         """)
-        db.execute(update_query, {"id": result["id"]})
+
+        db.execute(update_query, {
+            "id": result["id"]
+        })
+
         db.commit()
 
     db.close()

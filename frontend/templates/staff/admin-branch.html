@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Pizza 4P's - Admin Branch</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="../../static/css/admin-branch.css" />
+</head>
+
+<body>
+  <header class="admin-header">
+    <div class="admin-logo-box">
+      <img src="../../static/images/pizza4ps_logo.jpg" alt="Pizza 4P's" class="admin-logo-img" />
+      <div class="admin-logo-text">
+        <strong>Pizza 4P's</strong>
+        <span>ADMIN BRANCH</span>
+      </div>
+    </div>
+
+    <div class="admin-user">
+      <button type="button" class="back-btn" onclick="window.location.href='admin-dashboard.html'">
+        ← Dashboard
+      </button>
+      <span id="staffUserInfo" class="user-pill">Admin</span>
+      <button type="button" class="logout-btn" onclick="globalThis.logoutStaff()">Đăng xuất</button>
+    </div>
+  </header>
+
+  <main class="admin-main">
+    <section class="admin-page-heading">
+      <div>
+        <h1>Quản lý chi nhánh</h1>
+        <p>Quản lý thông tin chi nhánh, trạng thái hoạt động, nhân viên và báo cáo tổng quan.</p>
+      </div>
+
+      <button type="button" class="primary-btn" onclick="BranchAdmin.openCreateModal()">
+        + Thêm chi nhánh
+      </button>
+    </section>
+
+    <nav class="admin-tabbar">
+      <button type="button" class="admin-tab active" data-tab="dashboard">
+        <span>📊</span> Tổng quan
+      </button>
+
+      <button type="button" class="admin-tab" data-tab="branches">
+        <span>🏬</span> Danh sách chi nhánh
+      </button>
+
+      <button type="button" class="admin-tab" data-tab="staff">
+        <span>👥</span> Nhân viên chi nhánh
+      </button>
+
+      <button type="button" class="admin-tab" data-tab="summary">
+        <span>📈</span> Báo cáo chi nhánh
+      </button>
+    </nav>
+
+    <p id="branchMessage" class="branch-message"></p>
+
+    <section id="panel-dashboard" class="admin-panel active">
+      <h2 class="panel-title">Tổng quan chi nhánh</h2>
+
+      <div class="stat-grid">
+        <article class="stat-card">
+          <p>Tổng chi nhánh</p>
+          <h3 id="statTotalBranches">0</h3>
+        </article>
+
+        <article class="stat-card success">
+          <p>Đang hoạt động</p>
+          <h3 id="statActiveBranches">0</h3>
+        </article>
+
+        <article class="stat-card warning">
+          <p>Bảo trì</p>
+          <h3 id="statMaintenanceBranches">0</h3>
+        </article>
+
+        <article class="stat-card danger">
+          <p>Ngừng hoạt động</p>
+          <h3 id="statInactiveBranches">0</h3>
+        </article>
+      </div>
+
+      <div class="table-card">
+        <div class="table-card-header">
+          <h3>Chi nhánh mới nhất</h3>
+          <button type="button" class="secondary-btn" onclick="BranchAdmin.loadDashboard()">Tải lại</button>
+        </div>
+
+        <div class="table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Mã CN</th>
+                <th>Tên chi nhánh</th>
+                <th>Địa chỉ</th>
+                <th>Hotline</th>
+                <th>Trạng thái</th>
+              </tr>
+            </thead>
+
+            <tbody id="latestBranchesBody">
+              <tr>
+                <td colspan="5" class="empty-row">Đang tải dữ liệu...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="panel-branches" class="admin-panel">
+      <div class="panel-header-row">
+        <h2 class="panel-title">Danh sách chi nhánh</h2>
+
+        <div class="filter-row">
+          <input id="branchSearchInput" type="text" placeholder="Tìm tên, mã, địa chỉ..." />
+
+          <select id="branchStatusFilter">
+            <option value="">Tất cả trạng thái</option>
+            <option value="ACTIVE">ACTIVE</option>
+            <option value="INACTIVE">INACTIVE</option>
+            <option value="MAINTENANCE">MAINTENANCE</option>
+          </select>
+
+          <button type="button" class="secondary-btn" onclick="BranchAdmin.loadBranches()">Lọc</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Mã CN</th>
+              <th>Tên chi nhánh</th>
+              <th>Địa chỉ</th>
+              <th>Hotline</th>
+              <th>Giờ mở cửa</th>
+              <th>Trạng thái</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+
+          <tbody id="branchesTableBody">
+            <tr>
+              <td colspan="7" class="empty-row">Đang tải dữ liệu...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="panel-staff" class="admin-panel">
+      <h2 class="panel-title">Nhân viên theo chi nhánh</h2>
+
+      <div class="branch-select-box">
+        <label for="staffBranchSelect">Chọn chi nhánh</label>
+        <select id="staffBranchSelect" onchange="BranchAdmin.loadBranchStaff()">
+          <option value="">— Chọn chi nhánh —</option>
+        </select>
+      </div>
+
+      <div class="table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Họ tên</th>
+              <th>Username</th>
+              <th>Vai trò</th>
+              <th>Trạng thái</th>
+            </tr>
+          </thead>
+
+          <tbody id="branchStaffBody">
+            <tr>
+              <td colspan="4" class="empty-row">Vui lòng chọn chi nhánh.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="panel-summary" class="admin-panel">
+      <h2 class="panel-title">Báo cáo từng chi nhánh</h2>
+
+      <div class="branch-select-box">
+        <label for="summaryBranchSelect">Chọn chi nhánh</label>
+        <select id="summaryBranchSelect" onchange="BranchAdmin.loadBranchSummary()">
+          <option value="">— Chọn chi nhánh —</option>
+        </select>
+      </div>
+
+      <div class="summary-grid">
+        <article class="summary-card">
+          <p>Tổng nhân viên</p>
+          <h3 id="summaryStaffCount">0</h3>
+        </article>
+
+        <article class="summary-card">
+          <p>Tổng bàn</p>
+          <h3 id="summaryTableCount">0</h3>
+        </article>
+
+        <article class="summary-card">
+          <p>Tổng đơn</p>
+          <h3 id="summaryOrderCount">0</h3>
+        </article>
+
+        <article class="summary-card">
+          <p>Doanh thu</p>
+          <h3 id="summaryRevenue">0 VNĐ</h3>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <div id="branchModalOverlay" class="modal-overlay hidden">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 id="branchModalTitle">Thêm chi nhánh</h2>
+        <button type="button" onclick="BranchAdmin.closeModal()">×</button>
+      </div>
+
+      <form id="branchForm" class="branch-form">
+        <input type="hidden" id="branchEditId" />
+
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="branchCode">Mã chi nhánh</label>
+            <input id="branchCode" type="text" placeholder="VD: CN001" required />
+          </div>
+
+          <div class="form-field">
+            <label for="branchName">Tên chi nhánh</label>
+            <input id="branchName" type="text" placeholder="VD: Pizza 4P's Quận 1" required />
+          </div>
+
+          <div class="form-field full">
+            <label for="branchAddress">Địa chỉ</label>
+            <input id="branchAddress" type="text" placeholder="Nhập địa chỉ chi nhánh" required />
+          </div>
+
+          <div class="form-field">
+            <label for="branchPhone">Số điện thoại</label>
+            <input id="branchPhone" type="text" placeholder="VD: 0901234567" />
+          </div>
+
+          <div class="form-field">
+            <label for="branchEmail">Email</label>
+            <input id="branchEmail" type="email" placeholder="branch@example.com" />
+          </div>
+
+          <div class="form-field">
+            <label for="branchOpeningTime">Giờ mở cửa</label>
+            <input id="branchOpeningTime" type="time" />
+          </div>
+
+          <div class="form-field">
+            <label for="branchClosingTime">Giờ đóng cửa</label>
+            <input id="branchClosingTime" type="time" />
+          </div>
+
+          <div class="form-field">
+            <label for="branchStatus">Trạng thái</label>
+            <select id="branchStatus">
+              <option value="ACTIVE">ACTIVE</option>
+              <option value="INACTIVE">INACTIVE</option>
+              <option value="MAINTENANCE">MAINTENANCE</option>
+            </select>
+          </div>
+
+          <div class="form-field full">
+            <label for="branchNote">Ghi chú</label>
+            <input id="branchNote" type="text" placeholder="Ghi chú nếu có" />
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="secondary-btn" onclick="BranchAdmin.closeModal()">Hủy</button>
+          <button type="submit" class="primary-btn">Lưu chi nhánh</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <footer class="admin-footer">
+    <span>Pizza 4P's Restaurant Management System</span>
+  </footer>
+
+  <script src="../../static/js/staff/admin-branch.js"></script>
+</body>
+</html>

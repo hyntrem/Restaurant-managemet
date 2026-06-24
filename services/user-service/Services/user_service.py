@@ -14,16 +14,24 @@ from Models.user_model import (
     update_password
 )
 
+
 def register_user(data):
     username = data.get("username")
     password = data.get("password")
     role_id = data.get("role_id", 1)
+    branch_id = data.get("branch_id")
 
     if not username or not password:
-        return {"success": False, "message": "Username and password are required"}, 400
+        return {
+            "success": False,
+            "message": "Username and password are required"
+        }, 400
 
     if find_user_by_username(username):
-        return {"success": False, "message": "Username already exists"}, 400
+        return {
+            "success": False,
+            "message": "Username already exists"
+        }, 400
 
     password_hash = bcrypt.hashpw(
         password.encode("utf-8"),
@@ -36,20 +44,39 @@ def register_user(data):
         email=data.get("email"),
         phone=data.get("phone"),
         password_hash=password_hash,
-        role_id=role_id
+        role_id=role_id,
+        branch_id=branch_id
     )
 
-    return {"success": True, "message": "Register successfully"}, 201
+    return {
+        "success": True,
+        "message": "Register successfully"
+    }, 201
 
 
 def login_user(data):
     username = data.get("username")
     password = data.get("password")
 
+    if not username or not password:
+        return {
+            "success": False,
+            "message": "Username and password are required"
+        }, 400
+
     user = find_user_by_username(username)
 
     if not user:
-        return {"success": False, "message": "Invalid username or password"}, 401
+        return {
+            "success": False,
+            "message": "Invalid username or password"
+        }, 401
+
+    if user.get("status") and user.get("status") != "ACTIVE":
+        return {
+            "success": False,
+            "message": "Account is inactive or locked"
+        }, 403
 
     is_valid = bcrypt.checkpw(
         password.encode("utf-8"),
@@ -57,7 +84,10 @@ def login_user(data):
     )
 
     if not is_valid:
-        return {"success": False, "message": "Invalid username or password"}, 401
+        return {
+            "success": False,
+            "message": "Invalid username or password"
+        }, 401
 
     token = generate_token(user)
 
@@ -67,12 +97,17 @@ def login_user(data):
         "data": {
             "token": token,
             "user": {
-                "id": user["id"],
-                "full_name": user["full_name"],
-                "username": user["username"],
-                "email": user["email"],
-                "phone": user["phone"],
-                "role": user["role"]
+                "id": user.get("id"),
+                "full_name": user.get("full_name"),
+                "username": user.get("username"),
+                "email": user.get("email"),
+                "phone": user.get("phone"),
+                "role": user.get("role"),
+
+                # Thông tin chi nhánh
+                "branch_id": user.get("branch_id"),
+                "branch_code": user.get("branch_code"),
+                "branch_name": user.get("branch_name")
             }
         }
     }, 200
@@ -89,12 +124,18 @@ def send_otp_service(data):
     email = data.get("email")
 
     if not email:
-        return {"success": False, "message": "Email is required"}, 400
+        return {
+            "success": False,
+            "message": "Email is required"
+        }, 400
 
     user = find_user_by_email(email)
 
     if not user:
-        return {"success": False, "message": "Email does not exist"}, 404
+        return {
+            "success": False,
+            "message": "Email does not exist"
+        }, 404
 
     otp_code = str(random.randint(100000, 999999))
     expired_at = datetime.now() + timedelta(minutes=5)
@@ -116,12 +157,18 @@ def reset_password_service(data):
     new_password = data.get("new_password")
 
     if not email or not otp_code or not new_password:
-        return {"success": False, "message": "Email, OTP and new password are required"}, 400
+        return {
+            "success": False,
+            "message": "Email, OTP and new password are required"
+        }, 400
 
     is_valid_otp = verify_otp(email, otp_code)
 
     if not is_valid_otp:
-        return {"success": False, "message": "Invalid or expired OTP"}, 400
+        return {
+            "success": False,
+            "message": "Invalid or expired OTP"
+        }, 400
 
     password_hash = bcrypt.hashpw(
         new_password.encode("utf-8"),
@@ -130,14 +177,20 @@ def reset_password_service(data):
 
     update_password(email, password_hash)
 
-    return {"success": True, "message": "Reset password successfully"}, 200
+    return {
+        "success": True,
+        "message": "Reset password successfully"
+    }, 200
 
 
 def get_user_profile(current_user):
     user = find_user_by_id(current_user["user_id"])
 
     if not user:
-        return {"success": False, "message": "User not found"}, 404
+        return {
+            "success": False,
+            "message": "User not found"
+        }, 404
 
     return {
         "success": True,
@@ -148,7 +201,10 @@ def get_user_profile(current_user):
 
 def admin_get_all_users(current_user):
     if current_user["role"] != "ADMIN":
-        return {"success": False, "message": "Only admin can view all users"}, 403
+        return {
+            "success": False,
+            "message": "Only admin can view all users"
+        }, 403
 
     users = get_all_users()
 

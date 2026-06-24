@@ -4,8 +4,8 @@ services:
     container_name: restaurant_mysql
     restart: always
     command:
-    - --character-set-server=utf8mb4
-    - --collation-server=utf8mb4_unicode_ci
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -15,6 +15,16 @@ services:
       - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./database/seed_menu.sql:/docker-entrypoint-initdb.d/02_seed_menu.sql
+      - ./database/seed_inventory.sql:/docker-entrypoint-initdb.d/03_seed_inventory.sql
+      - ./database/migration_add_reservations.sql:/docker-entrypoint-initdb.d/04_migration_add_reservations.sql
+      - ./database/migration_branch_service.sql:/docker-entrypoint-initdb.d/05_migration_branch_service.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
     networks:
       - restaurant_network
 
@@ -33,7 +43,8 @@ services:
     environment:
       PYTHONPATH: /app
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     networks:
       - restaurant_network
 
@@ -52,7 +63,8 @@ services:
     environment:
       PYTHONPATH: /app
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     networks:
       - restaurant_network
 
@@ -71,7 +83,8 @@ services:
     environment:
       PYTHONPATH: /app
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     networks:
       - restaurant_network
 
@@ -90,7 +103,8 @@ services:
     environment:
       PYTHONPATH: /app
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     networks:
       - restaurant_network
 
@@ -109,7 +123,8 @@ services:
     environment:
       PYTHONPATH: /app
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     networks:
       - restaurant_network
 
@@ -128,7 +143,8 @@ services:
     environment:
       PYTHONPATH: /app
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     networks:
       - restaurant_network
 
@@ -147,7 +163,8 @@ services:
     environment:
       PYTHONPATH: /app
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     networks:
       - restaurant_network
 
@@ -166,7 +183,8 @@ services:
     environment:
       PYTHONPATH: /app
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     networks:
       - restaurant_network
 
