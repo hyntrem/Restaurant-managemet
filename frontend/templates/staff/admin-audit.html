@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Pizza 4P's - Admin Audit Log</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="../../static/css/manager.css" />
+</head>
+
+<body>
+  <header class="manager-header">
+    <div class="manager-logo-box">
+      <img src="../../static/images/pizza4ps_logo.jpg" alt="Pizza 4P's" class="manager-logo-img" />
+      <div class="manager-logo-text">
+        <strong>Pizza 4P's</strong>
+        <span>ADMIN AUDIT LOG</span>
+      </div>
+    </div>
+
+    <div class="manager-user">
+      <button type="button" class="back-btn" onclick="window.location.href='admin-dashboard.html'">← Dashboard</button>
+      <span id="staffUserInfo" class="user-pill">Admin</span>
+      <button type="button" class="logout-btn" onclick="AdminAudit.logout()">Đăng xuất</button>
+    </div>
+  </header>
+
+  <main class="manager-main">
+    <section class="manager-page-heading">
+      <div>
+        <h1>Audit Log toàn hệ thống</h1>
+        <p>Admin xem nhật ký thao tác theo bộ phận, chi nhánh, người dùng và thời gian.</p>
+      </div>
+      <button type="button" class="primary-btn" onclick="AdminAudit.loadLogs()">⟳ Tải lại</button>
+    </section>
+
+    <section class="manager-panel active">
+      <div class="panel-header-row">
+        <h2 class="panel-title">Danh sách audit log</h2>
+
+        <div class="filter-row">
+          <select id="adminAuditModuleFilter" onchange="AdminAudit.renderLogs()">
+            <option value="">Tất cả bộ phận</option>
+            <option value="RESERVATION">Đặt bàn</option>
+            <option value="ORDER">Đơn hàng</option>
+            <option value="INVENTORY">Kho</option>
+            <option value="USER">Tài khoản</option>
+            <option value="BRANCH">Chi nhánh</option>
+          </select>
+
+          <select id="adminAuditBranchFilter" onchange="AdminAudit.renderLogs()">
+            <option value="">Tất cả chi nhánh</option>
+          </select>
+
+          <select id="adminAuditSortSelect" onchange="AdminAudit.renderLogs()">
+            <option value="newest">Mới nhất</option>
+            <option value="oldest">Cũ nhất</option>
+            <option value="actor">Theo người thao tác</option>
+            <option value="module">Theo bộ phận</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="manager-table">
+          <thead>
+            <tr>
+              <th>Thời gian</th>
+              <th>Chi nhánh</th>
+              <th>Người thao tác</th>
+              <th>Vai trò</th>
+              <th>Bộ phận</th>
+              <th>Hành động</th>
+              <th>Đối tượng</th>
+              <th>Nội dung</th>
+            </tr>
+          </thead>
+          <tbody id="adminAuditLogsBody">
+            <tr><td colspan="8" class="empty-row">Đang tải audit log...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="manager-footer">
+    <span>Pizza 4P's Restaurant Management System</span>
+  </footer>
+
+  <script src="../../static/js/staff/admin-audit.js"></script>
+</body>
+</html>
