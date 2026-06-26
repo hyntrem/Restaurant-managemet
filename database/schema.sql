@@ -193,49 +193,7 @@ CREATE TABLE stock_logs (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (ingredient_id) REFERENCES ingredients(id)
 );
-DELIMITER $$
 
-CREATE TRIGGER trg_deduct_inventory
-AFTER INSERT ON order_items
-FOR EACH ROW
-BEGIN
-
-    UPDATE ingredients i
-    JOIN recipes r
-        ON i.id = r.ingredient_id
-    SET i.quantity =
-        i.quantity - (r.quantity_required * NEW.quantity)
-    WHERE r.menu_item_id = NEW.menu_item_id;
-
-END$$
-
-DELIMITER ;
-----
-DELIMITER $$
-
-CREATE TRIGGER trg_restore_inventory
-AFTER UPDATE ON order_items
-FOR EACH ROW
-BEGIN
-
-    IF OLD.status <> 'CANCELLED'
-       AND NEW.status = 'CANCELLED' THEN
-
-        UPDATE ingredients i
-        JOIN recipes r
-            ON i.id = r.ingredient_id
-        SET i.quantity =
-            i.quantity + (r.quantity_required * NEW.quantity)
-        WHERE r.menu_item_id = NEW.menu_item_id;
-
-    END IF;
-
-END$$
-
-DELIMITER ;
-ALTER TABLE ingredients
-ADD CONSTRAINT chk_quantity_positive
-CHECK (quantity >= 0);
 -- =========================
 -- 6. ORDER / KITCHEN
 -- =========================
@@ -268,6 +226,48 @@ CREATE TABLE order_items (
     FOREIGN KEY (order_id) REFERENCES orders(id),
     FOREIGN KEY (menu_item_id) REFERENCES menu_items(id)
 );
+DELIMITER $$
+
+CREATE TRIGGER trg_deduct_inventory
+AFTER INSERT ON order_items
+FOR EACH ROW
+BEGIN
+
+    UPDATE ingredients i
+    JOIN recipes r
+        ON i.id = r.ingredient_id
+    SET i.quantity =
+        i.quantity - (r.quantity_required * NEW.quantity)
+    WHERE r.menu_item_id = NEW.menu_item_id;
+
+END$$
+
+DELIMITER ;
+DELIMITER $$
+
+CREATE TRIGGER trg_restore_inventory
+AFTER UPDATE ON order_items
+FOR EACH ROW
+BEGIN
+
+    IF OLD.status <> 'CANCELLED'
+       AND NEW.status = 'CANCELLED' THEN
+
+        UPDATE ingredients i
+        JOIN recipes r
+            ON i.id = r.ingredient_id
+        SET i.quantity =
+            i.quantity + (r.quantity_required * NEW.quantity)
+        WHERE r.menu_item_id = NEW.menu_item_id;
+
+    END IF;
+
+END$$
+
+DELIMITER ;
+ALTER TABLE ingredients
+ADD CONSTRAINT chk_quantity_positive
+CHECK (quantity >= 0);
 
 CREATE TABLE order_status_history (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
