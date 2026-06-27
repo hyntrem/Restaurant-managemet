@@ -301,7 +301,7 @@
     <script src="../../static/js/customer/customer-common.js"></script>
     <script>
         // API Configuration
-        const API_BASE_URL = 'http://localhost:8080/api/tables';
+       const TABLE_API = "http://localhost:5006";
 
         // Form interactivity and validation
         const reservationForm = document.getElementById('reservation-form');
@@ -363,7 +363,7 @@
 
             try {
                 // Call API
-                const response = await fetch(`${API_BASE_URL}/reservations`, {
+                const response = await fetch(`${TABLE_API}/reservations`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

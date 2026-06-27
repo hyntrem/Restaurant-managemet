@@ -310,7 +310,6 @@
         globalThis.localStorage.setItem(`delivery_info_${finalCodeKey}`, JSON.stringify(deliveryInfo));
     }
     
-    alert("🎉 Đặt hàng và khởi tạo đơn hàng thành công!");
 
     //  Reset giỏ hàng hiện tại sau khi đã chuyển giao dữ liệu
     currentCart = [];
@@ -322,7 +321,6 @@
     // ========================================================
     if (currentOrderType === "DELIVERY") {
         // Thông báo đặt đơn thành công rực rỡ
-        alert("🎉 Đặt đơn giao hàng thành công!");
         
         // ⚡ THẦN CHÚ: Ép hệ thống mở bung màn hình Tab Delivery Hub lên ngay lập tức!
         showScreen("deliveryHub");
@@ -469,7 +467,6 @@
 
     if (action === "ACCEPT") {
       //  Nhận đơn xong, mọi thứ chuẩn chỉnh rồi mới cho đi THANH TOÁN!
-      alert(`✔️ Đã xác nhận thông tin đơn hàng chuẩn xác!\nHệ thống đang chuyển sang màn hình thanh toán để xuất bill...`);
       
       // Bốc dữ liệu của đơn hàng đang chọn ném vào localStorage để trang payment-dashboard.html đọc chuẩn xác
       let rawTotalAmount = currentSelectedDelivery.total_amount || calculateSubtotal();

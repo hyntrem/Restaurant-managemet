@@ -16,9 +16,11 @@ def safe_dict(row):
                 if isinstance(v, datetime.datetime)
                 else "%Y-%m-%d"
             )
+        # THÊM ĐOẠN NÀY ĐỂ XỬ LÝ GIỜ PHÚT (Fix lỗi 500)
+        elif isinstance(v, datetime.timedelta):
+            d[k] = str(v)
+            
     return d
-
-
 def generate_reservation_code():
     today = datetime.datetime.now().strftime("%Y%m%d")
     random_str = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))

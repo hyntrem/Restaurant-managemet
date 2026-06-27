@@ -2,11 +2,11 @@
    admin-branch.js
    Dùng cho: frontend/templates/staff/admin-dashboard.html
    Backend: Branch Service qua API Gateway
-   API base: http://localhost:8080/api/branches
+   API base: http://localhost:5007/api/branches
 ========================================================== */
 
 (function () {
-  const API_BASE = "http://localhost:8080/api/branches";
+  const API_BASE = "http://localhost:5007/api/branches";
 
   let branchesCache = [];
 

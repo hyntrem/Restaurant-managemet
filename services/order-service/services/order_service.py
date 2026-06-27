@@ -195,7 +195,7 @@ def create_order_service(data, user_id):
         
         # Kiểm tra bàn có available không (nếu là EAT_IN)
         if order_type == "EAT_IN":
-            table_response = call_table_service(f"/tables/{table_id}", method="GET")
+            table_response = call_table_service(f"/{table_id}", method="GET")
             if not table_response or not table_response.get("success"):
                 return {
                     "success": False,

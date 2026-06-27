@@ -31,7 +31,7 @@
     <section class="manager-page-heading">
       <div>
         <h1>Dashboard quản lý cửa hàng</h1>
-        <p id="branchSubtitle">Theo dõi doanh thu, đơn hàng, bếp, kho, nhân viên, đặt bàn và audit log theo chi nhánh của Manager.</p>
+        <p id="branchSubtitle">Theo dõi doanh thu, đơn hàng, bếp, kho, nhân viên và đặt bàn theo chi nhánh.</p>
       </div>
       <button type="button" class="primary-btn" onclick="ManagerDashboard.refreshAll()">⟳ Tải lại dữ liệu</button>
     </section>
@@ -40,35 +40,25 @@
       <button type="button" class="manager-tab active" data-tab="overview">
         <span>📊</span> Tổng quan
       </button>
-
       <button type="button" class="manager-tab" data-tab="orders">
         <span>🧾</span> Đơn hàng
       </button>
-
       <button type="button" class="manager-tab" data-tab="kitchen">
         <span>🍳</span> Theo dõi bếp
       </button>
-
       <button type="button" class="manager-tab" data-tab="inventory">
         <span>📦</span> Cảnh báo kho
       </button>
-
       <button type="button" class="manager-tab" data-tab="staff">
         <span>👥</span> Nhân viên
       </button>
-
       <button type="button" class="manager-tab" data-tab="reservation">
         <span>📅</span> Đặt bàn
-      </button>
-
-      <button type="button" class="manager-tab" data-tab="audit">
-        <span>📝</span> Audit Log
       </button>
     </nav>
 
     <p id="managerMessage" class="manager-message"></p>
 
-    <!-- OVERVIEW -->
     <section id="panel-overview" class="manager-panel active">
       <h2 class="panel-title">Tổng quan hôm nay</h2>
 
@@ -124,7 +114,6 @@
                   <th>Thời gian</th>
                 </tr>
               </thead>
-
               <tbody id="latestOrdersBody">
                 <tr>
                   <td colspan="5" class="empty-row">Đang tải dữ liệu...</td>
@@ -138,7 +127,6 @@
           <div class="table-card-header">
             <h3>Cảnh báo vận hành</h3>
           </div>
-
           <div class="alert-list" id="operationAlerts">
             <p class="empty-row">Đang kiểm tra...</p>
           </div>
@@ -146,7 +134,6 @@
       </div>
     </section>
 
-    <!-- ORDERS -->
     <section id="panel-orders" class="manager-panel">
       <div class="panel-header-row">
         <h2 class="panel-title">Đơn hàng của cửa hàng</h2>
@@ -159,7 +146,6 @@
             <option value="DONE">DONE</option>
             <option value="CANCELLED">CANCELLED</option>
           </select>
-
           <button type="button" class="secondary-btn" onclick="ManagerDashboard.renderOrdersTable()">Lọc</button>
         </div>
       </div>
@@ -176,7 +162,6 @@
               <th>Thao tác</th>
             </tr>
           </thead>
-
           <tbody id="ordersTableBody">
             <tr>
               <td colspan="6" class="empty-row">Đang tải dữ liệu...</td>
@@ -186,7 +171,6 @@
       </div>
     </section>
 
-    <!-- KITCHEN -->
     <section id="panel-kitchen" class="manager-panel">
       <h2 class="panel-title">Theo dõi bếp</h2>
 
@@ -213,7 +197,6 @@
       </div>
     </section>
 
-    <!-- INVENTORY -->
     <section id="panel-inventory" class="manager-panel">
       <h2 class="panel-title">Cảnh báo kho cửa hàng</h2>
 
@@ -228,7 +211,6 @@
               <th>Trạng thái</th>
             </tr>
           </thead>
-
           <tbody id="inventoryAlertsBody">
             <tr>
               <td colspan="5" class="empty-row">Đang tải cảnh báo kho...</td>
@@ -238,7 +220,6 @@
       </div>
     </section>
 
-    <!-- STAFF -->
     <section id="panel-staff" class="manager-panel">
       <h2 class="panel-title">Nhân viên cửa hàng</h2>
 
@@ -252,7 +233,6 @@
               <th>Trạng thái</th>
             </tr>
           </thead>
-
           <tbody id="branchStaffBody">
             <tr>
               <td colspan="4" class="empty-row">Đang tải nhân viên...</td>
@@ -262,7 +242,6 @@
       </div>
     </section>
 
-    <!-- RESERVATION -->
     <section id="panel-reservation" class="manager-panel">
       <div class="panel-header-row">
         <h2 class="panel-title">Đơn đặt bàn từ Website</h2>
@@ -270,11 +249,10 @@
         <div class="filter-row">
           <input
             type="text"
-            id="reservationSearch"
+            id="reservationSearchInput"
             placeholder="Tìm tên khách hoặc SĐT"
             oninput="ManagerDashboard.renderReservationTable()"
           />
-
           <select id="reservationStatusFilter" onchange="ManagerDashboard.renderReservationTable()">
             <option value="">Tất cả trạng thái</option>
             <option value="PENDING">Chờ xác nhận</option>
@@ -284,7 +262,7 @@
             <option value="CANCELLED">Đã hủy</option>
           </select>
 
-          <select id="reservationSort" onchange="ManagerDashboard.renderReservationTable()">
+          <select id="reservationSortSelect" onchange="ManagerDashboard.renderReservationTable()">
             <option value="DESC">Mới nhất</option>
             <option value="ASC">Cũ nhất</option>
           </select>
@@ -310,60 +288,9 @@
               <th>Thao tác</th>
             </tr>
           </thead>
-
-          <tbody id="reservationTableBody">
+          <tbody id="reservationsTableBody">
             <tr>
               <td colspan="9" class="empty-row">Chưa có dữ liệu.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- AUDIT LOG -->
-    <section id="panel-audit" class="manager-panel">
-      <div class="panel-header-row">
-        <h2 class="panel-title">Audit Log cửa hàng</h2>
-
-        <div class="filter-row">
-          <select id="auditModuleFilter" onchange="ManagerDashboard.renderAuditTable()">
-            <option value="">Tất cả bộ phận</option>
-            <option value="ORDER">Order</option>
-            <option value="RESERVATION">Reservation</option>
-            <option value="INVENTORY">Inventory</option>
-            <option value="MENU">Menu</option>
-            <option value="STAFF">Staff</option>
-            <option value="BRANCH">Branch</option>
-          </select>
-
-          <select id="auditSort" onchange="ManagerDashboard.renderAuditTable()">
-            <option value="DESC">Mới nhất</option>
-            <option value="ASC">Cũ nhất</option>
-          </select>
-
-          <button type="button" class="secondary-btn" onclick="ManagerDashboard.loadAuditLogs()">
-            Làm mới
-          </button>
-        </div>
-      </div>
-
-      <div class="table-wrap">
-        <table class="manager-table">
-          <thead>
-            <tr>
-              <th>Thời gian</th>
-              <th>Nhân viên</th>
-              <th>Vai trò</th>
-              <th>Bộ phận</th>
-              <th>Hành động</th>
-              <th>Đối tượng</th>
-              <th>Chi tiết</th>
-            </tr>
-          </thead>
-
-          <tbody id="auditTableBody">
-            <tr>
-              <td colspan="7" class="empty-row">Chưa có dữ liệu.</td>
             </tr>
           </tbody>
         </table>

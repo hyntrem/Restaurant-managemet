@@ -1,423 +1,534 @@
 /* ==========================================================
    manager-dashboard.js
-   Dùng DB có sẵn: table_reservations
-   Customer web đang POST: /api/tables/reservations
-   Manager nhận đơn đặt bàn, xác nhận/hủy và xem audit log.
+   Pizza 4P's Manager Dashboard - Refactored
+   - Tích hợp chính xác API Microservices (User, Order, Table, Branch, Inventory)
+   - Đồng bộ hóa ID giữa HTML và JS
+   - Chỉ quản lý chi nhánh của Manager
 ========================================================== */
 
 (function () {
-  const GATEWAY_URL = "http://localhost:8080";
-  const TABLE_API = GATEWAY_URL + "/api/tables";
-  const AUDIT_API = GATEWAY_URL + "/api/audit-logs";
-  const ORDER_DIRECT_URL = "http://localhost:5004";
+    /*=========================================================
+        CONFIG (Đã được cấu hình chuẩn theo Microservices)
+    =========================================================*/
+    const GATEWAY_URL = "http://localhost:8080";
+    const USER_API = "http://localhost:5001";
+    const ORDER_API = "http://localhost:5004";
+    const TABLE_API = "http://localhost:5006";
+    const BRANCH_API = "http://localhost:5007/api/branches";
+    const INVENTORY_API = GATEWAY_URL + "/api/inventory";
 
-  let currentUser = null;
-  let reservationsCache = [];
-  let auditLogsCache = [];
-  let ordersCache = [];
-  let staffCache = [];
+    /*=========================================================
+        CACHE
+    =========================================================*/
+    let currentUser = null;
+    let ordersCache = [];
+    let reservationsCache = [];
+    let staffCache = [];
+    let inventoryCache = [];
 
-  function getStaffUser() {
-    const userText = localStorage.getItem("staff_user");
-    if (!userText) return null;
-    try { return JSON.parse(userText); }
-    catch (error) { console.error("Invalid staff_user:", error); return null; }
-  }
+    /*=========================================================
+        AUTH
+    =========================================================*/
+    function getCurrentUser() {
+        try {
+            return JSON.parse(localStorage.getItem("staff_user"));
+        } catch {
+            return null;
+        }
+    }
 
-  function getHeaders() {
-    const token = localStorage.getItem("staff_token");
-    return {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: "Bearer " + token } : {})
+    function getHeaders() {
+        const token = localStorage.getItem("staff_token");
+        return {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: "Bearer " + token } : {})
+        };
+    }
+
+    function protectPage() {
+        const token = localStorage.getItem("staff_token");
+        currentUser = getCurrentUser();
+
+        if (!token || !currentUser) {
+            alert("Vui lòng đăng nhập.");
+            location.href = "login.html";
+            return false;
+        }
+
+        if (currentUser.role !== "MANAGER" && currentUser.role !== "ADMIN") {
+            alert("Bạn không có quyền.");
+            location.href = "admin-dashboard.html";
+            return false;
+        }
+
+        const info = document.getElementById("staffUserInfo");
+        if (info) {
+            info.innerHTML = `${currentUser.full_name} | ${currentUser.role} | ${currentUser.branch_code || ""}`;
+        }
+
+        const branch = document.getElementById("branchSubtitle");
+        if (branch) {
+            branch.textContent = `Quản lý hoạt động của ${currentUser.branch_name || 'chi nhánh'}`;
+        }
+
+        const branchName = document.getElementById("statBranchName");
+        if (branchName) {
+            branchName.textContent = currentUser.branch_name || "-";
+        }
+
+        return true;
+    }
+
+    /*=========================================================
+        COMMON
+    =========================================================*/
+    function showMessage(msg, error = false) {
+        const el = document.getElementById("managerMessage");
+        if (!el) return;
+        el.textContent = msg;
+        el.style.color = error ? "#d63031" : "#163B6D";
+        
+        // Tự động ẩn message sau 3 giây
+        setTimeout(() => el.textContent = "", 3000);
+    }
+
+    function formatCurrency(value) {
+        return Number(value || 0).toLocaleString("vi-VN") + " VNĐ";
+    }
+
+    function formatDate(value) {
+        if (!value) return "-";
+        return new Date(value).toLocaleDateString("vi-VN");
+    }
+
+    function formatTime(value) {
+        if (!value) return "-";
+        return String(value).substring(0, 5);
+    }
+
+    function badge(status) {
+        const css = {
+            PENDING: "status-pending",
+            PREPARING: "status-preparing",
+            DONE: "status-done",
+            CANCELLED: "status-cancelled",
+            CONFIRMED: "status-confirmed",
+            COMPLETED: "status-completed",
+            ACTIVE: "status-active",
+            NO_SHOW: "status-no-show"
+        };
+        return `<span class="status-badge ${css[status] || "status-pending"}">${status}</span>`;
+    }
+
+    /*=========================================================
+        API HELPER
+    =========================================================*/
+    async function apiGet(url) {
+        try {
+            const response = await fetch(url, { headers: getHeaders() });
+            
+            // Xử lý chống văng lỗi nếu Backend trả HTML thay vì JSON (Lỗi 404/500)
+            const contentType = response.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                throw new Error(`Endpoint sai hoặc Server không trả về JSON (Status: ${response.status})`);
+            }
+
+            const json = await response.json();
+            if (!response.ok) throw new Error(json.message || "Server Error");
+            return json.success !== undefined ? json : { success: true, data: json };
+        } catch (err) {
+            console.error(err);
+            return { success: false, message: err.message };
+        }
+    }
+
+    async function apiPut(url, body) {
+        try {
+            const response = await fetch(url, {
+                method: "PUT",
+                headers: getHeaders(),
+                body: JSON.stringify(body)
+            });
+            const json = await response.json();
+            if (!response.ok) throw new Error(json.message || "Server Error");
+            return json.success !== undefined ? json : { success: true, data: json };
+        } catch (err) {
+            console.error(err);
+            return { success: false, message: err.message };
+        }
+    }
+
+    /*=========================================================
+        FILTER
+    =========================================================*/
+    function isCurrentBranch(item) {
+        if (currentUser.role === "ADMIN") return true;
+        if (!item.branch_id) return true;
+        return Number(item.branch_id) === Number(currentUser.branch_id);
+    }
+
+    /*=========================================================
+        LOAD DATA (Đã map đúng đường dẫn Blueprint)
+    =========================================================*/
+    async function loadOrders() {
+        let result = null;
+        if (typeof globalThis.orderGet === "function") {
+            result = await globalThis.orderGet("/");
+        } else {
+            result = await apiGet(ORDER_API + "/"); // Match: order_bp.route("/", methods=["GET"])
+        }
+        
+        if (!result || !result.success) {
+            ordersCache = [];
+            return;
+        }
+        ordersCache = (result.data || []).filter(isCurrentBranch);
+    }
+
+    async function loadReservations() {
+        const result = await apiGet(TABLE_API + "/reservations/all"); // Match: table_bp.route("/reservations/all")
+        if (!result || !result.success) {
+            reservationsCache = [];
+            return;
+        }
+        reservationsCache = (result.data || []).filter(isCurrentBranch);
+    }
+
+    async function loadStaff() {
+        const result = await apiGet(USER_API + "/admin/users"); 
+        if (!result || !result.success) {
+            staffCache = [];
+            return;
+        }
+        
+        // Đã thêm điều kiện: user.role !== "CUSTOMER"
+        staffCache = (result.data || []).filter(user => 
+            isCurrentBranch(user) && user.role !== "CUSTOMER"
+        );
+    }
+
+    async function loadInventory() {
+        const result = await apiGet(INVENTORY_API + "/ingredients"); // Match: inventory_bp.route("/ingredients")
+        if (!result || !result.success) {
+            inventoryCache = [];
+            return;
+        }
+        inventoryCache = (result.data || []).filter(isCurrentBranch);
+    }
+
+    /*=========================================================
+        RENDERERS
+    =========================================================*/
+    function renderOverview() {
+        document.getElementById("statTotalOrders").textContent = ordersCache.length;
+        document.getElementById("statActiveOrders").textContent = ordersCache.filter(o => o.status === "PENDING" || o.status === "PREPARING").length;
+        document.getElementById("statDoneOrders").textContent = ordersCache.filter(o => o.status === "DONE").length;
+        document.getElementById("statCancelledOrders").textContent = ordersCache.filter(o => o.status === "CANCELLED").length;
+
+        const revenue = ordersCache
+            .filter(o => o.status === "DONE")
+            .reduce((sum, o) => sum + Number(o.total_amount || o.total || 0), 0);
+        document.getElementById("statRevenue").textContent = formatCurrency(revenue);
+
+        const latest = [...ordersCache].sort((a, b) => b.id - a.id).slice(0, 8);
+        const tbody = document.getElementById("latestOrdersBody");
+
+        if (!latest.length) {
+            tbody.innerHTML = `<tr><td colspan="5" class="empty-row">Chưa có đơn hàng.</td></tr>`;
+        } else {
+            tbody.innerHTML = latest.map(o => `
+                <tr>
+                    <td><strong>${o.order_code}</strong></td>
+                    <td>${o.order_type}</td>
+                    <td>${badge(o.status)}</td>
+                    <td>${formatCurrency(o.total_amount || o.total)}</td>
+                    <td>${new Date(o.created_at).toLocaleString("vi-VN")}</td>
+                </tr>
+            `).join("");
+        }
+
+        const preparing = ordersCache.filter(o => o.status === "PREPARING").length;
+        const pendingRes = reservationsCache.filter(r => r.status === "PENDING").length;
+        const alertBox = document.getElementById("operationAlerts");
+
+        let html = "";
+        if (preparing) html += `<div class="alert-item">🍳 Có ${preparing} đơn đang chế biến.</div>`;
+        if (pendingRes) html += `<div class="alert-item">📅 Có ${pendingRes} đặt bàn đang chờ xác nhận.</div>`;
+        if (!html) html = `<p class="empty-row">Không có cảnh báo.</p>`;
+        alertBox.innerHTML = html;
+    }
+
+    function renderOrdersTable() {
+        const tbody = document.getElementById("ordersTableBody");
+        const filter = document.getElementById("orderStatusFilter")?.value || "";
+
+        let rows = filter ? ordersCache.filter(o => o.status === filter) : [...ordersCache];
+
+        if (!rows.length) {
+            tbody.innerHTML = `<tr><td colspan="6" class="empty-row">Không có đơn hàng.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = rows.map(order => {
+            let action = "-";
+            if (order.status === "PENDING") {
+                action = `<button class="primary-btn" onclick="ManagerDashboard.changeOrderStatus(${order.id},'PREPARING')">Bắt đầu</button>`;
+            } else if (order.status === "PREPARING") {
+                action = `<button class="success-btn" onclick="ManagerDashboard.changeOrderStatus(${order.id},'DONE')">Hoàn tất</button>`;
+            }
+
+            return `
+                <tr>
+                    <td><strong>${order.order_code}</strong></td>
+                    <td>${order.order_type}</td>
+                    <td>${badge(order.status)}</td>
+                    <td>${formatCurrency(order.total_amount || order.total)}</td>
+                    <td>${new Date(order.created_at).toLocaleString("vi-VN")}</td>
+                    <td>${action}</td>
+                </tr>
+            `;
+        }).join("");
+    }
+
+    function renderReservationTable() {
+        const tbody = document.getElementById("reservationsTableBody");
+        const search = (document.getElementById("reservationSearchInput")?.value || "").toLowerCase();
+        const statusFilter = document.getElementById("reservationStatusFilter")?.value || "";
+        const sort = document.getElementById("reservationSortSelect")?.value || "DESC";
+
+        let rows = [...reservationsCache];
+
+        if (search) {
+            rows = rows.filter(r => 
+                (r.customer_name || "").toLowerCase().includes(search) || 
+                (r.customer_phone || "").includes(search)
+            );
+        }
+        if (statusFilter) {
+            rows = rows.filter(r => r.status === statusFilter);
+        }
+
+        rows.sort((a, b) => {
+            const dateA = new Date(a.created_at || a.reservation_date);
+            const dateB = new Date(b.created_at || b.reservation_date);
+            return sort === "DESC" ? dateB - dateA : dateA - dateB;
+        });
+
+        if (!rows.length) {
+            tbody.innerHTML = `<tr><td colspan="9" class="empty-row">Chưa có dữ liệu đặt bàn.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = rows.map(r => `
+            <tr>
+                <td>${r.reservation_code || r.id}</td>
+                <td>${r.customer_name}</td>
+                <td>${r.customer_phone}</td>
+                <td>${formatDate(r.reservation_date)}</td>
+                <td>${formatTime(r.reservation_time)}</td>
+                <td>${r.guest_count}</td>
+                <td>${r.notes || "-"}</td>
+                <td>${badge(r.status)}</td>
+                <td>
+                    <select onchange="ManagerDashboard.updateReservationStatus(${r.id}, this.value)" style="padding:4px;">
+                        <option value="" disabled selected>Đổi TT</option>
+                        <option value="CONFIRMED">Xác nhận</option>
+                        <option value="COMPLETED">Đã đến</option>
+                        <option value="NO_SHOW">No Show</option>
+                        <option value="CANCELLED">Hủy</option>
+                    </select>
+                </td>
+            </tr>
+        `).join("");
+    }
+
+    function renderKitchen() {
+        const lists = {
+            PENDING: document.getElementById("kitchenPendingList"),
+            PREPARING: document.getElementById("kitchenPreparingList"),
+            DONE: document.getElementById("kitchenDoneList"),
+            CANCELLED: document.getElementById("kitchenCancelledList")
+        };
+
+        Object.values(lists).forEach(col => col.innerHTML = "");
+
+        ordersCache.forEach(order => {
+            if (!lists[order.status]) return;
+            
+            const card = document.createElement("div");
+            card.className = "kitchen-card";
+            card.innerHTML = `
+                <h4>${order.order_code}</h4>
+                <p>${order.order_type}</p>
+                <p><strong>${formatCurrency(order.total_amount || order.total)}</strong></p>
+                <p>${new Date(order.created_at).toLocaleTimeString("vi-VN")}</p>
+            `;
+            lists[order.status].appendChild(card);
+        });
+
+        Object.values(lists).forEach(col => {
+            if (!col.innerHTML) col.innerHTML = `<div class="empty-row">Không có đơn</div>`;
+        });
+    }
+
+    function renderInventory() {
+        const tbody = document.getElementById("inventoryAlertsBody");
+        
+        if (!inventoryCache.length) {
+            tbody.innerHTML = `<tr><td colspan="5" class="empty-row">Không có dữ liệu kho.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = inventoryCache.map(item => `
+            <tr>
+                <td>${item.material_name || item.name}</td>
+                <td>${item.quantity}</td>
+                <td>${item.unit}</td>
+                <td>${formatDate(item.expiration_date)}</td>
+                <td>${item.quantity < 10 
+                    ? '<span class="status-badge status-cancelled">Sắp hết</span>' 
+                    : '<span class="status-badge status-active">Bình thường</span>'}
+                </td>
+            </tr>
+        `).join("");
+    }
+
+    function renderStaff() {
+        const tbody = document.getElementById("branchStaffBody");
+        
+        if (!staffCache.length) {
+            tbody.innerHTML = `<tr><td colspan="4" class="empty-row">Không có nhân viên.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = staffCache.map(staff => `
+            <tr>
+                <td>${staff.full_name}</td>
+                <td>${staff.username}</td>
+                <td>${staff.role}</td>
+                <td>${badge(staff.status || 'ACTIVE')}</td>
+            </tr>
+        `).join("");
+    }
+
+    /*=========================================================
+        ACTIONS
+    =========================================================*/
+    async function changeOrderStatus(id, status) {
+        if (!confirm(`Đổi trạng thái sang ${status}?`)) return;
+
+        // Xử lý map status sang endpoint tương ứng của Order Microservice
+        let endpoint = "";
+        if (status === "PREPARING") {
+            endpoint = `/${id}/preparing`;
+        } else if (status === "DONE") {
+            endpoint = `/${id}/done`;
+        } else {
+            showMessage("Chức năng đổi trạng thái này chưa hỗ trợ", true);
+            return;
+        }
+
+        const result = await apiPut(ORDER_API + endpoint, {}); 
+        
+        if (!result.success) {
+            showMessage(result.message, true);
+            return;
+        }
+
+        showMessage("Đã cập nhật đơn hàng.");
+        await loadOrders();
+        renderOverview();
+        renderOrdersTable();
+        renderKitchen();
+    }
+
+    async function updateReservationStatus(id, status) {
+        if (!confirm("Xác nhận thay đổi trạng thái?")) return;
+
+        const result = await apiPut(TABLE_API + `/reservations/${id}/status`, { status });
+        
+        if (!result.success) {
+            showMessage(result.message, true);
+            return;
+        }
+
+        showMessage("Đã cập nhật trạng thái đặt bàn.");
+        await loadReservations();
+        renderOverview();
+        renderReservationTable();
+    }
+
+    /*=========================================================
+        TAB & INIT
+    =========================================================*/
+    function bindTabs() {
+        document.querySelectorAll(".manager-tab").forEach(tab => {
+            tab.onclick = function () {
+                const panel = tab.dataset.tab;
+
+                document.querySelectorAll(".manager-tab").forEach(t => t.classList.remove("active"));
+                document.querySelectorAll(".manager-panel").forEach(p => p.classList.remove("active"));
+
+                tab.classList.add("active");
+                document.getElementById("panel-" + panel)?.classList.add("active");
+
+                switch (panel) {
+                    case "orders": renderOrdersTable(); break;
+                    case "reservation": renderReservationTable(); break;
+                    case "staff": renderStaff(); break;
+                    case "inventory": renderInventory(); break;
+                    case "kitchen": renderKitchen(); break;
+                    default: renderOverview();
+                }
+            };
+        });
+    }
+
+    window.ManagerDashboard = {
+        logout() {
+            localStorage.removeItem("staff_token");
+            localStorage.removeItem("staff_user");
+            location.href = "login.html";
+        },
+        async refreshAll() {
+            showMessage("Đang tải dữ liệu...");
+            
+            await Promise.allSettled([
+                loadOrders(),
+                loadReservations(),
+                loadStaff(),
+                loadInventory()
+            ]);
+
+            renderOverview();
+            renderOrdersTable();
+            renderReservationTable();
+            renderKitchen();
+            renderInventory();
+            renderStaff();
+            
+            showMessage("Đã cập nhật dữ liệu.");
+        },
+        async loadOrders() { await loadOrders(); renderOrdersTable(); },
+        async loadReservations() { await loadReservations(); renderReservationTable(); },
+        changeOrderStatus,
+        updateReservationStatus,
+        renderOrdersTable,
+        renderReservationTable
     };
-  }
 
-  function protectManagerPage() {
-    const token = localStorage.getItem("staff_token");
-    const user = getStaffUser();
-
-    if (!token || !user) {
-      alert("Vui lòng đăng nhập trước.");
-      window.location.href = "login.html";
-      return null;
-    }
-
-    if (user.role !== "MANAGER" && user.role !== "ADMIN") {
-      alert("Bạn không có quyền truy cập trang Manager.");
-      window.location.href = "admin-dashboard.html";
-      return null;
-    }
-
-    const userInfo = document.getElementById("staffUserInfo");
-    if (userInfo) {
-      const branchText = user.branch_code ? ` | ${user.branch_code} - ${user.branch_name || "Chi nhánh"}` : "";
-      userInfo.textContent = `${user.full_name || user.username || "Manager"} - ${user.role}${branchText}`;
-    }
-
-    const subtitle = document.getElementById("branchSubtitle");
-    if (subtitle && user.branch_id) {
-      subtitle.textContent = `Nhận đặt bàn và audit log của ${user.branch_code || "CN" + user.branch_id} - ${user.branch_name || "Chi nhánh"}.`;
-    }
-
-    return user;
-  }
-
-  function setMessage(message, isError = false) {
-    const el = document.getElementById("managerMessage");
-    if (!el) return;
-    el.textContent = message || "";
-    el.style.color = isError ? "#c0392b" : "#163B6D";
-  }
-
-  function formatCurrency(value) {
-    return `${Number(value || 0).toLocaleString("vi-VN")} VNĐ`;
-  }
-
-  function formatDate(value) {
-    if (!value) return "—";
-    try { return new Date(value).toLocaleDateString("vi-VN"); }
-    catch { return value; }
-  }
-
-  function formatTime(value) {
-    if (!value) return "—";
-    return String(value).slice(0, 5);
-  }
-
-  function statusBadge(status) {
-    const value = status || "PENDING";
-    const cls = {
-      PENDING: "status-pending",
-      CONFIRMED: "status-confirmed",
-      COMPLETED: "status-completed",
-      CANCELLED: "status-cancelled",
-      NO_SHOW: "status-no-show",
-      ACTIVE: "status-active",
-      DONE: "status-done",
-      PREPARING: "status-preparing"
-    }[value] || "status-pending";
-    return `<span class="status-badge ${cls}">${value}</span>`;
-  }
-
-  async function apiGet(url) {
-    try {
-      const response = await fetch(url, { method: "GET", headers: getHeaders() });
-      const data = await response.json();
-      if (!response.ok) return { success: false, message: data.message || data.detail || "Lỗi " + response.status };
-      return data && typeof data.success !== "undefined" ? data : { success: true, data };
-    } catch (error) {
-      console.error("GET error:", error);
-      return { success: false, message: "Không kết nối được server." };
-    }
-  }
-
-  async function apiPost(url, body = {}) {
-    try {
-      const response = await fetch(url, { method: "POST", headers: getHeaders(), body: JSON.stringify(body) });
-      const data = await response.json();
-      if (!response.ok) return { success: false, message: data.message || data.detail || "Lỗi " + response.status };
-      return data && typeof data.success !== "undefined" ? data : { success: true, data };
-    } catch (error) {
-      console.error("POST error:", error);
-      return { success: false, message: "Không kết nối được server." };
-    }
-  }
-
-  async function apiPut(url, body = {}) {
-    try {
-      const response = await fetch(url, { method: "PUT", headers: getHeaders(), body: JSON.stringify(body) });
-      const data = await response.json();
-      if (!response.ok) return { success: false, message: data.message || data.detail || "Lỗi " + response.status };
-      return data && typeof data.success !== "undefined" ? data : { success: true, data };
-    } catch (error) {
-      console.error("PUT error:", error);
-      return { success: false, message: "Không kết nối được server." };
-    }
-  }
-
-  function belongsToCurrentBranch(item) {
-    if (!currentUser || currentUser.role === "ADMIN") return true;
-    const itemBranchId = Number(item.branch_id || 0);
-    if (!itemBranchId) return true; // DB reservation hiện tại chưa có branch_id thì vẫn hiển thị
-    return itemBranchId === Number(currentUser.branch_id);
-  }
-
-  async function writeAudit(action, targetType, targetId, description) {
-    await apiPost(AUDIT_API, {
-      branch_id: currentUser?.branch_id || null,
-      module: targetType,
-      action,
-      target_type: targetType,
-      target_id: targetId,
-      description
+    document.addEventListener("DOMContentLoaded", async function () {
+        if (!protectPage()) return;
+        bindTabs();
+        await ManagerDashboard.refreshAll();
     });
-  }
 
-  function reservationDateTimeValue(r) {
-    return `${r.reservation_date || ""}T${r.reservation_time || "00:00:00"}`;
-  }
+    /*=========================================================
+        AUTO REFRESH (Mỗi 20s)
+    =========================================================*/
+    setInterval(async () => {
+        if (!currentUser) return;
+        await ManagerDashboard.refreshAll();
+    }, 20000);
 
-  function renderOverview() {
-    const today = new Date().toISOString().slice(0, 10);
-    const todayRows = reservationsCache.filter(r => !r.reservation_date || r.reservation_date === today);
-
-    document.getElementById("statReservationTotal").textContent = todayRows.length;
-    document.getElementById("statReservationPending").textContent = todayRows.filter(r => r.status === "PENDING").length;
-    document.getElementById("statReservationConfirmed").textContent = todayRows.filter(r => r.status === "CONFIRMED").length;
-    document.getElementById("statReservationCancelled").textContent = todayRows.filter(r => r.status === "CANCELLED" || r.status === "NO_SHOW").length;
-
-    const latest = reservationsCache.slice().sort((a, b) => Number(b.id) - Number(a.id)).slice(0, 8);
-    const tbody = document.getElementById("latestReservationsBody");
-
-    if (!latest.length) {
-      tbody.innerHTML = '<tr><td colspan="7" class="empty-row">Chưa có đặt bàn.</td></tr>';
-    } else {
-      tbody.innerHTML = latest.map(r => `
-        <tr>
-          <td><strong>${r.reservation_code || "RSV-" + r.id}</strong></td>
-          <td>${r.customer_name || "—"}</td>
-          <td>${r.customer_phone || "—"}</td>
-          <td>${formatDate(r.reservation_date)}</td>
-          <td>${formatTime(r.reservation_time)}</td>
-          <td>${r.number_of_guests || "—"}</td>
-          <td>${statusBadge(r.status)}</td>
-        </tr>
-      `).join("");
-    }
-
-    const pending = reservationsCache.filter(r => r.status === "PENDING").length;
-    const box = document.getElementById("operationAlerts");
-    box.innerHTML = pending
-      ? `<div class="alert-item">⚠️ Có ${pending} đơn đặt bàn đang chờ Manager xác nhận.</div>`
-      : '<p class="empty-row">Không có đặt bàn chờ xử lý.</p>';
-  }
-
-  function renderReservationsTable() {
-    const tbody = document.getElementById("reservationsTableBody");
-    const status = document.getElementById("reservationStatusFilter")?.value || "";
-    const sort = document.getElementById("reservationSortSelect")?.value || "newest";
-    const keyword = (document.getElementById("reservationSearchInput")?.value || "").toLowerCase().trim();
-
-    let rows = reservationsCache.slice();
-
-    if (status) rows = rows.filter(r => r.status === status);
-
-    if (keyword) {
-      rows = rows.filter(r =>
-        String(r.reservation_code || "").toLowerCase().includes(keyword) ||
-        String(r.customer_name || "").toLowerCase().includes(keyword) ||
-        String(r.customer_phone || "").toLowerCase().includes(keyword)
-      );
-    }
-
-    if (sort === "newest") rows.sort((a, b) => Number(b.id || 0) - Number(a.id || 0));
-    if (sort === "oldest") rows.sort((a, b) => Number(a.id || 0) - Number(b.id || 0));
-    if (sort === "date_asc") rows.sort((a, b) => new Date(reservationDateTimeValue(a)) - new Date(reservationDateTimeValue(b)));
-    if (sort === "guest_desc") rows.sort((a, b) => Number(b.number_of_guests || 0) - Number(a.number_of_guests || 0));
-
-    if (!rows.length) {
-      tbody.innerHTML = '<tr><td colspan="9" class="empty-row">Không có đặt bàn phù hợp.</td></tr>';
-      return;
-    }
-
-    tbody.innerHTML = rows.map(r => {
-      let actions = "";
-
-      if (r.status === "PENDING") {
-        actions += `<button class="success-btn" onclick="ManagerDashboard.updateReservationStatus(${r.id}, 'CONFIRMED')">Xác nhận</button>`;
-        actions += `<button class="danger-btn" onclick="ManagerDashboard.updateReservationStatus(${r.id}, 'CANCELLED')">Hủy</button>`;
-      }
-
-      if (r.status === "CONFIRMED") {
-        actions += `<button class="primary-btn" onclick="ManagerDashboard.updateReservationStatus(${r.id}, 'COMPLETED')">Hoàn tất</button>`;
-        actions += `<button class="warning-btn" onclick="ManagerDashboard.updateReservationStatus(${r.id}, 'NO_SHOW')">No-show</button>`;
-      }
-
-      return `
-        <tr>
-          <td><strong>${r.reservation_code || "RSV-" + r.id}</strong></td>
-          <td>${r.customer_name || "—"}</td>
-          <td>${r.customer_phone || "—"}</td>
-          <td>${formatDate(r.reservation_date)}</td>
-          <td>${formatTime(r.reservation_time)}</td>
-          <td>${r.number_of_guests || "—"}</td>
-          <td>${r.special_notes || "—"}</td>
-          <td>${statusBadge(r.status)}</td>
-          <td><div class="table-actions">${actions || "—"}</div></td>
-        </tr>
-      `;
-    }).join("");
-  }
-
-  function renderAuditLogs() {
-    const tbody = document.getElementById("auditLogsBody");
-    const moduleFilter = document.getElementById("auditModuleFilter")?.value || "";
-    const sort = document.getElementById("auditSortSelect")?.value || "newest";
-
-    let rows = auditLogsCache.slice();
-    if (moduleFilter) rows = rows.filter(log => (log.module || log.target_type) === moduleFilter);
-
-    if (sort === "newest") rows.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-    if (sort === "oldest") rows.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-    if (sort === "actor") rows.sort((a, b) => String(a.user_name || a.username || "").localeCompare(String(b.user_name || b.username || "")));
-
-    if (!rows.length) {
-      tbody.innerHTML = '<tr><td colspan="7" class="empty-row">Chưa có audit log.</td></tr>';
-      return;
-    }
-
-    tbody.innerHTML = rows.map(log => `
-      <tr>
-        <td>${log.created_at ? new Date(log.created_at).toLocaleString("vi-VN") : "—"}</td>
-        <td>${log.user_name || log.username || "—"}</td>
-        <td><strong>${log.role || "—"}</strong></td>
-        <td>${log.module || log.target_type || "—"}</td>
-        <td>${log.action || "—"}</td>
-        <td>${log.target_type || "—"} #${log.target_id || "—"}</td>
-        <td>${log.description || "—"}</td>
-      </tr>
-    `).join("");
-  }
-
-  function renderOrdersTable() {
-    const tbody = document.getElementById("ordersTableBody");
-    if (!ordersCache.length) {
-      tbody.innerHTML = '<tr><td colspan="5" class="empty-row">Chưa có dữ liệu đơn hàng.</td></tr>';
-      return;
-    }
-
-    tbody.innerHTML = ordersCache.slice(0, 20).map(o => `
-      <tr>
-        <td><strong>${o.order_code || "ORD-" + o.id}</strong></td>
-        <td>${o.order_type || "—"}</td>
-        <td>${statusBadge(o.status)}</td>
-        <td>${formatCurrency(o.total_amount || o.total || 0)}</td>
-        <td>${o.created_at ? new Date(o.created_at).toLocaleString("vi-VN") : "—"}</td>
-      </tr>
-    `).join("");
-  }
-
-  function renderStaff() {
-    const tbody = document.getElementById("branchStaffBody");
-    if (!staffCache.length) {
-      tbody.innerHTML = '<tr><td colspan="4" class="empty-row">Chưa có dữ liệu nhân viên.</td></tr>';
-      return;
-    }
-
-    tbody.innerHTML = staffCache.map(item => `
-      <tr>
-        <td>${item.full_name || "—"}</td>
-        <td>${item.username || "—"}</td>
-        <td><strong>${item.role || "—"}</strong></td>
-        <td>${statusBadge(item.status || "ACTIVE")}</td>
-      </tr>
-    `).join("");
-  }
-
-  function bindTabs() {
-    document.querySelectorAll(".manager-tab").forEach(tab => {
-      tab.addEventListener("click", function () {
-        const tabId = tab.dataset.tab;
-        document.querySelectorAll(".manager-tab").forEach(btn => btn.classList.remove("active"));
-        document.querySelectorAll(".manager-panel").forEach(panel => panel.classList.remove("active"));
-        tab.classList.add("active");
-        document.getElementById("panel-" + tabId).classList.add("active");
-
-        if (tabId === "reservations") renderReservationsTable();
-        if (tabId === "audit") renderAuditLogs();
-        if (tabId === "orders") renderOrdersTable();
-        if (tabId === "staff") renderStaff();
-      });
-    });
-  }
-
-  window.ManagerDashboard = {
-    logout() {
-      localStorage.removeItem("staff_token");
-      localStorage.removeItem("staff_user");
-      window.location.href = "login.html";
-    },
-
-    async refreshAll() {
-      setMessage("Đang tải dữ liệu...");
-      await this.loadReservations();
-      await this.loadAuditLogs();
-      await this.loadOrders();
-      await this.loadStaff();
-      renderOverview();
-      renderReservationsTable();
-      renderAuditLogs();
-      renderOrdersTable();
-      renderStaff();
-      setMessage("Đã cập nhật dữ liệu.");
-    },
-
-    async loadReservations() {
-      const result = await apiGet(TABLE_API + "/reservations");
-      reservationsCache = result.success ? (result.data || []).filter(belongsToCurrentBranch) : [];
-    },
-
-    async updateReservationStatus(id, status) {
-      if (!confirm(`Đổi trạng thái đặt bàn #${id} sang ${status}?`)) return;
-
-      const result = await apiPut(TABLE_API + "/reservations/" + id + "/status", { status });
-
-      if (!result.success) {
-        setMessage(result.message || "Không cập nhật được đặt bàn.", true);
-        return;
-      }
-
-      await writeAudit(
-        "UPDATE_STATUS",
-        "RESERVATION",
-        id,
-        `Manager cập nhật đặt bàn #${id} sang ${status}`
-      );
-
-      setMessage("Đã cập nhật trạng thái đặt bàn.");
-      await this.loadReservations();
-      await this.loadAuditLogs();
-      renderOverview();
-      renderReservationsTable();
-      renderAuditLogs();
-    },
-
-    async loadAuditLogs() {
-      let url = AUDIT_API;
-      if (currentUser?.role === "MANAGER" && currentUser.branch_id) {
-        url += "?branch_id=" + currentUser.branch_id;
-      }
-      const result = await apiGet(url);
-      auditLogsCache = result.success ? result.data || [] : [];
-    },
-
-    async loadOrders() {
-      let result = null;
-      if (typeof globalThis.orderGet === "function") result = await globalThis.orderGet("/");
-      else result = await apiGet(ORDER_DIRECT_URL + "/");
-      ordersCache = result && result.success ? (result.data || []).filter(belongsToCurrentBranch) : [];
-    },
-
-    async loadStaff() {
-      if (!currentUser?.branch_id) {
-        staffCache = [];
-        return;
-      }
-      const result = await apiGet(GATEWAY_URL + "/api/branches/" + currentUser.branch_id + "/staff");
-      staffCache = result.success ? result.data || [] : [];
-    },
-
-    renderReservationsTable,
-    renderAuditLogs
-  };
-
-  document.addEventListener("DOMContentLoaded", async function () {
-    currentUser = protectManagerPage();
-    if (!currentUser) return;
-
-    bindTabs();
-    await ManagerDashboard.refreshAll();
-
-    setInterval(() => ManagerDashboard.refreshAll(), 20000);
-  });
 })();
