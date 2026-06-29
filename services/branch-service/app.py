@@ -2,7 +2,9 @@ from flask import Flask
 from flask_cors import CORS
 
 from Models.branch_model import BranchModel
+from Models.audit_model import AuditModel
 from routes.branch_routes import branch_bp
+from routes.audit_routes import audit_bp
 from utils.response import success
 
 
@@ -13,8 +15,10 @@ def create_app():
     # Tự bổ sung cột cần thiết nếu schema đang dùng bản cũ.
     with app.app_context():
         BranchModel.ensure_schema()
+        AuditModel.ensure_schema()
 
     app.register_blueprint(branch_bp, url_prefix="/api/branches")
+    app.register_blueprint(audit_bp, url_prefix="/api/audit-logs")
 
     @app.route("/health", methods=["GET"])
     def health():
@@ -34,6 +38,7 @@ def create_app():
                 "GET /api/branches/<id>/staff",
                 "GET /api/branches/<id>/summary",
                 "GET /api/branches/dashboard",
+                "GET /api/audit-logs"
             ]
         }, "Branch service API")
 

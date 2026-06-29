@@ -16,7 +16,6 @@
 <body>
   <header class="admin-header">
     <div class="admin-logo-box">
-      <img src="../../static/images/pizza4ps_logo.jpg" alt="Pizza 4P's" class="logo-img">
       <div class="admin-logo-text">
         <strong>Pizza 4P's</strong>
         <span>ADMIN BRANCH</span>
@@ -60,8 +59,15 @@
       <button type="button" class="admin-tab" data-tab="summary">
         <span>📈</span> Báo cáo chi nhánh
       </button>
+
+      <button type="button" class="admin-tab" data-tab="audit">
+        <span>📜</span> Audit Log
+      </button>
     </nav>
 
+    <p id="branchServiceError" class="branch-message" style="color: #b3261e; font-weight: 600; display: none; margin: 10px 0;">
+      Không kết nối được Branch Service.
+    </p>
     <p id="branchMessage" class="branch-message"></p>
 
     <section id="panel-dashboard" class="admin-panel active">
@@ -106,7 +112,6 @@
                 <th>Trạng thái</th>
               </tr>
             </thead>
-
             <tbody id="latestBranchesBody">
               <tr>
                 <td colspan="5" class="empty-row">Đang tải dữ liệu...</td>
@@ -148,7 +153,6 @@
               <th>Thao tác</th>
             </tr>
           </thead>
-
           <tbody id="branchesTableBody">
             <tr>
               <td colspan="7" class="empty-row">Đang tải dữ liệu...</td>
@@ -178,7 +182,6 @@
               <th>Trạng thái</th>
             </tr>
           </thead>
-
           <tbody id="branchStaffBody">
             <tr>
               <td colspan="4" class="empty-row">Vui lòng chọn chi nhánh.</td>
@@ -218,6 +221,30 @@
           <p>Doanh thu</p>
           <h3 id="summaryRevenue">0 VNĐ</h3>
         </article>
+      </div>
+    </section>
+
+    <section id="panel-audit" class="admin-panel">
+      <h2 class="panel-title">Nhật ký hoạt động hệ thống</h2>
+      
+      <div class="table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Thời gian</th>
+              <th>Chi nhánh</th>
+              <th>Người thực hiện</th>
+              <th>Phân hệ</th>
+              <th>Hành động</th>
+              <th>Mô tả chi tiết</th>
+            </tr>
+          </thead>
+          <tbody id="auditTableBody">
+            <tr>
+              <td colspan="6" class="empty-row">Đang tải nhật ký hệ thống...</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </section>
   </main>
