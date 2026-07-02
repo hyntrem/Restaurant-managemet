@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta, UTC
 import jwt
-
-SECRET_KEY = "restaurant_secret_key"
+from common.config import JWT_SECRET_KEY as SECRET_KEY
 
 def generate_token(user):
     payload = {

@@ -10,6 +10,9 @@ from routes.menu_routes import menu_bp
 app = Flask(__name__)
 CORS(app)
 
+from common.database import init_db_app
+init_db_app(app)
+
 app.register_blueprint(menu_bp)
 
 @app.route("/", methods=["GET"])

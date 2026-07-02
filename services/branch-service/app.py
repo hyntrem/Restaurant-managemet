@@ -12,6 +12,9 @@ def create_app():
     app = Flask(__name__)
     CORS(app)
 
+    from common.database import init_db_app
+    init_db_app(app)
+
     # Tự bổ sung cột cần thiết nếu schema đang dùng bản cũ.
     with app.app_context():
         BranchModel.ensure_schema()

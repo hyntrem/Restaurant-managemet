@@ -142,12 +142,12 @@ def send_otp_service(data):
 
     save_otp(email, otp_code, expired_at)
 
+    # For testing/demo: print OTP to console logs since no actual email service is connected yet
+    print(f"[TESTING ONLY] Generated OTP for {email} is: {otp_code}")
+
     return {
         "success": True,
-        "message": "OTP sent successfully",
-        "data": {
-            "otp": otp_code
-        }
+        "message": "OTP sent successfully. Please check your email inbox (or backend console log in testing mode)."
     }, 200
 
 

@@ -11,6 +11,9 @@ from routes.order_routes import order_bp
 app = Flask(__name__)
 CORS(app)
 
+from common.database import init_db_app
+init_db_app(app)
+
 app.register_blueprint(order_bp)
 
 @app.route("/", methods=["GET"])

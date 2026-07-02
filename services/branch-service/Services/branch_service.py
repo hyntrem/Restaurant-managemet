@@ -18,8 +18,9 @@ class BranchService:
                 "action": action,
                 "description": description
             }
-            # Gọi API bằng phương thức POST sang cổng 5007 của Audit Log
-            requests.post("http://localhost:5007/api/audit-logs", json=audit_payload, timeout=2)
+            # Gọi trực tiếp qua AuditService thay vì đi qua mạng HTTP để tránh deadlock và tăng hiệu năng
+            from Services.audit_service import AuditService
+            AuditService.create_log(audit_payload)
         except Exception as e:
             # In ra màn hình terminal của Backend để kiểm tra nếu lỗi kết nối xảy ra
             print(f"⚠️ Không thể ghi nhận Audit Log do: {str(e)}")

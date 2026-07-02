@@ -6,10 +6,12 @@ from flask_cors import CORS
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from routes.user_route import user_bp
+from common.database import init_db_app
 
 app = Flask(__name__)
 
 CORS(app)
+init_db_app(app)
 
 app.register_blueprint(user_bp)
 

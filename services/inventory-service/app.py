@@ -11,6 +11,9 @@ from routes.inventory_route import inventory_bp
 app = Flask(__name__)
 CORS(app)
 
+from common.database import init_db_app
+init_db_app(app)
+
 # Đăng ký blueprint phân hệ quản lý kho vật tư
 app.register_blueprint(inventory_bp, url_prefix='/api/inventory')
 

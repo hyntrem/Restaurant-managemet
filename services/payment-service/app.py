@@ -5,6 +5,9 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app) # Cho phép Frontend (Web/App) gọi API mà không bị chặn CORS
 
+from common.database import init_db_app
+init_db_app(app)
+
 # Đăng ký tập hợp các Route của phân hệ Payment
 app.register_blueprint(payment_bp, url_prefix='/api/payments')
 

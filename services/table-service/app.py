@@ -9,6 +9,9 @@ from routes.table_route import table_bp
 app = Flask(__name__)
 CORS(app)
 
+from common.database import init_db_app
+init_db_app(app)
+
 app.register_blueprint(table_bp)
 
 @app.route("/", methods=["GET"])
