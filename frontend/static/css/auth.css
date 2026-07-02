@@ -45,7 +45,7 @@ body {
 }
 
 .auth-box h1 {
-  color: #02274f;
+  color: #00254e;
   margin-bottom: 8px;
   font-size: 32px;
 }
@@ -83,8 +83,8 @@ body {
   width: 100%;
   padding: 13px;
 
-  background: #2563eb;
-  color: white;
+  background: #dded4e;
+  color: #00254e;
 
   border: none;
   border-radius: 10px;
@@ -98,7 +98,7 @@ body {
 }
 
 .auth-box button:hover {
-  background: #1d4ed8;
+  filter: brightness(1.1);
   transform: translateY(-1px);
 }
 
