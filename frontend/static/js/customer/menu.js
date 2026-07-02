@@ -138,25 +138,36 @@ function renderMenuGrid(items) {
             const isAvailable =
                 item.status === "AVAILABLE" ||
                 !item.status;
+            let categoryName = item.category_name || item.category || "";
+            if (!categoryName && allCategories.length > 0) {
+                const catId = getItemCategoryId(item);
+                const foundCat = allCategories.find(cat => getCategoryId(cat) === catId);
+                if (foundCat) {
+                    categoryName = foundCat.name || foundCat.category_name || "";
+                }
+            }
+            const categoryTagHtml = categoryName ? `
+                <span class="absolute top-3 right-3 bg-primary/95 text-white backdrop-blur-md text-[11px] font-bold px-3 py-1.5 rounded-full shadow-md uppercase tracking-wider z-10 border border-white/10">
+                    ${categoryName}
+                </span>
+            ` : '';
             return `
-                <article class="menu-card">
-                    <div class="menu-image">
+                <article class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border border-surface-variant/30 flex flex-col relative group hover:-translate-y-1">
+                    <div class="relative h-56 w-full overflow-hidden bg-surface-container-low">
+                        ${categoryTagHtml}
                         <img
                             src="${imageUrl}"
                             alt="${item.name}"
                             loading="lazy"
+                            class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         >
                     </div>
-                    <div class="menu-content">
-<h3>${item.name}</h3>
-                        <p>
-                            ${
-                                item.description ||
-                                "Món ăn đặc sản Pizza 4P's."
-                            }
-                        </p>
-                        <div class="menu-footer">
-                            <span class="menu-price">
+                    <div class="p-5 flex-grow flex flex-col justify-between">
+                        <h3 class="font-headline-md text-lg text-primary font-bold line-clamp-2 mb-4 leading-snug">
+                            ${item.name}
+                        </h3>
+                        <div class="flex items-center justify-between mt-auto">
+                            <span class="text-red-800 font-extrabold text-lg md:text-xl tracking-tight">
                                 ${formatPrice(item.price)}
                             </span>
                             ${
@@ -169,13 +180,19 @@ function renderMenuGrid(items) {
                                             ${item.price},
                                             '${imageUrl}'
                                         )"
+                                        class="bg-secondary hover:bg-secondary/90 text-primary w-11 h-11 rounded-full flex items-center justify-center transition-all active:scale-95 shadow-md hover:shadow-lg focus:outline-none"
+                                        title="Thêm vào giỏ hàng"
                                     >
-                                        Thêm vào giỏ
+                                        <span class="material-symbols-outlined text-2xl font-bold">add_shopping_cart</span>
                                     </button>
                                 `
                                     : `
-                                    <button disabled>
-                                        Hết hàng
+                                    <button 
+                                        disabled
+                                        class="bg-surface-variant text-on-tertiary-container w-11 h-11 rounded-full flex items-center justify-center cursor-not-allowed opacity-60"
+                                        title="Hết hàng"
+                                    >
+                                        <span class="material-symbols-outlined text-2xl">block</span>
                                     </button>
                                 `
                             }
