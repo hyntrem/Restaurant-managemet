@@ -362,7 +362,11 @@ function openCheckoutModal() {
     modal.id = 'checkout-modal';
     modal.className = 'fixed inset-0 bg-black/60 backdrop-blur-md z-[110] flex items-center justify-center p-4';
     modal.innerHTML = `
-        <div class="bg-white dark:bg-tertiary w-full max-w-3xl rounded-2xl shadow-2xl border border-white/20 p-8 md:p-12 flex flex-col space-y-6 animate-scale-in max-h-[95vh] overflow-y-auto relative">
+        <style>
+            #checkout-modal .hide-scrollbar::-webkit-scrollbar { display: none; }
+            #checkout-modal .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        </style>
+        <div class="bg-white dark:bg-tertiary w-full max-w-3xl rounded-2xl shadow-2xl border border-white/20 p-8 md:p-12 flex flex-col space-y-6 animate-scale-in max-h-[95vh] overflow-y-auto hide-scrollbar relative">
             <div class="flex justify-between items-center border-b border-surface-variant pb-6">
                 <div class="flex items-center gap-3">
                     <span class="material-symbols-outlined text-primary text-3xl">local_shipping</span>
