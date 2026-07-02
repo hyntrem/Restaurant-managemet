@@ -7,8 +7,8 @@
 ========================================================== */
 
 (function () {
-  const API_BASE = "http://localhost:5007/api/branches";
-  const API_AUDIT = "http://localhost:5007/api/audit-logs"; // Định nghĩa API endpoint của Audit Log
+  const API_BASE = "http://localhost:8080/api/branches";
+  const API_AUDIT = "http://localhost:8080/api/audit-logs"; // Định nghĩa API endpoint của Audit Log
 
   let branchesCache = [];
 

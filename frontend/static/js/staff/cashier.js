@@ -349,8 +349,8 @@
       const headers = { "Content-Type": "application/json" };
       if (token) headers["Authorization"] = `Bearer ${token}`;
 
-      // Ép gọi fetch trực tiếp sang cổng 5004 xử lý đơn hàng của nhóm bồ
-      const response = await fetch("http://localhost:5004/", {
+      // Ép gọi fetch trực tiếp sang cổng Gateway 8080 xử lý đơn hàng của nhóm bồ
+      const response = await fetch("http://localhost:8080/api/orders/", {
         method: "GET",
         headers: headers
       });
@@ -364,7 +364,7 @@
         renderDeliveryHubCards();
       } else {
         const el = document.getElementById("deliveryCardsContainer");
-        if (el) el.innerHTML = '<p class="empty-text" style="color:#ef4444;text-align:center;">⚠️ Lỗi phản hồi từ Order Service (Cổng 5004)</p>';
+        if (el) el.innerHTML = '<p class="empty-text" style="color:#ef4444;text-align:center;">⚠️ Lỗi phản hồi từ Order Service (Cổng Gateway 8080)</p>';
       }
     } catch (error) {
       console.error("Lỗi kết nối Order Service:", error);

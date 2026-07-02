@@ -41,9 +41,9 @@ async function fetchSystemOrderActivity() {
  if (typeof globalThis.orderGet === "function") {
  result = await globalThis.orderGet("/");
  } else {
- // Nhánh dự phòng gọi trực tiếp cổng API Order
- const response = await fetch("http://localhost:5004");
- result = await response.json();
+  // Nhánh dự phòng gọi trực tiếp cổng API Order
+  const response = await fetch("http://localhost:8080/api/orders");
+  result = await response.json();
  }
 
  if (result && result.success && result.data) {

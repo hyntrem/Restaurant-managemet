@@ -1,4 +1,4 @@
-const ORDER_URL = "http://localhost:5004";
+const ORDER_URL = "http://localhost:8080/api/orders";
 
 function getOrderHeaders() {
     const token = localStorage.getItem("staff_token");

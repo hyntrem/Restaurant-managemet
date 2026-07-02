@@ -140,7 +140,7 @@
     }
   };
   // ── INVENTORY SERVICE (port 5003) ──
-  const INVENTORY_URL = "http://localhost:5003";
+  const INVENTORY_URL = "http://localhost:8080/api/inventory";
 
   globalThis.inventoryPost = async function(path, body) {
     try {

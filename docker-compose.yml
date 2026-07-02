@@ -188,6 +188,16 @@ services:
     networks:
       - restaurant_network
 
+  frontend:
+    image: nginx:alpine
+    container_name: frontend_service
+    ports:
+      - "3000:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+    networks:
+      - restaurant_network
+
   api-gateway:
     build:
       context: ./api-gateway

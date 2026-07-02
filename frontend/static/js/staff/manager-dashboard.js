@@ -11,10 +11,10 @@
         CONFIG (Đã được cấu hình chuẩn theo Microservices)
     =========================================================*/
     const GATEWAY_URL = "http://localhost:8080";
-    const USER_API = "http://localhost:5001";
-    const ORDER_API = "http://localhost:5004";
-    const TABLE_API = "http://localhost:5006";
-    const BRANCH_API = "http://localhost:5007/api/branches";
+    const USER_API = GATEWAY_URL + "/api/users";
+    const ORDER_API = GATEWAY_URL + "/api/orders";
+    const TABLE_API = GATEWAY_URL + "/api/tables";
+    const BRANCH_API = GATEWAY_URL + "/api/branches";
     const INVENTORY_API = GATEWAY_URL + "/api/inventory";
 
     /*=========================================================
