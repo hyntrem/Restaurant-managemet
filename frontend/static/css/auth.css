@@ -1,6 +1,8 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@100..900&display=swap");
+
 * {
   box-sizing: border-box;
-  font-family: Arial, sans-serif;
+  font-family: "Montserrat", sans-serif;
 }
 
 body {
@@ -15,22 +17,18 @@ body {
   justify-content: center;
   align-items: center;
 
-  background: linear-gradient(
-    135deg,
-    #dbeafe 0%,
-    #eff6ff 45%,
-    #ffffff 100%
-  );
+  background: linear-gradient(135deg,
+      #dbeafe 0%,
+      #eff6ff 45%,
+      #ffffff 100%);
 }
 
 /* Staff background */
 .staff-bg {
-  background: linear-gradient(
-    135deg,
-    #1e3a8a 0%,
-    #2563eb 45%,
-    #60a5fa 100%
-  );
+  background: linear-gradient(135deg,
+      #1e3a8a 0%,
+      #2563eb 45%,
+      #60a5fa 100%);
 }
 
 .auth-box {
@@ -47,7 +45,7 @@ body {
 }
 
 .auth-box h1 {
-  color: #1e3a8a;
+  color: #02274f;
   margin-bottom: 8px;
   font-size: 32px;
 }
