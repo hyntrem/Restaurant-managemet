@@ -1,5 +1,5 @@
 from flask import request, jsonify
-from Services.inventory_service import (
+from services.inventory_service import (
     list_inventory, add_new_ingredient, edit_ingredient, 
     import_goods, waste_goods, check_and_deduct_order_stock, 
     get_inventory_alerts, view_logs,

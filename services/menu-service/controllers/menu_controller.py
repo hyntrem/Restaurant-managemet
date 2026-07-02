@@ -1,6 +1,6 @@
 from flask import request, jsonify
 
-from Services.menu_service import (
+from services.menu_service import (
     list_categories,
     add_category,
     update_category,

@@ -3,7 +3,7 @@ import bcrypt
 from datetime import datetime, timedelta
 
 from common.auth import generate_token
-from Models.user_model import (
+from models.user_model import (
     create_user,
     find_user_by_username,
     find_user_by_email,

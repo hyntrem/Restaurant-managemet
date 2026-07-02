@@ -1,5 +1,5 @@
 import requests  # Thêm thư viện gọi API HTTP ở đầu file
-from Models.branch_model import BranchModel
+from models.branch_model import BranchModel
 from utils.validators import ALLOWED_BRANCH_STATUS, normalize_branch_payload, validate_branch_payload
 
 
@@ -19,7 +19,7 @@ class BranchService:
                 "description": description
             }
             # Gọi trực tiếp qua AuditService thay vì đi qua mạng HTTP để tránh deadlock và tăng hiệu năng
-            from Services.audit_service import AuditService
+            from services.audit_service import AuditService
             AuditService.create_log(audit_payload)
         except Exception as e:
             # In ra màn hình terminal của Backend để kiểm tra nếu lỗi kết nối xảy ra

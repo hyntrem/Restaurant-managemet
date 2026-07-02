@@ -1,8 +1,8 @@
 from flask import Flask
 from flask_cors import CORS
 
-from Models.branch_model import BranchModel
-from Models.audit_model import AuditModel
+from models.branch_model import BranchModel
+from models.audit_model import AuditModel
 from routes.branch_routes import branch_bp
 from routes.audit_routes import audit_bp
 from utils.response import success

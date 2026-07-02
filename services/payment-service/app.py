@@ -1,5 +1,5 @@
 from flask import Flask
-from Routes.payment_route import payment_bp
+from routes.payment_route import payment_bp
 from flask_cors import CORS
 
 app = Flask(__name__)

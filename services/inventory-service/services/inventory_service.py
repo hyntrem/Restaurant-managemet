@@ -1,4 +1,4 @@
-from Models.inventory_model import (
+from models.inventory_model import (
     get_all_ingredients, create_ingredient, update_ingredient_fields,
     execute_stock_transaction, get_recipes_for_menu_items, 
     get_all_stock_logs, get_ingredient_by_id,

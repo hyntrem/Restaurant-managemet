@@ -1,5 +1,5 @@
 from flask import Blueprint
-from Controllers.payment_controller import (
+from controllers.payment_controller import (
     create_invoice_controller, get_invoice_controller, process_payment_controller
 )
 from untils.auth_decorator import require_auth, require_roles

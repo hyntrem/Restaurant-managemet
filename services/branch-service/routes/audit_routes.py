@@ -1,5 +1,5 @@
 from flask import Blueprint
-from Controllers.audit_controller import AuditController
+from controllers.audit_controller import AuditController
 
 audit_bp = Blueprint("audit_bp", __name__)
 

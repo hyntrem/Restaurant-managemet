@@ -1,6 +1,6 @@
 from flask import Blueprint
 
-from Controllers.user_controller import (
+from controllers.user_controller import (
     register,
     login,
     logout,

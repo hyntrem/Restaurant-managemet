@@ -1,4 +1,4 @@
-from Models.menu_model import (
+from models.menu_model import (
     get_all_categories,
     create_category,
     update_category_by_id,

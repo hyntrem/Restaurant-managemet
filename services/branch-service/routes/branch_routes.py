@@ -1,5 +1,5 @@
 from flask import Blueprint
-from Controllers.branch_controller import BranchController
+from controllers.branch_controller import BranchController
 
 branch_bp = Blueprint("branch_bp", __name__)
 

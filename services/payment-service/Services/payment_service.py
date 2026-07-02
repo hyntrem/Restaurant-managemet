@@ -1,6 +1,6 @@
 import requests
 import uuid
-from Models.payment_model import (
+from models.payment_model import (
     create_invoice_db, get_invoice_by_order_id, get_invoice_by_id, 
     update_invoice_status_db, create_payment_record_db, get_payments_by_invoice
 )

@@ -1,5 +1,5 @@
 from flask import Blueprint
-from Controllers.inventory_controller import (
+from controllers.inventory_controller import (
     get_inventory, post_ingredient, put_ingredient, 
     import_stock_controller, waste_stock_controller, 
     check_ingredient_by_menu, deduct_stock_internal, 

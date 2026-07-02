@@ -1,7 +1,7 @@
 from flask import request, jsonify
 from common.auth import verify_token
 
-from Services.user_service import (
+from services.user_service import (
     register_user,
     login_user,
     logout_user,

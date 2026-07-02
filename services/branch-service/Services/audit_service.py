@@ -1,4 +1,4 @@
-from Models.audit_model import AuditModel
+from models.audit_model import AuditModel
 
 
 class AuditService:

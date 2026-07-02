@@ -1,5 +1,5 @@
 from flask import Blueprint
-from Controllers.menu_controller import (
+from controllers.menu_controller import (
     get_categories,
     create_category_controller,
     update_category_controller,
