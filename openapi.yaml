@@ -1,0 +1,1621 @@
+openapi: 3.0.3
+info:
+  title: Restaurant Management System API
+  description: Centralized API documentation for the Restaurant Management System. Access and test endpoints across all 8 microservices.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: API Gateway (Main Entrypoint)
+  - url: http://localhost:5001
+    description: User Service
+  - url: http://localhost:5002
+    description: Menu Service
+  - url: http://localhost:5003
+    description: Inventory Service
+  - url: http://localhost:5004
+    description: Order Service
+  - url: http://localhost:5005
+    description: Payment Service
+  - url: http://localhost:5006
+    description: Table Service
+  - url: http://localhost:5007
+    description: Branch Service
+  - url: http://localhost:5008
+    description: Report Service
+
+paths:
+  # ==========================================
+  # USER SERVICE ENDPOINTS
+  # ==========================================
+  /api/users/register:
+    post:
+      tags:
+        - Users
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - email
+                - password
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+                role:
+                  type: string
+                  enum: [CUSTOMER, CASHIER_LOBBY, KITCHEN, MANAGER, ADMIN]
+      responses:
+        '201':
+          description: User registered successfully
+        '400':
+          description: Registration failed (e.g. user already exists)
+
+  /api/users/login:
+    post:
+      tags:
+        - Users
+      summary: Login user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login successful. Returns JWT token.
+        '401':
+          description: Invalid username or password
+
+  /api/users/logout:
+    post:
+      tags:
+        - Users
+      summary: Logout current user
+      responses:
+        '200':
+          description: Logout successful
+
+  /api/users/send-otp:
+    post:
+      tags:
+        - Users
+      summary: Send OTP code for password reset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+      responses:
+        '200':
+          description: OTP sent successfully
+
+  /api/users/reset-password:
+    post:
+      tags:
+        - Users
+      summary: Reset password using OTP code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - otp
+                - new_password
+              properties:
+                email:
+                  type: string
+                otp:
+                  type: string
+                new_password:
+                  type: string
+      responses:
+        '200':
+          description: Password reset successful
+
+  /api/users/me:
+    get:
+      tags:
+        - Users
+      summary: Get profile of logged-in user
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Returns user profile
+        '401':
+          description: Unauthorized / invalid token
+
+  /api/users/admin/users:
+    get:
+      tags:
+        - Users
+      summary: Get all users (Admin only)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Returns list of all users
+        '401':
+          description: Unauthorized
+
+  # ==========================================
+  # MENU SERVICE ENDPOINTS
+  # ==========================================
+  /api/menu/categories:
+    get:
+      tags:
+        - Menu Categories
+      summary: Get all menu categories
+      responses:
+        '200':
+          description: List of categories
+    post:
+      tags:
+        - Menu Categories
+      summary: Create a menu category (Admin/Manager only)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+      responses:
+        '201':
+          description: Category created
+
+  /api/menu/categories/{category_id}:
+    put:
+      tags:
+        - Menu Categories
+      summary: Update a menu category (Admin/Manager only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: category_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+      responses:
+        '200':
+          description: Category updated
+    delete:
+      tags:
+        - Menu Categories
+      summary: Delete a menu category (Admin/Manager only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: category_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Category deleted
+
+  /api/menu/menu:
+    get:
+      tags:
+        - Menu Items
+      summary: Get all menu items
+      responses:
+        '200':
+          description: List of menu items
+    post:
+      tags:
+        - Menu Items
+      summary: Create a menu item (Admin/Manager only)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - price
+                - category_id
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                price:
+                  type: number
+                category_id:
+                  type: integer
+                image_url:
+                  type: string
+                is_available:
+                  type: boolean
+      responses:
+        '201':
+          description: Menu item created
+
+  /api/menu/menu/search:
+    get:
+      tags:
+        - Menu Items
+      summary: Search menu items
+      parameters:
+        - name: q
+          in: query
+          description: Search term
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of matching menu items
+
+  /api/menu/menu/category/{category_id}:
+    get:
+      tags:
+        - Menu Items
+      summary: Get menu items by category ID
+      parameters:
+        - name: category_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of menu items in category
+
+  /api/menu/menu/{item_id}:
+    get:
+      tags:
+        - Menu Items
+      summary: Get details of a single menu item
+      parameters:
+        - name: item_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Details of the menu item
+    put:
+      tags:
+        - Menu Items
+      summary: Update a menu item (Admin/Manager only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: item_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                price:
+                  type: number
+                category_id:
+                  type: integer
+                image_url:
+                  type: string
+                is_available:
+                  type: boolean
+      responses:
+        '200':
+          description: Menu item updated
+    delete:
+      tags:
+        - Menu Items
+      summary: Delete a menu item (Admin/Manager only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: item_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Menu item deleted
+
+  /api/menu/menu/{item_id}/status:
+    patch:
+      tags:
+        - Menu Items
+      summary: Toggle availability status of a menu item (Admin/Manager only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: item_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - is_available
+              properties:
+                is_available:
+                  type: boolean
+      responses:
+        '200':
+          description: Availability status updated
+
+  # ==========================================
+  # INVENTORY SERVICE ENDPOINTS
+  # ==========================================
+  /api/inventory/ingredients:
+    get:
+      tags:
+        - Inventory
+      summary: Get list of ingredients
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of ingredients
+    post:
+      tags:
+        - Inventory
+      summary: Add a new ingredient
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - quantity
+                - unit
+              properties:
+                name:
+                  type: string
+                quantity:
+                  type: number
+                unit:
+                  type: string
+                min_threshold:
+                  type: number
+                expiry_date:
+                  type: string
+                  format: date
+      responses:
+        '201':
+          description: Ingredient created
+
+  /api/inventory/ingredients/{ingredient_id}:
+    get:
+      tags:
+        - Inventory
+      summary: Get details of a single ingredient
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: ingredient_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Ingredient details
+    put:
+      tags:
+        - Inventory
+      summary: Update ingredient details
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: ingredient_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                quantity:
+                  type: number
+                unit:
+                  type: string
+                min_threshold:
+                  type: number
+                expiry_date:
+                  type: string
+                  format: date
+      responses:
+        '200':
+          description: Ingredient updated
+    delete:
+      tags:
+        - Inventory
+      summary: Delete an ingredient
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: ingredient_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Ingredient deleted
+
+  /api/inventory/import:
+    post:
+      tags:
+        - Inventory Operations
+      summary: Import items into inventory
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - ingredient_id
+                - quantity
+              properties:
+                ingredient_id:
+                  type: integer
+                quantity:
+                  type: number
+                price:
+                  type: number
+                supplier:
+                  type: string
+      responses:
+        '200':
+          description: Stock imported successfully
+
+  /api/inventory/export:
+    post:
+      tags:
+        - Inventory Operations
+      summary: Export items from inventory
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - ingredient_id
+                - quantity
+              properties:
+                ingredient_id:
+                  type: integer
+                quantity:
+                  type: number
+                reason:
+                  type: string
+      responses:
+        '200':
+          description: Stock exported successfully
+
+  /api/inventory/waste:
+    post:
+      tags:
+        - Inventory Operations
+      summary: Report ingredients waste
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - ingredient_id
+                - quantity
+                - reason
+              properties:
+                ingredient_id:
+                  type: integer
+                quantity:
+                  type: number
+                reason:
+                  type: string
+      responses:
+        '200':
+          description: Waste reported successfully
+
+  /api/inventory/logs:
+    get:
+      tags:
+        - Inventory
+      summary: Get inventory logs
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of inventory transaction logs
+
+  /api/inventory/alerts:
+    get:
+      tags:
+        - Inventory
+      summary: Get inventory alerts (low stock or expired ingredients)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of current inventory alerts
+
+  # ==========================================
+  # ORDER SERVICE ENDPOINTS
+  # ==========================================
+  /api/orders/:
+    post:
+      tags:
+        - Orders
+      summary: Create a new order
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - branch_id
+                - table_id
+                - type
+              properties:
+                branch_id:
+                  type: integer
+                table_id:
+                  type: integer
+                type:
+                  type: string
+                  enum: [DINE_IN, TAKE_AWAY, DELIVERY]
+                notes:
+                  type: string
+      responses:
+        '201':
+          description: Order created successfully
+    get:
+      tags:
+        - Orders
+      summary: List all orders
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of orders
+
+  /api/orders/{order_id}:
+    get:
+      tags:
+        - Orders
+      summary: Get single order details
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Order details
+
+  /api/orders/search:
+    get:
+      tags:
+        - Orders
+      summary: Search orders
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: table_id
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Search results
+
+  /api/orders/{order_id}/items:
+    post:
+      tags:
+        - Order Items
+      summary: Add items to an order
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - menu_item_id
+                - quantity
+              properties:
+                menu_item_id:
+                  type: integer
+                quantity:
+                  type: integer
+                notes:
+                  type: string
+      responses:
+        '200':
+          description: Items added to order
+
+  /api/orders/{order_id}/items/{item_id}:
+    put:
+      tags:
+        - Order Items
+      summary: Update order item quantity/notes
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: item_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - quantity
+              properties:
+                quantity:
+                  type: integer
+                notes:
+                  type: string
+      responses:
+        '200':
+          description: Order item updated
+    delete:
+      tags:
+        - Order Items
+      summary: Remove item from order
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: item_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Item removed from order
+
+  /api/orders/{order_id}/items/{item_id}/cancel:
+    put:
+      tags:
+        - Order Items
+      summary: Cancel a preparation item in kitchen (Manager/Admin only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: item_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Item cancelled in kitchen
+
+  /api/orders/{order_id}/send-kitchen:
+    post:
+      tags:
+        - Order Workflow
+      summary: Send order items to the kitchen
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Order items sent to kitchen
+
+  /api/orders/{order_id}/preparing:
+    put:
+      tags:
+        - Order Workflow
+      summary: Mark order status as PREPARING (Kitchen only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Status updated to preparing
+
+  /api/orders/{order_id}/done:
+    put:
+      tags:
+        - Order Workflow
+      summary: Mark order status as DONE/Ready (Kitchen only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Status updated to ready
+
+  /api/orders/{order_id}/receive:
+    put:
+      tags:
+        - Order Workflow
+      summary: "Customer receives the food (status: COMPLETED)"
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Status updated to completed
+
+  /api/orders/{order_id}/cancel:
+    put:
+      tags:
+        - Order Workflow
+      summary: Cancel the order
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Order cancelled
+
+  /api/orders/{order_id}/history:
+    get:
+      tags:
+        - Orders
+      summary: Get action history for the order
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: History logs returned
+
+  # ==========================================
+  # PAYMENT SERVICE ENDPOINTS
+  # ==========================================
+  /api/payments/invoices:
+    post:
+      tags:
+        - Payments
+      summary: Create an invoice for an order (Staff/Admin only)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - order_id
+              properties:
+                order_id:
+                  type: integer
+                discount:
+                  type: number
+                tax:
+                  type: number
+      responses:
+        '201':
+          description: Invoice created successfully
+
+  /api/payments/invoices/{invoice_id}:
+    get:
+      tags:
+        - Payments
+      summary: Get details of an invoice
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: invoice_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Invoice details
+
+  /api/payments/invoices/{invoice_id}/pay:
+    post:
+      tags:
+        - Payments
+      summary: Process payment for invoice
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: invoice_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - method
+              properties:
+                method:
+                  type: string
+                  enum: [CASH, TRANSFER, ATM, ONLINE]
+                amount_paid:
+                  type: number
+      responses:
+        '200':
+          description: Payment processed successfully
+
+  # ==========================================
+  # TABLE SERVICE ENDPOINTS
+  # ==========================================
+  /api/tables/map:
+    get:
+      tags:
+        - Tables
+      summary: Get table map / layout (Staff/Admin only)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Table layout returned
+
+  /api/tables/{table_id}:
+    get:
+      tags:
+        - Tables
+      summary: Get single table details
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: table_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Table details
+    put:
+      tags:
+        - Tables
+      summary: Update table details (Admin/Manager only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: table_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                number:
+                  type: string
+                capacity:
+                  type: integer
+                area:
+                  type: string
+      responses:
+        '200':
+          description: Table updated
+    delete:
+      tags:
+        - Tables
+      summary: Delete a table (Admin/Manager only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: table_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Table deleted
+
+  /api/tables/:
+    post:
+      tags:
+        - Tables
+      summary: Add a new table (Admin/Manager only)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - number
+                - capacity
+                - area
+              properties:
+                number:
+                  type: string
+                capacity:
+                  type: integer
+                area:
+                  type: string
+      responses:
+        '201':
+          description: Table created successfully
+
+  /api/tables/areas:
+    post:
+      tags:
+        - Tables
+      summary: Add a new area (Admin/Manager only)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+      responses:
+        '201':
+          description: Area created successfully
+
+  /api/tables/status:
+    put:
+      tags:
+        - Tables
+      summary: Update table status (Staff/Admin only)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - table_id
+                - status
+              properties:
+                table_id:
+                  type: integer
+                status:
+                  type: string
+                  enum: [FREE, OCCUPIED, RESERVED, CLEANING, LOCKED]
+      responses:
+        '200':
+          description: Table status updated
+
+  /api/tables/transfer:
+    post:
+      tags:
+        - Tables
+      summary: Transfer/move table for an active order
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - from_table_id
+                - to_table_id
+              properties:
+                from_table_id:
+                  type: integer
+                to_table_id:
+                  type: integer
+      responses:
+        '200':
+          description: Table transferred successfully
+
+  /api/tables/assign-order:
+    put:
+      tags:
+        - Tables
+      summary: Assign order ID to table
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - table_id
+                - order_id
+              properties:
+                table_id:
+                  type: integer
+                order_id:
+                  type: integer
+      responses:
+        '200':
+          description: Table order ID assigned successfully
+
+  /api/tables/reservations/check-availability:
+    post:
+      tags:
+        - Reservations
+      summary: Check table availability for a specific time slot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - reservation_time
+                - guest_count
+              properties:
+                reservation_time:
+                  type: string
+                  format: date-time
+                guest_count:
+                  type: integer
+      responses:
+        '200':
+          description: Availability check results
+
+  /api/tables/reservations:
+    post:
+      tags:
+        - Reservations
+      summary: Create a table reservation (Public/Staff)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - customer_name
+                - customer_phone
+                - guest_count
+                - reservation_time
+              properties:
+                customer_name:
+                  type: string
+                customer_phone:
+                  type: string
+                guest_count:
+                  type: integer
+                reservation_time:
+                  type: string
+                  format: date-time
+                notes:
+                  type: string
+      responses:
+        '201':
+          description: Reservation created successfully
+
+  /api/tables/reservations/{reservation_code}:
+    get:
+      tags:
+        - Reservations
+      summary: Get reservation details by reservation code
+      parameters:
+        - name: reservation_code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Reservation details
+
+  /api/tables/reservations/my:
+    get:
+      tags:
+        - Reservations
+      summary: Get logged-in user's reservations
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of reservations
+
+  /api/tables/reservations/cancel:
+    post:
+      tags:
+        - Reservations
+      summary: Cancel reservation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - reservation_code
+              properties:
+                reservation_code:
+                  type: string
+      responses:
+        '200':
+          description: Reservation cancelled successfully
+
+  /api/tables/reservations/all:
+    get:
+      tags:
+        - Reservations
+      summary: List all reservations (Staff/Admin only)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of all reservations
+
+  /api/tables/reservations/{reservation_id}/status:
+    put:
+      tags:
+        - Reservations
+      summary: Update reservation status (Staff/Admin only)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: reservation_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [CONFIRMED, SEATED, CANCELLED, NO_SHOW]
+      responses:
+        '200':
+          description: Reservation status updated
+
+  # ==========================================
+  # BRANCH SERVICE ENDPOINTS
+  # ==========================================
+  /api/branches:
+    get:
+      tags:
+        - Branches
+      summary: List all branches
+      responses:
+        '200':
+          description: List of branches
+    post:
+      tags:
+        - Branches
+      summary: Create a new branch
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - address
+                - phone
+              properties:
+                name:
+                  type: string
+                address:
+                  type: string
+                phone:
+                  type: string
+      responses:
+        '201':
+          description: Branch created
+
+  /api/branches/dashboard:
+    get:
+      tags:
+        - Branches
+      summary: Get branches dashboard data
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Dashboard summary
+
+  /api/branches/{branch_id}:
+    get:
+      tags:
+        - Branches
+      summary: Get single branch details
+      parameters:
+        - name: branch_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Branch details
+    put:
+      tags:
+        - Branches
+      summary: Update a branch
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: branch_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                address:
+                  type: string
+                phone:
+                  type: string
+      responses:
+        '200':
+          description: Branch updated
+    delete:
+      tags:
+        - Branches
+      summary: Delete a branch
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: branch_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Branch deleted
+
+  /api/branches/{branch_id}/status:
+    patch:
+      tags:
+        - Branches
+      summary: Toggle branch active/inactive status
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: branch_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [ACTIVE, INACTIVE]
+      responses:
+        '200':
+          description: Branch status updated
+    put:
+      tags:
+        - Branches
+      summary: Update branch status
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: branch_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [ACTIVE, INACTIVE]
+      responses:
+        '200':
+          description: Branch status updated
+
+  /api/branches/{branch_id}/staff:
+    get:
+      tags:
+        - Branches
+      summary: Get staff members in a branch
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: branch_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of branch staff members
+
+  /api/branches/{branch_id}/summary:
+    get:
+      tags:
+        - Branches
+      summary: Get branch statistics summary
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: branch_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Branch summary data
+
+  /api/audit-logs:
+    get:
+      tags:
+        - Branches
+      summary: Get system audit logs
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of audit logs
+    post:
+      tags:
+        - Branches
+      summary: Create an audit log
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - action
+                - detail
+              properties:
+                action:
+                  type: string
+                detail:
+                  type: string
+      responses:
+        '201':
+          description: Audit log created
+
+  # ==========================================
+  # REPORT SERVICE ENDPOINTS
+  # ==========================================
+  /api/reports/dashboard:
+    get:
+      tags:
+        - Reports
+      summary: Get dashboard statistics (Revenue, Orders, Inventory)
+      responses:
+        '200':
+          description: Dashboard stats
+
+  /api/reports/generate:
+    post:
+      tags:
+        - Reports
+      summary: Generate custom reports
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - report_type
+              properties:
+                report_type:
+                  type: string
+                  enum: [REVENUE, INVENTORY, ORDER]
+                start_date:
+                  type: string
+                  format: date
+                end_date:
+                  type: string
+                  format: date
+      responses:
+        '200':
+          description: Custom report generated
+
+  /api/reports/list:
+    get:
+      tags:
+        - Reports
+      summary: List all historical reports
+      responses:
+        '200':
+          description: List of reports
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

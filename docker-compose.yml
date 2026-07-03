@@ -217,6 +217,36 @@ services:
     networks:
       - restaurant_network
 
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: restaurant_phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    ports:
+      - "8085:80"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - restaurant_network
+
+  swagger-ui:
+    image: swaggerapi/swagger-ui
+    container_name: restaurant_swagger_ui
+    restart: always
+    ports:
+      - "8086:8080"
+    environment:
+      SWAGGER_JSON: /openapi.yaml
+    volumes:
+      - ./openapi.yaml:/openapi.yaml
+    networks:
+      - restaurant_network
+
 volumes:
   mysql_data:
 
