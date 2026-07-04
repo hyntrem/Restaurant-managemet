@@ -341,9 +341,6 @@
             e.preventDefault();
             
             const originalContent = submitBtn.innerHTML;
-            submitBtn.innerHTML = `<span class="animate-spin inline-block border-2 border-primary border-t-transparent rounded-full w-4 h-4 mr-2"></span> Đang xử lý...`;
-            submitBtn.disabled = true;
-
             const name = document.getElementById('res-name').value.trim();
             const phone = document.getElementById('res-phone').value.trim();
             const date = document.getElementById('res-date').value;
@@ -351,63 +348,77 @@
             const guests = parseInt(document.getElementById('res-guests').value);
             const notes = document.getElementById('res-notes').value.trim();
 
-            // Prepare request data
-            const reservationData = {
-                customer_name: name,
-                customer_phone: phone,
-                number_of_guests: guests,
-                reservation_date: date,
-                reservation_time: time,
-                special_notes: notes
-            };
-
-            try {
-                // Call API
-                const response = await fetch(`${TABLE_API}/reservations`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(reservationData)
+            if (typeof globalThis.requestOtpVerification === 'function') {
+                globalThis.requestOtpVerification(phone, async (verified) => {
+                    if (!verified) return;
+                    await submitReservation();
                 });
+            } else {
+                await submitReservation();
+            }
 
-                const result = await response.json();
+            async function submitReservation() {
+                submitBtn.innerHTML = `<span class="animate-spin inline-block border-2 border-primary border-t-transparent rounded-full w-4 h-4 mr-2"></span> Đang xử lý...`;
+                submitBtn.disabled = true;
 
-                submitBtn.innerHTML = originalContent;
-                submitBtn.disabled = false;
+                // Prepare request data
+                const reservationData = {
+                    customer_name: name,
+                    customer_phone: phone,
+                    number_of_guests: guests,
+                    reservation_date: date,
+                    reservation_time: time,
+                    special_notes: notes
+                };
 
-                if (response.ok && result.success) {
-                    // Success
-                    const reservationCode = result.data.reservation_code;
-                    const reservationDate = result.data.reservation_date;
-                    const reservationTime = result.data.reservation_time;
+                try {
+                    // Call API
+                    const response = await fetch(`${TABLE_API}/reservations`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(reservationData)
+                    });
 
-                    showNotificationModal(
-                        true,
-                        'Đặt bàn thành công!',
-                        `Cảm ơn <b>${name}</b> (${phone}). Mã đặt bàn của bạn là: <b class="text-secondary">${reservationCode}</b><br><br>Thời gian: <b>${reservationDate} lúc ${reservationTime}</b><br>Số người: <b>${guests} người</b><br><br>Chúng tôi sẽ sớm liên hệ xác nhận. Vui lòng giữ mã đặt bàn để tra cứu.`
-                    );
+                    const result = await response.json();
 
-                    reservationForm.reset();
-                    validateReservationForm(); // Re-validate after reset
-                } else {
-                    // Error from backend
+                    submitBtn.innerHTML = originalContent;
+                    submitBtn.disabled = false;
+
+                    if (response.ok && result.success) {
+                        // Success
+                        const reservationCode = result.data.reservation_code;
+                        const reservationDate = result.data.reservation_date;
+                        const reservationTime = result.data.reservation_time;
+
+                        showNotificationModal(
+                            true,
+                            'Đặt bàn thành công!',
+                            `Cảm ơn <b>${name}</b> (${phone}). Mã đặt bàn của bạn là: <b class="text-secondary">${reservationCode}</b><br><br>Thời gian: <b>${reservationDate} lúc ${reservationTime}</b><br>Số người: <b>${guests} người</b><br><br>Chúng tôi sẽ sớm liên hệ xác nhận. Vui lòng giữ mã đặt bàn để tra cứu.`
+                        );
+
+                        reservationForm.reset();
+                        validateReservationForm(); // Re-validate after reset
+                    } else {
+                        // Error from backend
+                        showNotificationModal(
+                            false,
+                            'Đặt bàn thất bại',
+                            result.message || 'Có lỗi xảy ra khi đặt bàn. Vui lòng thử lại sau.'
+                        );
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    submitBtn.innerHTML = originalContent;
+                    submitBtn.disabled = false;
+
                     showNotificationModal(
                         false,
-                        'Đặt bàn thất bại',
-                        result.message || 'Có lỗi xảy ra khi đặt bàn. Vui lòng thử lại sau.'
+                        'Lỗi kết nối',
+                        'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng và thử lại.'
                     );
                 }
-            } catch (error) {
-                console.error('Error:', error);
-                submitBtn.innerHTML = originalContent;
-                submitBtn.disabled = false;
-
-                showNotificationModal(
-                    false,
-                    'Lỗi kết nối',
-                    'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng và thử lại.'
-                );
             }
         });
 

@@ -7,6 +7,7 @@ from services.user_service import (
     logout_user,
     send_otp_service,
     reset_password_service,
+    verify_otp_service,
     get_user_profile,
     admin_get_all_users
 )
@@ -63,4 +64,10 @@ def admin_get_users():
         }), 401
 
     response, status_code = admin_get_all_users(current_user)
+    return jsonify(response), status_code
+
+
+def verify_otp():
+    data = request.get_json()
+    response, status_code = verify_otp_service(data)
     return jsonify(response), status_code

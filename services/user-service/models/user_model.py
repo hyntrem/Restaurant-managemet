@@ -157,10 +157,9 @@ def verify_otp(email, otp_code):
     db = SessionLocal()
 
     query = text("""
-        SELECT id
+        SELECT id, otp_code, attempts
         FROM password_otps
         WHERE email = :email
-        AND otp_code = :otp_code
         AND is_used = FALSE
         AND expired_at > NOW()
         ORDER BY id DESC
@@ -168,25 +167,73 @@ def verify_otp(email, otp_code):
     """)
 
     result = db.execute(query, {
-        "email": email,
-        "otp_code": otp_code
+        "email": email
     }).mappings().first()
 
-    if result:
-        update_query = text("""
-            UPDATE password_otps
-            SET is_used = TRUE
+    if not result:
+        db.close()
+        return False, "Mã OTP không hợp lệ hoặc đã hết hạn."
+
+    if result["otp_code"] == otp_code:
+        # Correct OTP: delete it from DB immediately
+        delete_query = text("""
+            DELETE FROM password_otps
             WHERE id = :id
         """)
-
-        db.execute(update_query, {
+        db.execute(delete_query, {
             "id": result["id"]
         })
-
         db.commit()
+        db.close()
+        return True, "Xác thực OTP thành công."
+    else:
+        # Incorrect OTP: increment attempts
+        new_attempts = result["attempts"] + 1
+        if new_attempts >= 3:
+            # Reached max attempts: delete/invalidate the OTP record
+            delete_query = text("""
+                DELETE FROM password_otps
+                WHERE id = :id
+            """)
+            db.execute(delete_query, {
+                "id": result["id"]
+            })
+            db.commit()
+            db.close()
+            return False, "Bạn đã nhập sai quá 3 lần. Mã OTP này đã bị hủy. Vui lòng yêu cầu gửi lại mã mới."
+        else:
+            update_query = text("""
+                UPDATE password_otps
+                SET attempts = :attempts
+                WHERE id = :id
+            """)
+            db.execute(update_query, {
+                "id": result["id"],
+                "attempts": new_attempts
+            })
+            db.commit()
+            db.close()
+            return False, f"Mã OTP không chính xác. Bạn còn {3 - new_attempts} lần thử."
+
+
+def check_otp_rate_limit(email, limit_seconds=30):
+    db = SessionLocal()
+
+    query = text("""
+        SELECT id
+        FROM password_otps
+        WHERE email = :email
+        AND created_at > DATE_SUB(NOW(), INTERVAL :limit_seconds SECOND)
+        ORDER BY id DESC
+        LIMIT 1
+    """)
+
+    result = db.execute(query, {
+        "email": email,
+        "limit_seconds": limit_seconds
+    }).mappings().first()
 
     db.close()
-
     return True if result else False
 
 

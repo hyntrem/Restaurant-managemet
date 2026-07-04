@@ -11,6 +11,7 @@ from models.user_model import (
     get_all_users,
     save_otp,
     verify_otp,
+    check_otp_rate_limit,
     update_password
 )
 
@@ -122,32 +123,68 @@ def logout_user():
 
 def send_otp_service(data):
     email = data.get("email")
+    phone = data.get("phone")
 
-    if not email:
+    if not email and not phone:
         return {
             "success": False,
-            "message": "Email is required"
+            "message": "Email or phone is required"
         }, 400
 
-    user = find_user_by_email(email)
+    identifier = email if email else phone
 
-    if not user:
+    # Rate limiting: 30 seconds cooldown
+    if check_otp_rate_limit(identifier, 30):
         return {
             "success": False,
-            "message": "Email does not exist"
-        }, 404
+            "message": "Vui lòng đợi 30 giây trước khi yêu cầu gửi lại mã mới."
+        }, 429
+
+    if email:
+        user = find_user_by_email(email)
+        if not user:
+            return {
+                "success": False,
+                "message": "Email does not exist"
+            }, 404
 
     otp_code = str(random.randint(100000, 999999))
     expired_at = datetime.now() + timedelta(minutes=5)
 
-    save_otp(email, otp_code, expired_at)
+    save_otp(identifier, otp_code, expired_at)
 
-    # For testing/demo: print OTP to console logs since no actual email service is connected yet
-    print(f"[TESTING ONLY] Generated OTP for {email} is: {otp_code}")
+    # For testing/demo: print OTP to console logs
+    print(f"[TESTING ONLY] Generated OTP for {identifier} is: {otp_code}")
 
     return {
         "success": True,
-        "message": "OTP sent successfully. Please check your email inbox (or backend console log in testing mode)."
+        "message": f"OTP sent successfully to {identifier}."
+    }, 200
+
+
+def verify_otp_service(data):
+    email = data.get("email")
+    phone = data.get("phone")
+    otp_code = data.get("otp_code")
+
+    if not otp_code or (not email and not phone):
+        return {
+            "success": False,
+            "message": "OTP code and email or phone are required"
+        }, 400
+
+    identifier = email if email else phone
+    is_valid, message = verify_otp(identifier, otp_code)
+
+    if not is_valid:
+        return {
+            "success": False,
+            "message": message
+        }, 400
+
+    return {
+        "success": True,
+        "message": message
     }, 200
 
 
@@ -162,12 +199,12 @@ def reset_password_service(data):
             "message": "Email, OTP and new password are required"
         }, 400
 
-    is_valid_otp = verify_otp(email, otp_code)
+    is_valid, message = verify_otp(email, otp_code)
 
-    if not is_valid_otp:
+    if not is_valid:
         return {
             "success": False,
-            "message": "Invalid or expired OTP"
+            "message": message
         }, 400
 
     password_hash = bcrypt.hashpw(

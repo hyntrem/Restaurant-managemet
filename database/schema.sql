@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS password_otps (
     email VARCHAR(150) NOT NULL,
     otp_code VARCHAR(10) NOT NULL,
     is_used BOOLEAN DEFAULT FALSE,
+    attempts INT DEFAULT 0,
     expired_at DATETIME NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -370,7 +371,7 @@ INSERT INTO roles (name) VALUES
 ('MANAGER'),
 ('ADMIN');
 INSERT INTO users (full_name, email, phone, username, password_hash, role_id, branch_id, status) VALUES 
-('Quản Trị Viên', 'admin@restaurant.com', '0123456789', 'admin', '$2b$12$K399lzW8gUe10MtkA66Abe0779Qf69xW2gW1iJp54A1wF5.A3zG6a', 5, NULL, 'ACTIVE');
+('Quản Trị Viên', 'admin@restaurant.com', '0123456789', 'admin', '$2b$12$nCfDy1.trDmQej9122GFre808ezBdYCPu.muN3Z8QLXkXDndZVHJ2', 5, NULL, 'ACTIVE');
 
 -- Thêm khu vực mặc định
 INSERT INTO table_areas (area_name, description) VALUES 

@@ -507,7 +507,7 @@ function openCheckoutModal() {
                 try {
                     const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&countrycodes=vn`);
                     const data = await res.json();
-                    
+
                     if (data && data.length > 0) {
                         suggestionsContainer.innerHTML = data.map(item => `
                             <div class="suggestion-item p-3 hover:bg-surface-container-low cursor-pointer flex items-start gap-3 border-b border-surface-variant/30 text-sm font-body-md text-primary dark:text-primary-fixed" data-value="${item.display_name.replace(/"/g, '&quot;')}">
@@ -611,8 +611,6 @@ async function handleOrderSubmit(e) {
 
     const submitBtn = e.target.querySelector('button[type="submit"]');
     const originalContent = submitBtn.innerHTML;
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = `<span class="animate-spin inline-block border-2 border-primary border-t-transparent rounded-full w-4 h-4 mr-2"></span> Đang đặt đơn...`;
 
     const name = document.getElementById('recipient-name').value;
     const phone = document.getElementById('recipient-phone').value;
@@ -624,64 +622,70 @@ async function handleOrderSubmit(e) {
 
     const cart = getCart();
 
-    // Prepare order request
-    const token = localStorage.getItem('customer_token');
-    const user = JSON.parse(localStorage.getItem('customer_user'));
+    globalThis.requestOtpVerification(phone, async (verified) => {
+        if (!verified) return;
 
-    const orderPayload = {
-        order_type: 'DELIVERY',
-        delivery_address: `${name} (${phone}) - ${address}`,
-        branch_id: 1, // Default branch ID
-        items: cart.map(item => ({
-            menu_item_id: item.id,
-            quantity: item.quantity,
-            note: `${item.note || ''} | Thời gian giao: ${time} | PTTT: ${paymentText} | Ghi chú: ${notes || ''}`.trim()
-        }))
-    };
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<span class="animate-spin inline-block border-2 border-primary border-t-transparent rounded-full w-4 h-4 mr-2"></span> Đang đặt đơn...`;
 
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/orders/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(orderPayload)
-        });
+        // Prepare order request
+        const token = localStorage.getItem('customer_token');
 
-        const result = await response.json();
+        const orderPayload = {
+            order_type: 'DELIVERY',
+            delivery_address: `${name} (${phone}) - ${address}`,
+            branch_id: 1, // Default branch ID
+            items: cart.map(item => ({
+                menu_item_id: item.id,
+                quantity: item.quantity,
+                note: `${item.note || ''} | Thời gian giao: ${time} | PTTT: ${paymentText} | Ghi chú: ${notes || ''}`.trim()
+            }))
+        };
 
-        if (response.ok && result.success) {
-            // Success!
-            localStorage.removeItem('customer_cart');
-            syncCartBadge();
-            closeCheckoutModal();
-            toggleCartSidebar(); // Close sidebar drawer
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/orders/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(orderPayload)
+            });
 
-            showNotificationModal(
-                true,
-                'Đặt hàng thành công!',
-                `Mã đơn hàng của bạn là <b>${result.data.order_code}</b>. Pizza 4P's đang chuẩn bị món ăn và sẽ sớm giao đến địa chỉ: <i>${address}</i>.`
-            );
-        } else {
-            // Fail!
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                // Success!
+                localStorage.removeItem('customer_cart');
+                syncCartBadge();
+                closeCheckoutModal();
+                toggleCartSidebar(); // Close sidebar drawer
+
+                showNotificationModal(
+                    true,
+                    'Đặt hàng thành công!',
+                    `Mã đơn hàng của bạn là <b>${result.data.order_code}</b>. Pizza 4P's đang chuẩn bị món ăn và sẽ sớm giao đến địa chỉ: <i>${address}</i>.`
+                );
+            } else {
+                // Fail!
+                showNotificationModal(
+                    false,
+                    'Đặt hàng thất bại',
+                    result.message || 'Hệ thống gặp sự cố khi tạo đơn hàng. Vui lòng thử lại sau.'
+                );
+            }
+        } catch (err) {
+            console.error(err);
             showNotificationModal(
                 false,
-                'Đặt hàng thất bại',
-                result.message || 'Hệ thống gặp sự cố khi tạo đơn hàng. Vui lòng thử lại sau.'
+                'Lỗi kết nối',
+                'Không thể kết nối đến máy chủ. Vui lòng kiểm tra đường truyền và thử lại.'
             );
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalContent;
         }
-    } catch (err) {
-        console.error(err);
-        showNotificationModal(
-            false,
-            'Lỗi kết nối',
-            'Không thể kết nối đến máy chủ. Vui lòng kiểm tra đường truyền và thử lại.'
-        );
-    } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalContent;
-    }
+    });
 }
 
 // 6. Global Popup Notification Dialogs (Success / Failure)
@@ -1081,3 +1085,205 @@ globalThis.closeOrdersModal = () => {
 
 globalThis.showOrdersPopup = showOrdersPopup;
 globalThis.showOrderDetailPopup = showOrderDetailPopup;
+
+// 9. OTP Phone Verification for orders/reservations
+globalThis.requestOtpVerification = async (phone, callback) => {
+    // 1. Trigger API send-otp
+    try {
+        const sendResponse = await fetch(`${API_BASE_URL}/api/users/send-otp`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone: phone })
+        });
+        const sendResult = await sendResponse.json();
+
+        if (!sendResponse.ok || !sendResult.success) {
+            showNotificationModal(false, 'Gửi OTP thất bại', sendResult.message || 'Không thể gửi mã xác thực tới số điện thoại này.');
+            callback(false);
+            return;
+        }
+    } catch (e) {
+        console.error(e);
+        showNotificationModal(false, 'Lỗi kết nối', 'Không thể kết nối đến máy chủ để gửi mã xác thực.');
+        callback(false);
+        return;
+    }
+
+    // 2. Create Modal
+    const modalId = 'phone-otp-modal';
+    const existing = document.getElementById(modalId);
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.id = modalId;
+    modal.className = 'fixed inset-0 bg-black/60 backdrop-blur-md z-[150] flex items-center justify-center p-4';
+    modal.innerHTML = `
+        <div class="bg-white dark:bg-tertiary w-full max-w-md rounded-2xl shadow-2xl border border-white/20 p-8 flex flex-col items-center text-center space-y-6 animate-scale-in">
+            <div class="flex justify-center w-full">
+                <span class="material-symbols-outlined text-6xl text-primary bg-surface-container p-4 rounded-full border-2 border-primary/20">lock_open</span>
+            </div>
+            <div>
+                <h3 class="font-headline-md text-2xl font-bold text-primary">Xác minh số điện thoại</h3>
+                <p class="font-body-md text-on-surface-variant leading-relaxed mt-2">
+                    Mã xác thực gồm 6 chữ số đã được gửi đến số điện thoại <b>${phone}</b>.
+                </p>
+            </div>
+            
+            <div class="w-full flex flex-col gap-2">
+                <input id="phone-otp-input" 
+                       type="text" 
+                       maxlength="6" 
+                       placeholder="Nhập 6 số" 
+                       class="w-full p-4 rounded-lg border border-surface-variant focus:outline-none focus:border-primary text-center tracking-[1em] pl-[1em] text-2xl font-bold text-primary transition-all"
+                       autocomplete="off" />
+                <p id="phone-otp-error" class="text-xs text-red-600 font-semibold hidden">Mã OTP không chính xác. Vui lòng kiểm tra lại.</p>
+                
+                <div class="text-right">
+                    <button id="phone-otp-resend" class="text-xs text-primary font-semibold hover:underline disabled:opacity-50 disabled:no-underline disabled:cursor-not-allowed">
+                        Gửi lại mã (30s)
+                    </button>
+                </div>
+            </div>
+            
+            <div class="flex gap-4 w-full pt-2">
+                <button id="phone-otp-cancel" class="flex-1 py-3 border border-outline text-primary font-bold rounded-lg hover:bg-surface-container-low transition-all active:scale-95">
+                    Hủy
+                </button>
+                <button id="phone-otp-submit" class="flex-1 py-3 bg-secondary text-primary font-bold rounded-lg hover:brightness-110 active:scale-95 transition-all shadow-md">
+                    Xác nhận
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    const otpInput = document.getElementById('phone-otp-input');
+    const otpError = document.getElementById('phone-otp-error');
+    const cancelBtn = document.getElementById('phone-otp-cancel');
+    const submitBtn = document.getElementById('phone-otp-submit');
+    const resendBtn = document.getElementById('phone-otp-resend');
+
+    otpInput.focus();
+
+    let cooldown = 30;
+    let countdownInterval;
+
+    const startCooldown = () => {
+        cooldown = 30;
+        resendBtn.disabled = true;
+        resendBtn.textContent = `Gửi lại mã (${cooldown}s)`;
+
+        clearInterval(countdownInterval);
+        countdownInterval = setInterval(() => {
+            cooldown--;
+            if (cooldown <= 0) {
+                clearInterval(countdownInterval);
+                resendBtn.disabled = false;
+                resendBtn.textContent = 'Gửi lại mã';
+            } else {
+                resendBtn.textContent = `Gửi lại mã (${cooldown}s)`;
+            }
+        }, 1000);
+    };
+
+    // Initialize cooldown
+    startCooldown();
+
+    // Reset verification error states on typing
+    otpInput.addEventListener('input', (e) => {
+        otpInput.value = otpInput.value.replace(/[^0-9]/g, '');
+        otpError.classList.add('hidden');
+    });
+
+    cancelBtn.addEventListener('click', () => {
+        clearInterval(countdownInterval);
+        modal.remove();
+        callback(false);
+    });
+
+    resendBtn.addEventListener('click', async () => {
+        resendBtn.disabled = true;
+        resendBtn.textContent = 'Đang gửi...';
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/users/resend-otp`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone: phone })
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                otpError.textContent = 'Đã gửi lại mã OTP mới. Vui lòng kiểm tra console backend.';
+                otpError.classList.remove('hidden');
+                otpError.classList.replace('text-red-600', 'text-green-600');
+                startCooldown();
+            } else {
+                otpError.textContent = data.message || 'Gửi lại mã thất bại. Vui lòng thử lại sau.';
+                otpError.classList.remove('hidden');
+                otpError.classList.replace('text-green-600', 'text-red-600');
+                resendBtn.disabled = false;
+                resendBtn.textContent = 'Gửi lại mã';
+            }
+        } catch (e) {
+            console.error(e);
+            otpError.textContent = 'Lỗi kết nối khi gửi lại mã.';
+            otpError.classList.remove('hidden');
+            otpError.classList.replace('text-green-600', 'text-red-600');
+            resendBtn.disabled = false;
+            resendBtn.textContent = 'Gửi lại mã';
+        }
+    });
+
+    const verifyCode = async () => {
+        const enteredOtp = otpInput.value.trim();
+        if (enteredOtp.length !== 6) {
+            otpError.textContent = 'Vui lòng nhập đầy đủ 6 số.';
+            otpError.classList.remove('hidden');
+            otpError.classList.replace('text-green-600', 'text-red-600');
+            return;
+        }
+
+        submitBtn.disabled = true;
+        const originalText = submitBtn.textContent;
+        submitBtn.innerHTML = `<span class="animate-spin inline-block border-2 border-primary border-t-transparent rounded-full w-4 h-4 mr-1"></span> Xác minh...`;
+
+        try {
+            const verifyResponse = await fetch(`${API_BASE_URL}/api/users/verify-otp`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone: phone, otp_code: enteredOtp })
+            });
+            const verifyResult = await verifyResponse.json();
+
+            if (verifyResponse.ok && verifyResult.success) {
+                clearInterval(countdownInterval);
+                modal.remove();
+                callback(true);
+            } else {
+                otpError.textContent = verifyResult.message || 'Mã OTP không chính xác. Vui lòng kiểm tra lại.';
+                otpError.classList.remove('hidden');
+                otpError.classList.replace('text-green-600', 'text-red-600');
+                otpInput.value = '';
+                otpInput.focus();
+            }
+        } catch (err) {
+            console.error(err);
+            otpError.textContent = 'Lỗi kết nối đến máy chủ xác thực.';
+            otpError.classList.remove('hidden');
+            otpError.classList.replace('text-green-600', 'text-red-600');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+        }
+    };
+
+    submitBtn.addEventListener('click', verifyCode);
+    otpInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            verifyCode();
+        } else if (e.key === 'Escape') {
+            clearInterval(countdownInterval);
+            modal.remove();
+            callback(false);
+        }
+    });
+};
