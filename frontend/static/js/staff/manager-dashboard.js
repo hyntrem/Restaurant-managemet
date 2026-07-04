@@ -87,7 +87,7 @@
         if (!el) return;
         el.textContent = msg;
         el.style.color = error ? "#d63031" : "#163B6D";
-        
+
         // Tự động ẩn message sau 3 giây
         setTimeout(() => el.textContent = "", 3000);
     }
@@ -126,7 +126,7 @@
     async function apiGet(url) {
         try {
             const response = await fetch(url, { headers: getHeaders() });
-            
+
             // Xử lý chống văng lỗi nếu Backend trả HTML thay vì JSON (Lỗi 404/500)
             const contentType = response.headers.get("content-type");
             if (!contentType || !contentType.includes("application/json")) {
@@ -177,7 +177,7 @@
         } else {
             result = await apiGet(ORDER_API + "/"); // Match: order_bp.route("/", methods=["GET"])
         }
-        
+
         if (!result || !result.success) {
             ordersCache = [];
             return;
@@ -195,14 +195,14 @@
     }
 
     async function loadStaff() {
-        const result = await apiGet(USER_API + "/admin/users"); 
+        const result = await apiGet(USER_API + "/admin/users");
         if (!result || !result.success) {
             staffCache = [];
             return;
         }
-        
+
         // Đã thêm điều kiện: user.role !== "CUSTOMER"
-        staffCache = (result.data || []).filter(user => 
+        staffCache = (result.data || []).filter(user =>
             isCurrentBranch(user) && user.role !== "CUSTOMER"
         );
     }
@@ -299,8 +299,8 @@
         let rows = [...reservationsCache];
 
         if (search) {
-            rows = rows.filter(r => 
-                (r.customer_name || "").toLowerCase().includes(search) || 
+            rows = rows.filter(r =>
+                (r.customer_name || "").toLowerCase().includes(search) ||
                 (r.customer_phone || "").includes(search)
             );
         }
@@ -326,8 +326,8 @@
                 <td>${r.customer_phone}</td>
                 <td>${formatDate(r.reservation_date)}</td>
                 <td>${formatTime(r.reservation_time)}</td>
-                <td>${r.guest_count}</td>
-                <td>${r.notes || "-"}</td>
+                <td>${r.number_of_guests}</td>
+                <td>${r.special_notes || "-"}</td>
                 <td>${badge(r.status)}</td>
                 <td>
                     <select onchange="ManagerDashboard.updateReservationStatus(${r.id}, this.value)" style="padding:4px;">
@@ -354,7 +354,7 @@
 
         ordersCache.forEach(order => {
             if (!lists[order.status]) return;
-            
+
             const card = document.createElement("div");
             card.className = "kitchen-card";
             card.innerHTML = `
@@ -373,7 +373,7 @@
 
     function renderInventory() {
         const tbody = document.getElementById("inventoryAlertsBody");
-        
+
         if (!inventoryCache.length) {
             tbody.innerHTML = `<tr><td colspan="5" class="empty-row">Không có dữ liệu kho.</td></tr>`;
             return;
@@ -385,9 +385,9 @@
                 <td>${item.quantity}</td>
                 <td>${item.unit}</td>
                 <td>${formatDate(item.expiration_date)}</td>
-                <td>${item.quantity < 10 
-                    ? '<span class="status-badge status-cancelled">Sắp hết</span>' 
-                    : '<span class="status-badge status-active">Bình thường</span>'}
+                <td>${item.quantity < 10
+                ? '<span class="status-badge status-cancelled">Sắp hết</span>'
+                : '<span class="status-badge status-active">Bình thường</span>'}
                 </td>
             </tr>
         `).join("");
@@ -395,7 +395,7 @@
 
     function renderStaff() {
         const tbody = document.getElementById("branchStaffBody");
-        
+
         if (!staffCache.length) {
             tbody.innerHTML = `<tr><td colspan="4" class="empty-row">Không có nhân viên.</td></tr>`;
             return;
@@ -428,8 +428,8 @@
             return;
         }
 
-        const result = await apiPut(ORDER_API + endpoint, {}); 
-        
+        const result = await apiPut(ORDER_API + endpoint, {});
+
         if (!result.success) {
             showMessage(result.message, true);
             return;
@@ -446,7 +446,7 @@
         if (!confirm("Xác nhận thay đổi trạng thái?")) return;
 
         const result = await apiPut(TABLE_API + `/reservations/${id}/status`, { status });
-        
+
         if (!result.success) {
             showMessage(result.message, true);
             return;
@@ -492,7 +492,7 @@
         },
         async refreshAll() {
             showMessage("Đang tải dữ liệu...");
-            
+
             await Promise.allSettled([
                 loadOrders(),
                 loadReservations(),
@@ -506,7 +506,7 @@
             renderKitchen();
             renderInventory();
             renderStaff();
-            
+
             showMessage("Đã cập nhật dữ liệu.");
         },
         async loadOrders() { await loadOrders(); renderOrdersTable(); },

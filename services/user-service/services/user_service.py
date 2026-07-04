@@ -1,5 +1,6 @@
 import random
 import bcrypt
+import os
 from datetime import datetime, timedelta
 
 from common.auth import generate_token
@@ -154,7 +155,8 @@ def send_otp_service(data):
     save_otp(identifier, otp_code, expired_at)
 
     # For testing/demo: print OTP to console logs
-    print(f"[TESTING ONLY] Generated OTP for {identifier} is: {otp_code}")
+    if os.getenv("APP_ENV") == "development":
+        print(f"[TESTING ONLY] Generated OTP for {identifier} is: {otp_code}")
 
     return {
         "success": True,

@@ -1212,7 +1212,7 @@ globalThis.requestOtpVerification = async (phone, callback) => {
             });
             const data = await res.json();
             if (res.ok && data.success) {
-                otpError.textContent = 'Đã gửi lại mã OTP mới. Vui lòng kiểm tra console backend.';
+                otpError.textContent = 'Đã gửi lại mã OTP mới. Vui lòng kiểm tra tin nhắn SMS của bạn.';
                 otpError.classList.remove('hidden');
                 otpError.classList.replace('text-red-600', 'text-green-600');
                 startCooldown();
