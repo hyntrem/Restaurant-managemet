@@ -42,7 +42,7 @@ function initializeNavigationLinks() {
 function updateNavbarAuthState() {
     const token = localStorage.getItem('customer_token');
     const userJson = localStorage.getItem('customer_user');
-    
+
     // Find navbar wrapper
     const navContainer = document.querySelector('nav > div');
     if (!navContainer) return;
@@ -54,7 +54,7 @@ function updateNavbarAuthState() {
     if (token && userJson) {
         try {
             const user = JSON.parse(userJson);
-            
+
             // Create wrapper for logged in controls
             const userControls = document.createElement('div');
             userControls.className = 'flex items-center gap-6';
@@ -76,12 +76,25 @@ function updateNavbarAuthState() {
 
             // Logout button
             const logoutBtn = document.createElement('button');
-            logoutBtn.className = 'border-2 border-outline text-on-surface-variant px-5 py-2 rounded-lg font-label-lg text-label-lg font-bold hover:bg-error-container hover:text-on-error-container hover:border-error transition-all active:scale-95';
-            logoutBtn.textContent = 'Đăng xuất';
+            logoutBtn.className = 'relative flex items-center justify-center p-2 rounded-full text-on-surface-variant hover:bg-error-container hover:text-on-error-container transition-all active:scale-95';
+            logoutBtn.title = 'Đăng xuất';
+            logoutBtn.innerHTML = `
+                <span class="material-symbols-outlined text-[28px]">logout</span>
+            `;
             logoutBtn.addEventListener('click', logoutCustomer);
+
+            // Orders button
+            const ordersBtn = document.createElement('button');
+            ordersBtn.className = 'relative flex items-center justify-center p-2 rounded-full text-primary dark:text-primary-fixed hover:bg-surface-container transition-all active:scale-95';
+            ordersBtn.title = 'Đơn hàng của tôi';
+            ordersBtn.innerHTML = `
+                <span class="material-symbols-outlined text-[28px]">receipt_long</span>
+            `;
+            ordersBtn.addEventListener('click', showOrdersPopup);
 
             userControls.appendChild(greeting);
             userControls.appendChild(cartBtn);
+            userControls.appendChild(ordersBtn);
             userControls.appendChild(logoutBtn);
 
             // Replace standard login button with user controls
@@ -136,7 +149,7 @@ function addToCartService(item) {
 
     const cart = getCart();
     const existingIndex = cart.findIndex(c => c.id === item.id);
-    
+
     if (existingIndex > -1) {
         cart[existingIndex].quantity += 1;
     } else {
@@ -149,7 +162,7 @@ function addToCartService(item) {
             note: ''
         });
     }
-    
+
     saveCart(cart);
     showMiniNotification(`Đã thêm ${item.name} vào giỏ hàng`);
     return true;
@@ -291,7 +304,7 @@ function renderCartItems() {
             checkoutBtn.classList.add('hover:brightness-110', 'active:scale-95');
         }
     }
-    
+
     if (cart.length === 0) {
         listContainer.innerHTML = `
             <div class="flex flex-col items-center justify-center h-full text-on-surface-variant space-y-4 py-12">
@@ -500,7 +513,7 @@ function openCheckoutModal() {
             }
             return field && field.value.trim() !== '';
         });
-        
+
         deliverySubmitBtn.disabled = !allFilled;
     }
 
@@ -527,7 +540,7 @@ globalThis.closeCheckoutModal = () => {
 
 async function handleOrderSubmit(e) {
     e.preventDefault();
-    
+
     const submitBtn = e.target.querySelector('button[type="submit"]');
     const originalContent = submitBtn.innerHTML;
     submitBtn.disabled = true;
@@ -542,7 +555,7 @@ async function handleOrderSubmit(e) {
     const paymentText = payment === 'bank' ? 'Chuyển khoản ngân hàng' : 'Tiền mặt';
 
     const cart = getCart();
-    
+
     // Prepare order request
     const token = localStorage.getItem('customer_token');
     const user = JSON.parse(localStorage.getItem('customer_user'));
@@ -569,14 +582,14 @@ async function handleOrderSubmit(e) {
         });
 
         const result = await response.json();
-        
+
         if (response.ok && result.success) {
             // Success!
             localStorage.removeItem('customer_cart');
             syncCartBadge();
             closeCheckoutModal();
             toggleCartSidebar(); // Close sidebar drawer
-            
+
             showNotificationModal(
                 true,
                 'Đặt hàng thành công!',
@@ -609,7 +622,7 @@ function showNotificationModal(success, title, htmlContent) {
     const existing = document.getElementById('global-notification-modal');
     if (existing) existing.remove();
 
-    const icon = success 
+    const icon = success
         ? '<span class="material-symbols-outlined text-6xl text-green-500 bg-green-50 dark:bg-green-950 p-4 rounded-full border-2 border-green-500/20">check_circle</span>'
         : '<span class="material-symbols-outlined text-6xl text-red-500 bg-red-50 dark:bg-red-950 p-4 rounded-full border-2 border-red-500/20">error</span>';
 
@@ -640,12 +653,11 @@ globalThis.closeGlobalNotification = () => {
 // 7. Small Bottom-Right Toast Notification
 function showMiniNotification(message, type = 'success') {
     const toast = document.createElement('div');
-    toast.className = `fixed bottom-6 right-6 z-[130] flex items-center gap-3 px-6 py-4 rounded-xl shadow-lg border text-sm font-semibold transition-all duration-300 translate-y-12 opacity-0 ${
-        type === 'error' 
-        ? 'bg-red-50 border-red-200 text-red-700 dark:bg-red-950 dark:border-red-900 dark:text-red-300' 
+    toast.className = `fixed bottom-6 right-6 z-[130] flex items-center gap-3 px-6 py-4 rounded-xl shadow-lg border text-sm font-semibold transition-all duration-300 translate-y-12 opacity-0 ${type === 'error'
+        ? 'bg-red-50 border-red-200 text-red-700 dark:bg-red-950 dark:border-red-900 dark:text-red-300'
         : 'bg-green-50 border-green-200 text-green-700 dark:bg-green-950 dark:border-green-900 dark:text-green-300'
-    }`;
-    
+        }`;
+
     const icon = type === 'error' ? 'error' : 'check_circle';
     toast.innerHTML = `
         <span class="material-symbols-outlined text-xl">${icon}</span>
@@ -673,3 +685,331 @@ function formatVND(amount) {
         minimumFractionDigits: 0
     }).format(amount);
 }
+
+// 8. Customer Order History Popup & Details
+let cachedRecentOrders = [];
+
+async function showOrdersPopup() {
+    const token = localStorage.getItem('customer_token');
+    if (!token) {
+        showNotificationModal(false, 'Yêu cầu đăng nhập', 'Vui lòng đăng nhập để xem lịch sử đơn hàng.');
+        return;
+    }
+
+    showOrdersModalLoading();
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/orders/`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        const result = await response.json();
+        if (response.ok && result.success) {
+            cachedRecentOrders = result.data ? result.data.slice(0, 5) : [];
+            renderOrdersListModal(cachedRecentOrders);
+        } else {
+            showNotificationModal(false, 'Lỗi', result.message || 'Không thể tải danh sách đơn hàng.');
+            closeOrdersModal();
+        }
+    } catch (e) {
+        console.error(e);
+        showNotificationModal(false, 'Lỗi kết nối', 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại.');
+        closeOrdersModal();
+    }
+}
+
+function showOrdersModalLoading() {
+    const existing = document.getElementById('orders-modal');
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'orders-modal';
+    modal.className = 'fixed inset-0 bg-black/60 backdrop-blur-md z-[120] flex items-center justify-center p-4';
+    modal.innerHTML = `
+        <div class="bg-white dark:bg-tertiary w-full max-w-lg rounded-2xl shadow-2xl border border-white/20 p-8 flex flex-col items-center justify-center text-center space-y-4 animate-scale-in relative">
+            <!-- Close Button -->
+            <button onclick="closeOrdersModal()" class="absolute top-4 right-4 text-on-surface-variant hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-2xl">close</span>
+            </button>
+            <span class="animate-spin inline-block border-4 border-primary border-t-transparent rounded-full w-10 h-10"></span>
+            <p class="text-sm font-semibold text-on-surface-variant">Đang tải lịch sử đơn hàng...</p>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+function getStatusDisplay(status) {
+    switch (status) {
+        case 'PENDING':
+            return { label: 'Chờ xác nhận', class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950/50 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-900/50' };
+        case 'CONFIRMED':
+            return { label: 'Đã xác nhận', class: 'bg-blue-100 text-blue-800 dark:bg-blue-950/50 dark:text-blue-400 border border-blue-200 dark:border-blue-900/50' };
+        case 'PREPARING':
+        case 'COOKING':
+            return { label: 'Đang chuẩn bị', class: 'bg-purple-100 text-purple-800 dark:bg-purple-950/50 dark:text-purple-400 border border-purple-200 dark:border-purple-900/50' };
+        case 'READY':
+        case 'DONE':
+            return { label: 'Đã hoàn thành món', class: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/50 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-900/50' };
+        case 'DELIVERING':
+            return { label: 'Đang giao hàng', class: 'bg-teal-100 text-teal-800 dark:bg-teal-950/50 dark:text-teal-400 border border-teal-200 dark:border-teal-900/50' };
+        case 'COMPLETED':
+        case 'RECEIVED':
+            return { label: 'Đã hoàn thành', class: 'bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-400 border border-green-200 dark:border-green-900/50' };
+        case 'CANCELLED':
+            return { label: 'Đã hủy', class: 'bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-400 border border-red-200 dark:border-red-900/50' };
+        default:
+            return { label: status, class: 'bg-gray-100 text-gray-800 dark:bg-gray-950/50 dark:text-gray-400 border border-gray-200 dark:border-gray-900/50' };
+    }
+}
+
+function renderOrdersListModal(orders) {
+    const existing = document.getElementById('orders-modal');
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'orders-modal';
+    modal.className = 'fixed inset-0 bg-black/60 backdrop-blur-md z-[120] flex items-center justify-center p-4';
+
+    let ordersHtml = '';
+    if (orders.length === 0) {
+        ordersHtml = `
+            <div class="text-center py-8 text-on-surface-variant">
+                <span class="material-symbols-outlined text-5xl opacity-40 mb-2">receipt</span>
+                <p>Bạn chưa có đơn hàng nào.</p>
+            </div>
+        `;
+    } else {
+        ordersHtml = `
+            <div class="space-y-3 max-h-[380px] overflow-y-auto pr-1">
+                ${orders.map(order => {
+            const statusConfig = getStatusDisplay(order.status);
+            const formattedDate = new Date(order.created_at).toLocaleString('vi-VN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+            return `
+                        <div onclick="showOrderDetailPopup(${order.id})" class="flex items-center justify-between p-4 rounded-xl border border-surface-variant/40 hover:border-primary/50 hover:bg-surface-container-low transition-all cursor-pointer group">
+                            <div class="space-y-1">
+                                <div class="font-bold text-primary group-hover:text-secondary-container transition-colors flex items-center gap-2">
+                                    <span>${order.order_code}</span>
+                                    <span class="text-xs px-2 py-0.5 rounded-full ${statusConfig.class}">
+                                        ${statusConfig.label}
+                                    </span>
+                                </div>
+                                <div class="text-xs text-on-surface-variant">${formattedDate}</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-bold text-primary">${formatVND(order.total_amount)}</div>
+                                <div class="text-[10px] text-secondary font-semibold flex items-center justify-end gap-0.5">
+                                    <span>Chi tiết</span>
+                                    <span class="material-symbols-outlined text-xs">chevron_right</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+        }).join('')}
+            </div>
+        `;
+    }
+
+    modal.innerHTML = `
+        <div class="bg-white dark:bg-tertiary w-full max-w-lg rounded-2xl shadow-2xl border border-white/20 p-6 md:p-8 flex flex-col space-y-6 animate-scale-in relative">
+            <!-- Close Button -->
+            <button onclick="closeOrdersModal()" class="absolute top-4 right-4 text-on-surface-variant hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-2xl">close</span>
+            </button>
+
+            <div>
+                <h3 class="font-headline-md text-xl font-bold text-primary flex items-center gap-2">
+                    <span class="material-symbols-outlined">receipt_long</span>
+                    Đơn hàng gần đây
+                </h3>
+                <p class="text-xs text-on-surface-variant mt-1">Hiển thị 5 đơn hàng gần nhất của bạn</p>
+            </div>
+
+            ${ordersHtml}
+
+            <button onclick="closeOrdersModal()" class="w-full py-3 border border-outline text-primary font-bold rounded-lg hover:bg-surface-container-low transition-all active:scale-95">
+                Đóng
+            </button>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+}
+
+async function showOrderDetailPopup(orderId) {
+    const token = localStorage.getItem('customer_token');
+    if (!token) return;
+
+    const modal = document.getElementById('orders-modal');
+    if (!modal) return;
+    const modalContent = modal.querySelector('div');
+
+    modalContent.innerHTML = `
+        <!-- Close Button -->
+        <button onclick="closeOrdersModal()" class="absolute top-4 right-4 text-on-surface-variant hover:text-primary transition-colors">
+            <span class="material-symbols-outlined text-2xl">close</span>
+        </button>
+
+        <div class="flex flex-col items-center justify-center py-12 space-y-4">
+            <span class="animate-spin inline-block border-4 border-primary border-t-transparent rounded-full w-10 h-10"></span>
+            <p class="text-sm font-semibold text-on-surface-variant">Đang tải chi tiết đơn hàng...</p>
+        </div>
+    `;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/orders/${orderId}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        const result = await response.json();
+        if (response.ok && result.success) {
+            const order = result.data;
+            const statusConfig = getStatusDisplay(order.status);
+            const formattedDate = new Date(order.created_at).toLocaleString('vi-VN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+
+            const itemsHtml = order.items.map(item => {
+                const subtotal = item.price * item.quantity;
+                return `
+                    <div class="flex justify-between py-3 border-b border-surface-variant/40 text-sm">
+                        <div class="space-y-0.5 max-w-[70%] text-left">
+                            <div class="font-semibold text-primary">${item.menu_item_name}</div>
+                            <div class="text-xs text-on-surface-variant">Số lượng: ${item.quantity} x ${formatVND(item.price)}</div>
+                            ${item.note ? `<div class="text-xs italic text-secondary font-medium">Ghi chú: ${item.note}</div>` : ''}
+                        </div>
+                        <div class="font-bold text-primary align-top">${formatVND(subtotal)}</div>
+                    </div>
+                `;
+            }).join('');
+
+            let addressHtml = '';
+            if (order.order_type === 'DELIVERY') {
+                addressHtml = `
+                    <div class="bg-surface-container-low p-4 rounded-xl space-y-1.5 text-xs text-on-surface-variant border border-surface-variant/30 text-left">
+                        <div class="font-bold text-primary flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-sm">local_shipping</span>
+                            Thông tin giao hàng
+                        </div>
+                        <div class="leading-relaxed whitespace-pre-wrap">${order.delivery_address || 'Không có thông tin địa chỉ'}</div>
+                    </div>
+                `;
+            } else {
+                addressHtml = `
+                    <div class="bg-surface-container-low p-4 rounded-xl space-y-1.5 text-xs text-on-surface-variant border border-surface-variant/30 text-left">
+                        <div class="font-bold text-primary flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-sm">restaurant</span>
+                            Thông tin bàn ăn
+                        </div>
+                        <div>Loại đơn: Phục vụ tại bàn (Bàn số: ${order.table_number || 'Chưa xếp bàn'})</div>
+                    </div>
+                `;
+            }
+
+            modalContent.innerHTML = `
+                <!-- Close Button -->
+                <button onclick="closeOrdersModal()" class="absolute top-4 right-4 text-on-surface-variant hover:text-primary transition-colors">
+                    <span class="material-symbols-outlined text-2xl">close</span>
+                </button>
+
+                <!-- Header -->
+                <div class="border-b border-surface-variant/60 pb-4 text-left">
+                    <div class="flex items-center gap-2 mb-1 flex-wrap">
+                        <h3 class="font-headline-md text-xl font-bold text-primary">${order.order_code}</h3>
+                        <span class="text-xs px-2 py-0.5 rounded-full ${statusConfig.class}">
+                            ${statusConfig.label}
+                        </span>
+                    </div>
+                    <p class="text-xs text-on-surface-variant">${formattedDate}</p>
+                </div>
+
+                <!-- Scrollable Order Body -->
+                <div class="space-y-4 max-h-[350px] overflow-y-auto pr-1">
+                    <!-- Items -->
+                    <div>
+                        <div class="text-xs font-bold uppercase tracking-wider text-secondary mb-1 text-left">Món ăn đã chọn</div>
+                        <div class="border-t border-surface-variant/60">
+                            ${itemsHtml}
+                        </div>
+                    </div>
+
+                    <!-- Delivery/Info -->
+                    ${addressHtml}
+
+                    <!-- Payment summary -->
+                    <div class="space-y-2 border-t border-surface-variant/60 pt-3 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-on-surface-variant">Tổng cộng</span>
+                            <span class="font-bold text-primary">${formatVND(order.total_amount)}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Back and Close Actions -->
+                <div class="flex gap-3 pt-2">
+                    <button onclick="goBackToOrdersList()" class="flex-1 py-3 border border-outline text-primary font-bold rounded-lg hover:bg-surface-container-low transition-all active:scale-95 flex items-center justify-center gap-1">
+                        <span class="material-symbols-outlined text-lg">arrow_back</span>
+                        Quay lại
+                    </button>
+                    <button onclick="closeOrdersModal()" class="flex-1 py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary-container transition-all active:scale-95 shadow-md">
+                        Đóng
+                    </button>
+                </div>
+            `;
+        } else {
+            modalContent.innerHTML = `
+                <!-- Close Button -->
+                <button onclick="closeOrdersModal()" class="absolute top-4 right-4 text-on-surface-variant hover:text-primary transition-colors">
+                    <span class="material-symbols-outlined text-2xl">close</span>
+                </button>
+                <div class="text-center py-8 text-red-500 flex flex-col items-center space-y-3">
+                    <span class="material-symbols-outlined text-5xl">error</span>
+                    <p>${result.message || 'Không thể tải chi tiết đơn hàng.'}</p>
+                    <button onclick="goBackToOrdersList()" class="px-6 py-2 border border-outline text-primary font-bold rounded-lg hover:bg-surface-container-low transition-all">
+                        Quay lại
+                    </button>
+                </div>
+            `;
+        }
+    } catch (e) {
+        console.error(e);
+        modalContent.innerHTML = `
+            <!-- Close Button -->
+            <button onclick="closeOrdersModal()" class="absolute top-4 right-4 text-on-surface-variant hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-2xl">close</span>
+            </button>
+            <div class="text-center py-8 text-red-500 flex flex-col items-center space-y-3">
+                <span class="material-symbols-outlined text-5xl">error</span>
+                <p>Không thể kết nối đến máy chủ. Vui lòng thử lại.</p>
+                <button onclick="goBackToOrdersList()" class="px-6 py-2 border border-outline text-primary font-bold rounded-lg hover:bg-surface-container-low transition-all">
+                    Quay lại
+                </button>
+            </div>
+        `;
+    }
+}
+
+globalThis.goBackToOrdersList = () => {
+    renderOrdersListModal(cachedRecentOrders);
+};
+
+globalThis.closeOrdersModal = () => {
+    const modal = document.getElementById('orders-modal');
+    if (modal) modal.remove();
+};
+
+globalThis.showOrdersPopup = showOrdersPopup;
+globalThis.showOrderDetailPopup = showOrderDetailPopup;

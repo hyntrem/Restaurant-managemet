@@ -29,7 +29,7 @@ order_bp.route("/", methods=["POST"])(
 )
 
 order_bp.route("/", methods=["GET"])(
-    require_roles("CASHIER_LOBBY", "MANAGER", "ADMIN")(get_orders_controller)
+    require_roles("CUSTOMER", "CASHIER_LOBBY", "MANAGER", "ADMIN")(get_orders_controller)
 )
 
 order_bp.route(ORDER_ID_ROUTE, methods=["GET"])(
