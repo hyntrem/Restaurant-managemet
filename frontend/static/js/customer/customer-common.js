@@ -405,13 +405,14 @@ function openCheckoutModal() {
                     </div>
                 </div>
                 <!-- Address -->
-                <div class="flex flex-col gap-2 text-left">
+                <div class="flex flex-col gap-2 text-left relative">
                     <label class="font-label-lg text-label-lg text-on-surface-variant" for="delivery-address">Địa chỉ giao hàng <span class="text-red-600">*</span></label>
                     <div class="relative">
                         <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">location_on</span>
                         <input class="form-input w-full p-4 pl-12 rounded-lg border border-surface-variant focus:outline-none focus:border-primary transition-all font-body-md text-body-md"
-                            id="delivery-address" placeholder="Nhập địa chỉ nhà, số căn hộ hoặc văn phòng của bạn" type="text" required />
+                            id="delivery-address" placeholder="Nhập địa chỉ nhà, số căn hộ hoặc văn phòng của bạn" type="text" autocomplete="off" required />
                     </div>
+                    <div id="address-suggestions" class="hidden absolute left-0 right-0 bg-white dark:bg-tertiary border border-surface-variant rounded-lg shadow-lg mt-1 max-h-60 overflow-y-auto z-[130] top-[calc(100%)]"></div>
                 </div>
                 <!-- Time & Notes -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
@@ -486,6 +487,73 @@ function openCheckoutModal() {
     `;
 
     document.body.appendChild(modal);
+
+    // Auto-complete setup for delivery address
+    const addressInput = document.getElementById('delivery-address');
+    const suggestionsContainer = document.getElementById('address-suggestions');
+
+    let debounceTimer;
+    if (addressInput && suggestionsContainer) {
+        addressInput.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            const query = addressInput.value.trim();
+            if (query.length < 3) {
+                suggestionsContainer.innerHTML = '';
+                suggestionsContainer.classList.add('hidden');
+                return;
+            }
+
+            debounceTimer = setTimeout(async () => {
+                try {
+                    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&countrycodes=vn`);
+                    const data = await res.json();
+                    
+                    if (data && data.length > 0) {
+                        suggestionsContainer.innerHTML = data.map(item => `
+                            <div class="suggestion-item p-3 hover:bg-surface-container-low cursor-pointer flex items-start gap-3 border-b border-surface-variant/30 text-sm font-body-md text-primary dark:text-primary-fixed" data-value="${item.display_name.replace(/"/g, '&quot;')}">
+                                <span class="material-symbols-outlined text-outline mt-0.5 select-none">location_on</span>
+                                <span class="leading-normal text-left">${item.display_name}</span>
+                            </div>
+                        `).join('');
+                        suggestionsContainer.classList.remove('hidden');
+
+                        // Attach click handlers to suggestion items
+                        suggestionsContainer.querySelectorAll('.suggestion-item').forEach(el => {
+                            el.addEventListener('click', () => {
+                                addressInput.value = el.getAttribute('data-value');
+                                suggestionsContainer.innerHTML = '';
+                                suggestionsContainer.classList.add('hidden');
+                                validateDeliveryForm(); // Trigger form validation
+                            });
+                        });
+                    } else {
+                        suggestionsContainer.innerHTML = `
+                            <div class="p-3 text-sm text-on-surface-variant text-center select-none">
+                                Không tìm thấy địa chỉ phù hợp
+                            </div>
+                        `;
+                        suggestionsContainer.classList.remove('hidden');
+                    }
+                } catch (e) {
+                    console.error('Error fetching address suggestions:', e);
+                }
+            }, 300);
+        });
+
+        // Hide suggestions when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!addressInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+                suggestionsContainer.classList.add('hidden');
+            }
+        });
+
+        // Close suggestions on Escape key
+        addressInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                suggestionsContainer.classList.add('hidden');
+            }
+        });
+    }
 
     // Populate fields if user information is stored
     const userJson = localStorage.getItem('customer_user');
