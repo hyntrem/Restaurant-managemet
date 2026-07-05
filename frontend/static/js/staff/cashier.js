@@ -52,6 +52,9 @@
     const deliveryHub = document.getElementById("screenDeliveryHub");
     if (deliveryHub) deliveryHub.classList.toggle("hidden", screenId !== "deliveryHub");
 
+     const readyOrders = document.getElementById("screenReadyOrders");
+    if (readyOrders) readyOrders.classList.toggle("hidden", screenId !== "readyOrders");
+
     var main = document.querySelector(".staff-main");
     if (main) main.classList.toggle("pos-active", screenId === "pos");
   }
@@ -372,6 +375,63 @@
       if (el) el.innerHTML = '<p class="empty-text" style="color:#ef4444;text-align:center;">⚠️ Không thể kết nối đến cổng 5004 (Network Error)</p>';
     }
   };
+  globalThis.openReadyOrdersTab = function () {
+    showScreen("readyOrders");
+    globalThis.loadReadyOrders();
+};
+
+globalThis.loadReadyOrders = async function () {
+    const container = document.getElementById("readyOrdersContainer");
+    try {
+        const result = await globalThis.apiGet("/api/orders/");
+        if (!result || !result.success) {
+            if (container) container.innerHTML = '<p class="empty-text" style="color:#ef4444;">Không thể tải danh sách đơn hàng.</p>';
+            return;
+        }
+        const readyOrders = result.data.filter(o => o.status === "DONE" && o.order_type !== "DELIVERY");
+        renderReadyOrders(readyOrders);
+    } catch (error) {
+        console.error("[Cashier] Lỗi loadReadyOrders:", error);
+        if (container) container.innerHTML = '<p class="empty-text" style="color:#ef4444;">Lỗi kết nối hệ thống.</p>';
+    }
+};
+
+function renderReadyOrders(orders) {
+    const container = document.getElementById("readyOrdersContainer");
+    if (!container) return;
+
+    if (!orders.length) {
+        container.innerHTML = '<p class="empty-text">🎉 Không có đơn nào đang chờ nhận món.</p>';
+        return;
+    }
+
+    container.innerHTML = orders.map(order => `
+        <div class="order-item" style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-left:4px solid #10b981; background:#fff; border-radius:4px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <div>
+                <strong style="color:#123c69;">${order.order_code}</strong>
+                <span style="color:#64748b; font-size:13px;"> — ${order.order_type}${order.table_number ? " · Bàn " + order.table_number : ""}</span>
+                <div style="font-size:13px;color:#334155; margin-top:2px;">${Number(order.total_amount).toLocaleString("vi-VN")} VNĐ</div>
+            </div>
+            <button type="button" class="primary-btn" style="padding:8px 14px;" onclick="globalThis.receiveOrder(${order.id})">Khách Nhận Món</button>
+        </div>
+    `).join("");
+}
+
+globalThis.receiveOrder = async function (orderId) {
+    if (!confirm("Xác nhận khách đã nhận món / hoàn tất đơn hàng?")) return;
+    try {
+        const result = await globalThis.apiPut(`/api/orders/${orderId}/receive`);
+        if (result && result.success !== false) {
+            alert(result.message || "Đã hoàn tất đơn hàng ");
+            globalThis.loadReadyOrders();
+        } else {
+            alert("Lỗi: " + (result?.message || "Không thể xác nhận nhận món."));
+        }
+    } catch (error) {
+        console.error("[Cashier] Lỗi receiveOrder:", error);
+        alert("Lỗi hệ thống khi xác nhận nhận món.");
+    }
+};
   // 3. Render danh sách thẻ đơn hàng mang trạng thái PENDING
   function renderDeliveryHubCards() {
     const container = document.getElementById("deliveryCardsContainer");
@@ -480,7 +540,6 @@
     } 
     else if (action === "MODIFY") {
       // ➔ TRẠNG THÁI 2: MODIFY -> Chuyển ngược về màn hình POS chọn món để nhân viên SỬA ĐƠN
-      alert("✏️ Đang điều phối dữ liệu đơn hàng ngược về giao diện POS để chỉnh sửa món ăn...");
       globalThis.location.href = `cashier-dashboard.html?modify_order_id=${orderId}&type=DELIVERY`;
     } 
     else if (action === "CANCEL") {
@@ -488,7 +547,7 @@
       const confirmCancel = confirm("Bạn có chắc chắn muốn CANCEL (Hủy - Không nhận) đơn hàng Delivery này?");
       if (!confirmCancel) return;
 
-      const result = await globalThis.apiPut(`/api/orders/${orderId}/status`, { status: "CANCELLED" });
+      const result = await globalThis.apiPut(`/api/orders/${orderId}/cancel`, { status: "CANCELLED" });
       if (result.success) {
           alert("❌ Đã từ chối nhận đơn và XÓA đơn hàng khỏi danh sách chờ thành công.");
           globalThis.loadDeliveryOrders();
@@ -564,6 +623,13 @@
     loadCategories();
     await globalThis.loadMenu();
     renderCart();
+
+    setInterval(() => {
+        const screen = document.getElementById("screenReadyOrders");
+        if (screen && !screen.classList.contains("hidden")) {
+            globalThis.loadReadyOrders();
+        }
+    }, 5000);
 
     // ========================================================
     // 🔍 LUỒNG KIỂM TRA ĐIỀU PHỐI ĐƠN SỬA ĐỔI (MODIFY_ORDER_ID THÔNG MẠCH)

@@ -61,6 +61,11 @@
           <span class="ot-desc">Đặt tiệc & sự kiện</span>
         </button>
       </div>
+      <div style="margin-top: 20px; text-align: center;">
+        <button type="button" class="secondary-btn" onclick="globalThis.openReadyOrdersTab()">
+          🔔 Đơn Đã Sẵn Sàng (Chờ Nhận Món)
+        </button>
+      </div>
     </div>
  
     <div id="screenPOS" class="hidden">
@@ -206,7 +211,19 @@
 
       </section>
     </div>
- 
+ <div id="screenReadyOrders" class="hidden" style="margin-top: 20px;">
+      <button type="button" class="back-btn" onclick="globalThis.resetOrderType()">← Quay lại chọn loại đơn</button>
+      <h1 class="page-title">Đơn Đã Sẵn Sàng — Chờ Nhận Món</h1>
+      <p class="page-subtitle">Xác nhận khách đã nhận món để hoàn tất đơn và giải phóng bàn.</p>
+
+      <section class="panel" style="margin-top: 15px;">
+        <div class="panel-title">Danh Sách Đơn DONE</div>
+        <div id="readyOrdersContainer" class="order-list" style="display: flex; flex-direction: column; gap: 8px; text-align: left;">
+          <p class="empty-text">Đang tải danh sách...</p>
+        </div>
+      </section>
+    </div>
+    
     <p id="message" class="pos-message"></p>
   </main>
  

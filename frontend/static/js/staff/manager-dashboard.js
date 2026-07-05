@@ -326,8 +326,8 @@
                 <td>${r.customer_phone}</td>
                 <td>${formatDate(r.reservation_date)}</td>
                 <td>${formatTime(r.reservation_time)}</td>
-                <td>${r.number_of_guests}</td>
-                <td>${r.special_notes || "-"}</td>
+                <td>${r.guest_count}</td>
+                <td>${r.notes || "-"}</td>
                 <td>${badge(r.status)}</td>
                 <td>
                     <select onchange="ManagerDashboard.updateReservationStatus(${r.id}, this.value)" style="padding:4px;">

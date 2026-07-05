@@ -147,7 +147,7 @@ globalThis.startPreparing = async function(orderId) {
             console.log("[Kitchen] Payload gửi trừ kho:", itemsPayload);
 
             const deductResult = await globalThis.inventoryPost(
-                "/api/inventory/deduct-internal",
+                "/deduct-internal",
                 { items: itemsPayload }
             );
 

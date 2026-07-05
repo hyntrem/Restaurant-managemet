@@ -779,38 +779,35 @@ def receive_food_service(order_id, user_id):
     try:
         order = get_order_by_id(order_id)
         if not order:
-            return {
-                "success": False,
-                "message": "Không tìm thấy đơn hàng đã order"
-            }, 404
-        
+            return {"success": False, "message": "Không tìm thấy đơn hàng đã order"}, 404
+
         if order["status"] != "DONE":
-            return {
-                "success": False,
-                "message": f"Không thể nhận món khi đơn hàng đang ở trạng thái {order['status']}"
-            }, 400
-        
-        # Cập nhật status
+            return {"success": False, "message": f"Không thể nhận món khi đơn hàng đang ở trạng thái {order['status']}"}, 400
+
         old_status = order["status"]
         update_order_status(order_id, "COMPLETED")
-        
-        # Ghi lịch sử
         add_status_history(order_id, old_status, "COMPLETED", user_id, "Khách đã nhận món")
-        
+
+        # ✅ Giải phóng bàn nếu là đơn EAT_IN
+        table_released = False
+        if order.get("order_type") == "EAT_IN" and order.get("table_id"):
+            table_response = call_table_service(
+                "/status",
+                method="PUT",
+                data={"table_id": order["table_id"], "status": "AVAILABLE"}
+            )
+            table_released = bool(table_response and table_response.get("success"))
+            if not table_released:
+                print(f"[Cảnh báo] Order {order_id} COMPLETED nhưng cập nhật bàn {order['table_id']} thất bại")
+
         return {
             "success": True,
-            "message": "Khách đã nhận món",
-            "data": {
-                "order_id": order_id,
-                "status": "COMPLETED"
-            }
+            "message": "Khách đã nhận món" + (" và bàn đã được giải phóng" if table_released else ""),
+            "data": {"order_id": order_id, "status": "COMPLETED", "table_released": table_released}
         }, 200
-    
+
     except Exception as e:
-        return {
-            "success": False,
-            "message": f"Lỗi khi nhận món: {str(e)}"
-        }, 500
+        return {"success": False, "message": f"Lỗi khi nhận món: {str(e)}"}, 500
 
 
 def cancel_order_service(order_id, user_id, reason):
