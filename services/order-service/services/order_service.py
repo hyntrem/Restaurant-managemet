@@ -1,5 +1,7 @@
 import requests
 from datetime import datetime, time
+import logging
+from common.notification import send_notification, NotificationType, format_delivery_address
 from models.order_model import (
     create_order_db, get_order_by_id, get_order_by_code, get_all_orders,
     update_order_status, update_order_total, cancel_order_db,
@@ -297,6 +299,33 @@ def create_order_service(data, user_id):
         order = get_order_by_id(order_id)
         order["items"] = items
         
+        # Gửi thông báo nếu là đơn hàng DELIVERY
+        if order_type == "DELIVERY":
+            try:
+                parsed_address = format_delivery_address(order.get("delivery_address"))
+                phone = parsed_address.get("phone") if parsed_address.get("phone") else order.get("customer_phone")
+                name = parsed_address.get("name") if parsed_address.get("name") else order.get("customer_name")
+                address = parsed_address.get("address")
+                
+                items_dto = []
+                for item in items:
+                    items_dto.append({
+                        "name": item.get("menu_item_name"),
+                        "quantity": item.get("quantity"),
+                        "price": float(item.get("price", 0))
+                    })
+                    
+                dto = {
+                    "order_code": order.get("order_code"),
+                    "customer_name": name,
+                    "address": address,
+                    "items": items_dto,
+                    "total": float(order.get("total_amount", 0))
+                }
+                send_notification(NotificationType.DELIVERY_PLACED, phone, dto)
+            except Exception as ex:
+                logging.exception(f"Lỗi gửi thông báo đặt đơn giao hàng: {ex}")
+                
         return {
             "success": True,
             "message": "Tạo đơn hàng thành công",
@@ -787,6 +816,22 @@ def receive_food_service(order_id, user_id):
         old_status = order["status"]
         update_order_status(order_id, "COMPLETED")
         add_status_history(order_id, old_status, "COMPLETED", user_id, "Khách đã nhận món")
+        
+        # Gửi thông báo nếu là đơn hàng DELIVERY
+        if order.get("order_type") == "DELIVERY":
+            try:
+                parsed_address = format_delivery_address(order.get("delivery_address"))
+                phone = parsed_address.get("phone") if parsed_address.get("phone") else order.get("customer_phone")
+                name = parsed_address.get("name") if parsed_address.get("name") else order.get("customer_name")
+                
+                dto = {
+                    "order_code": order.get("order_code"),
+                    "customer_name": name,
+                    "total": float(order.get("total_amount", 0))
+                }
+                send_notification(NotificationType.DELIVERY_COMPLETED, phone, dto)
+            except Exception as ex:
+                logging.exception(f"Lỗi gửi thông báo hoàn thành đơn giao hàng: {ex}")
 
         # ✅ Giải phóng bàn nếu là đơn EAT_IN
         table_released = False
@@ -835,6 +880,22 @@ def cancel_order_service(order_id, user_id, reason):
         # Ghi lịch sử
         add_status_history(order_id, old_status, "CANCELLED", user_id, f"Hủy đơn: {reason}")
         
+        # Gửi thông báo nếu là đơn hàng DELIVERY bị hủy
+        if order.get("order_type") == "DELIVERY":
+            try:
+                parsed_address = format_delivery_address(order.get("delivery_address"))
+                phone = parsed_address.get("phone") if parsed_address.get("phone") else order.get("customer_phone")
+                name = parsed_address.get("name") if parsed_address.get("name") else order.get("customer_name")
+                
+                dto = {
+                    "order_code": order.get("order_code"),
+                    "customer_name": name,
+                    "total": float(order.get("total_amount", 0))
+                }
+                send_notification(NotificationType.DELIVERY_CANCELLED, phone, dto)
+            except Exception as ex:
+                logging.exception(f"Lỗi gửi thông báo hủy đơn giao hàng: {ex}")
+                
         # Nếu là EAT_IN, giải phóng bàn
         if order["order_type"] == "EAT_IN" and order["table_id"]:
             call_table_service(

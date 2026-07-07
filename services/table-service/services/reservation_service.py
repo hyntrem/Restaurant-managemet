@@ -10,6 +10,8 @@ from models.reservation_model import (
     assign_tables_to_reservation
 )
 import datetime
+import logging
+from common.notification import send_notification, NotificationType
 
 # Constants
 TOTAL_TABLES = 20
@@ -225,7 +227,7 @@ def create_reservation_service(data):
                 "success": False,
                 "message": f"Lỗi tạo đặt bàn: {error}"
             }, 500
-        
+            
         return {
             "success": True,
             "message": "Đặt bàn thành công! Chúng tôi sẽ liên hệ xác nhận sớm nhất.",
@@ -294,7 +296,8 @@ def update_reservation_status_service(reservation_id, new_status):
             "success": False,
             "message": "Không tìm thấy đặt bàn"
         }, 404
-    
+        
+    old_status = reservation.get("status")
     updated, error = update_reservation_status(reservation_id, new_status)
     
     if error:
@@ -302,7 +305,35 @@ def update_reservation_status_service(reservation_id, new_status):
             "success": False,
             "message": f"Lỗi cập nhật: {error}"
         }, 500
-    
+        
+    # Gửi tin nhắn thông báo duyệt đặt bàn hoặc hủy đặt bàn
+    if old_status != "CONFIRMED" and new_status == "CONFIRMED":
+        try:
+            dto = {
+                "reservation_code": updated.get("reservation_code"),
+                "customer_name": updated.get("customer_name"),
+                "reservation_date": str(updated.get("reservation_date")),
+                "reservation_time": str(updated.get("reservation_time")),
+                "guest_count": updated.get("number_of_guests"),
+                "special_notes": updated.get("special_notes")
+            }
+            send_notification(NotificationType.RESERVATION_CONFIRMED, updated.get("customer_phone"), dto)
+        except Exception as ex:
+            logging.exception(f"Lỗi gửi thông báo duyệt đặt bàn: {ex}")
+    elif old_status != "CANCELLED" and new_status == "CANCELLED":
+        try:
+            dto = {
+                "reservation_code": updated.get("reservation_code"),
+                "customer_name": updated.get("customer_name"),
+                "reservation_date": str(updated.get("reservation_date")),
+                "reservation_time": str(updated.get("reservation_time")),
+                "guest_count": updated.get("number_of_guests"),
+                "special_notes": updated.get("special_notes")
+            }
+            send_notification(NotificationType.RESERVATION_CANCELLED, updated.get("customer_phone"), dto)
+        except Exception as ex:
+            logging.exception(f"Lỗi gửi thông báo hủy đặt bàn: {ex}")
+            
     return {
         "success": True,
         "message": "Cập nhật trạng thái thành công",
@@ -339,7 +370,21 @@ def cancel_reservation_service(reservation_code, phone=None):
             "success": False,
             "message": f"Lỗi hủy đặt bàn: {error}"
         }, 500
-    
+        
+    # Gửi tin nhắn thông báo hủy đặt bàn
+    try:
+        dto = {
+            "reservation_code": updated.get("reservation_code"),
+            "customer_name": updated.get("customer_name"),
+            "reservation_date": str(updated.get("reservation_date")),
+            "reservation_time": str(updated.get("reservation_time")),
+            "guest_count": updated.get("number_of_guests"),
+            "special_notes": updated.get("special_notes")
+        }
+        send_notification(NotificationType.RESERVATION_CANCELLED, updated.get("customer_phone"), dto)
+    except Exception as ex:
+        logging.exception(f"Lỗi gửi thông báo hủy đặt bàn: {ex}")
+        
     return {
         "success": True,
         "message": "Hủy đặt bàn thành công",

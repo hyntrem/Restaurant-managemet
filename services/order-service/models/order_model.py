@@ -42,7 +42,7 @@ def get_order_by_id(order_id):
         SELECT o.id, o.order_code, o.customer_id, o.table_id, o.branch_id,
                o.order_type, o.status, o.pickup_time, o.delivery_address,
                o.total_amount, o.created_at,
-               u.full_name AS customer_name,
+               u.full_name AS customer_name, u.phone AS customer_phone,
                rt.table_number
         FROM orders o
         LEFT JOIN users u ON o.customer_id = u.id
@@ -64,7 +64,7 @@ def get_order_by_code(order_code):
         SELECT o.id, o.order_code, o.customer_id, o.table_id, o.branch_id,
                o.order_type, o.status, o.pickup_time, o.delivery_address,
                o.total_amount, o.created_at,
-               u.full_name AS customer_name,
+               u.full_name AS customer_name, u.phone AS customer_phone,
                rt.table_number
         FROM orders o
         LEFT JOIN users u ON o.customer_id = u.id
