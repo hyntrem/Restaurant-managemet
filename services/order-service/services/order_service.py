@@ -5,7 +5,7 @@ from common.notification import send_notification, NotificationType, format_deli
 from models.order_model import (
     create_order_db, get_order_by_id, get_order_by_code, get_all_orders,
     update_order_status, update_order_total, cancel_order_db,
-    add_order_item_db, get_order_items, get_order_item_by_id,
+    add_order_item_db, get_order_items, get_all_order_items_including_cancelled, get_order_item_by_id,
     update_order_item_db, update_order_item_status, update_all_order_items_status,
     delete_order_item_db, cancel_order_item_db,
     add_status_history, get_order_history, search_orders, calculate_order_total
@@ -356,7 +356,8 @@ def get_order_detail_service(order_id, user_id=None, user_role=None):
                 "message": "Bạn không có quyền xem đơn hàng này"
             }, 403
 
-        items = get_order_items(order_id)
+        # Lấy TẤT CẢ món ăn bao gồm cả món đã hủy để hiển thị đầy đủ lịch sử
+        items = get_all_order_items_including_cancelled(order_id)
         order["items"] = items
 
         return {

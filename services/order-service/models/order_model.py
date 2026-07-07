@@ -222,6 +222,28 @@ def get_order_items(order_id):
         FROM order_items oi
         JOIN menu_items mi ON oi.menu_item_id = mi.id
         WHERE oi.order_id = :order_id
+          AND oi.status != 'CANCELLED'
+        ORDER BY oi.id ASC
+    """)
+    
+    result = db.execute(query, {"order_id": order_id}).mappings().all()
+    db.close()
+    
+    return [dict(row) for row in result]
+
+
+def get_all_order_items_including_cancelled(order_id):
+    """Lấy TẤT CẢ món trong đơn, bao gồm cả món đã hủy (dùng cho hiển thị lịch sử)"""
+    db = SessionLocal()
+    
+    query = text("""
+        SELECT oi.id, oi.order_id, oi.menu_item_id, oi.quantity, 
+               oi.price, oi.note, oi.status,
+               mi.name AS menu_item_name,
+               mi.description AS menu_item_description
+        FROM order_items oi
+        JOIN menu_items mi ON oi.menu_item_id = mi.id
+        WHERE oi.order_id = :order_id
         ORDER BY oi.id ASC
     """)
     
