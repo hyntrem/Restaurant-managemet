@@ -189,6 +189,45 @@
     Pizza 4P's © 2026
 
 </footer>
+
+<!-- Modal Popup Chi tiết Đơn hàng -->
+<div id="order-detail-modal" class="modal-overlay" onclick="closeOrderPopup()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h2 id="modal-order-title">Chi tiết đơn hàng</h2>
+            <button class="close-modal-btn" onclick="closeOrderPopup()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-order-info">
+                <div><strong>Mã đơn:</strong> <span id="modal-order-code">-</span></div>
+                <div><strong>Loại đơn:</strong> <span id="modal-order-type">-</span></div>
+                <div><strong>Trạng thái:</strong> <span id="modal-order-status">-</span></div>
+                <div><strong>Thời gian:</strong> <span id="modal-order-time">-</span></div>
+            </div>
+            
+            <h3>Danh sách món ăn</h3>
+            <table class="modal-items-table">
+                <thead>
+                    <tr>
+                        <th>Tên món</th>
+                        <th style="text-align: center; width: 100px;">Số lượng</th>
+                        <th>Ghi chú</th>
+                    </tr>
+                </thead>
+                <tbody id="modal-items-body">
+                    <!-- Sẽ được điền bằng Javascript -->
+                </tbody>
+            </table>
+        </div>
+        <div class="modal-footer">
+            <div id="modal-action-buttons" style="display: flex; gap: 10px; margin-right: auto;">
+                <!-- Các nút Nhận đơn, Hoàn thành, Hủy đơn -->
+            </div>
+            <button class="modal-btn-close" onclick="closeOrderPopup()">Đóng</button>
+        </div>
+    </div>
+</div>
+
 <script>
     // Đọc token từ URL param (trường hợp redirect từ admin)
     const urlParams = new URLSearchParams(window.location.search);

@@ -228,6 +228,7 @@ header {
   box-shadow: 0 4px 10px rgba(22,59,109,.08);
   transition: .2s;
   flex-shrink: 0;
+  cursor: pointer;
 }
 
 .order-card:hover {
@@ -319,4 +320,197 @@ footer {
     gap: 10px;
     padding: 10px;
   }
+}
+
+/* =========================
+     MODAL POPUP CHI TIẾT
+========================= */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-content {
+  background: var(--white);
+  border-radius: 16px;
+  width: 90%;
+  max-width: 600px;
+  box-shadow: 0 10px 25px rgba(22, 59, 109, 0.2);
+  border: 1.5px solid var(--border);
+  overflow: hidden;
+  transform: scale(0.9);
+  transition: transform 0.3s ease;
+}
+
+.modal-overlay.active .modal-content {
+  transform: scale(1);
+}
+
+.modal-header {
+  background: var(--marine);
+  color: var(--white);
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h2 {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.close-modal-btn {
+  background: transparent;
+  border: none;
+  color: var(--white);
+  font-size: 28px;
+  cursor: pointer;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.close-modal-btn:hover {
+  color: var(--gold);
+}
+
+.modal-body {
+  padding: 24px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.modal-order-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: var(--cream);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.modal-order-info div {
+  color: #334155;
+}
+
+.modal-order-info strong {
+  color: var(--marine);
+}
+
+.modal-body h3 {
+  font-size: 16px;
+  color: var(--marine);
+  margin-bottom: 12px;
+  border-bottom: 2px solid var(--border);
+  padding-bottom: 6px;
+}
+
+.modal-items-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.modal-items-table th {
+  background: var(--marine);
+  color: var(--white);
+  padding: 10px;
+  font-size: 14px;
+  text-align: left;
+}
+
+.modal-items-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  color: #334155;
+}
+
+.modal-items-table tr:hover {
+  background: var(--cream);
+}
+
+.modal-item-qty {
+  font-weight: bold;
+  font-size: 16px;
+  color: var(--marine);
+  background: var(--gold);
+  padding: 3px 8px;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+.modal-item-note {
+  font-style: italic;
+  color: #475569;
+}
+
+.modal-footer {
+  padding: 16px 24px;
+  background: var(--cream);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  align-items: center;
+}
+
+.modal-btn-close {
+  background: var(--border);
+  color: var(--marine);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.modal-btn-close:hover {
+  background: var(--cream-dark);
+}
+
+/* Badge styles */
+.badge {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 12px;
+  display: inline-block;
+}
+.badge-pending {
+  background: var(--gold);
+  color: var(--marine);
+}
+.badge-preparing {
+  background: var(--info);
+  color: var(--white);
+}
+.badge-done {
+  background: var(--success);
+  color: var(--white);
+}
+.badge-cancelled {
+  background: var(--danger);
+  color: var(--white);
 }
