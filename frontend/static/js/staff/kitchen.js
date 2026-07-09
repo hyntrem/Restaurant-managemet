@@ -111,78 +111,32 @@ function renderOrders(orders) {
         }
     });
 }
-
 // ==========================================
 // 2. CÁC HÀM THAO TÁC XỬ LÝ ĐƠN HÀNG (ACTIONS)
 // ==========================================
-
 // Hàm Nhận đơn / Bắt đầu chế biến
-globalThis.startPreparing = async function(orderId) {
+globalThis.startPreparing = async function (orderId) {
     try {
-        console.log(`[Kitchen] --- Bắt đầu nhận đơn #${orderId} ---`);
+        console.log(`[Kitchen] Nhận đơn #${orderId}`);
 
-        // 1. Lấy chi tiết đơn hàng
-        const orderDetailResult = await globalThis.orderGet(`/${orderId}`);
-        console.log("[Kitchen] Chi tiết đơn:", orderDetailResult);
+        // Chỉ gọi Order Service
+        const result = await globalThis.orderPut(
+            `/${orderId}/preparing`
+        );
 
-        if (!orderDetailResult || !orderDetailResult.success || !orderDetailResult.data) {
-            alert("Không thể tải chi tiết đơn hàng để kiểm tra kho!");
+        console.log("[Kitchen] Kết quả:", result);
+
+        if (result && result.success) {
+            alert("✓ Đã nhận đơn thành công!");
+            await globalThis.loadOrders();
             return;
         }
 
-        const rawData = orderDetailResult.data;
-        const orderItems = rawData.items
-            || rawData.order_items
-            || (Array.isArray(rawData) ? rawData : []);
-
-        console.log("[Kitchen] orderItems:", orderItems);
-
-        // 2. Trừ kho qua inventoryPost → port 5003
-        if (orderItems.length > 0) {
-            const itemsPayload = orderItems.map(item => ({
-                menu_item_id: Number(item.menu_item_id || item.item_id || item.id),
-                quantity: Number(item.quantity || 1)
-            }));
-
-            console.log("[Kitchen] Payload gửi trừ kho:", itemsPayload);
-
-            const deductResult = await globalThis.inventoryPost(
-                "/deduct-internal",
-                { items: itemsPayload }
-            );
-
-            console.log("[Kitchen] Kết quả trừ kho:", deductResult);
-
-            if (!deductResult || !deductResult.success) {
-                alert(
-                    `❌ KHÔNG THỂ NHẬN ĐƠN!\n` +
-                    `Kho phản hồi: ${deductResult?.message || "Lỗi Recipe hoặc thiếu nguyên liệu!"}`
-                );
-                return;
-            }
-        } else {
-            console.warn("[Kitchen] Không có items trong đơn, bỏ qua trừ kho.");
-        }
-
-        // 3. Cập nhật trạng thái đơn sang PREPARING
-        const result = await globalThis.orderPut(
-            `/${orderId}/preparing`,
-            { status: "PREPARING" }
-        );
-
-        if (result && result.success !== false) {
-            alert("✓ Đã nhận đơn và trừ kho thành công!");
-            globalThis.loadOrders();
-        } else {
-            alert(
-                "Lỗi trạng thái đơn: " +
-                (result?.message || "Không thể chuyển sang Đang chuẩn bị")
-            );
-        }
+        alert(result?.message || "Không thể nhận đơn!");
 
     } catch (error) {
-        console.error("[Kitchen] Lỗi đồng bộ Bếp - Kho:", error);
-        alert("Đã xảy ra lỗi hệ thống khi kết nối Bếp và Kho!");
+        console.error("[Kitchen]", error);
+        alert("Đã xảy ra lỗi khi nhận đơn.");
     }
 };
 // Hàm Hoàn thành món ăn
