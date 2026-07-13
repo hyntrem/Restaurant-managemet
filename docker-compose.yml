@@ -20,6 +20,7 @@ services:
       - ./database/seed_inventory.sql:/docker-entrypoint-initdb.d/03_seed_inventory.sql
       - ./database/migration_add_reservations.sql:/docker-entrypoint-initdb.d/04_migration_add_reservations.sql
       - ./database/migration_branch_service.sql:/docker-entrypoint-initdb.d/05_migration_branch_service.sql
+      - ./database/warehouse_schema.sql:/docker-entrypoint-initdb.d/06_warehouse_schema.sql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 5s

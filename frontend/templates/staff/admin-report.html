@@ -46,122 +46,156 @@
         }
         .back-to-admin:hover { background: var(--marine-hover); }
 
+        /* ── Tab navigation ────────────────────────────────────── */
+        .tab-nav {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0;
+        }
+        .tab-btn {
+            padding: 10px 22px;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--muted);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            border-radius: 6px 6px 0 0;
+            transition: all 0.2s;
+        }
+        .tab-btn:hover { color: var(--marine); background: var(--cream-dark); }
+        .tab-btn.active {
+            color: var(--marine);
+            border-bottom-color: var(--marine);
+            background: var(--white);
+        }
+
+        /* ── Tab panels ────────────────────────────────────────── */
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* ── Analytics iframe ──────────────────────────────────── */
+        .analytics-frame-wrap {
+            background: var(--white);
+            border-radius: 12px;
+            border: 1.5px solid var(--border);
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(22,59,109,0.06);
+        }
+        .analytics-frame-wrap iframe {
+            width: 100%;
+            height: 85vh;
+            border: none;
+            display: block;
+        }
+        .frame-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+            color: var(--muted);
+            font-size: 14px;
+            gap: 10px;
+        }
+        .spinner {
+            width: 20px; height: 20px;
+            border: 3px solid var(--border);
+            border-top-color: var(--marine);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Giữ nguyên style cũ ───────────────────────────────── */
         .admin-report-container { display: flex; flex-direction: column; gap: 25px; }
+        .report-header h2 { margin: 0; color: var(--marine); font-size: 24px; font-weight: 700; }
+        .report-header h3 { margin: 0; color: var(--marine); font-size: 18px; font-weight: 700; }
+        .report-header p  { margin: 5px 0 0 0; color: var(--muted); font-size: 14px; }
 
-        .report-header h2 {
-            margin: 0; color: var(--marine); font-size: 24px; font-weight: 700;
-        }
-        .report-header h3 {
-            margin: 0; color: var(--marine); font-size: 18px; font-weight: 700;
-        }
-        .report-header p {
-            margin: 5px 0 0 0; color: var(--muted); font-size: 14px;
-        }
-
-        .dashboard-cards {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
-        }
-        .sales-activity-cards {
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
-        }
+        .dashboard-cards       { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .sales-activity-cards  { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
 
         .dash-card {
-            background: var(--white);
-            padding: 20px;
-            border-radius: 12px;
+            background: var(--white); padding: 20px; border-radius: 12px;
             box-shadow: 0 3px 10px rgba(22,59,109,0.06);
-            border: 1.5px solid var(--border);
-            text-align: left;
+            border: 1.5px solid var(--border); text-align: left;
         }
-        .dash-card.cash    { border-left: 5px solid var(--success); }
-        .dash-card.transfer{ border-left: 5px solid var(--info); }
-        .dash-card.digital { border-left: 5px solid var(--indigo); }
-
-        .dash-card.center {
-            text-align: center;
-            border-left: none;
-        }
+        .dash-card.cash     { border-left: 5px solid var(--success); }
+        .dash-card.transfer { border-left: 5px solid var(--info); }
+        .dash-card.digital  { border-left: 5px solid var(--indigo); }
+        .dash-card.center   { text-align: center; border-left: none; }
         .dash-card.total     { border-top: 4px solid var(--marine); }
         .dash-card.active    { border-top: 4px solid var(--gold); }
         .dash-card.completed { border-top: 4px solid var(--success); }
         .dash-card.cancelled { border-top: 4px solid var(--danger); }
-
-        .dash-card h5 {
-            margin: 0; color: var(--muted); font-size: 13px; font-weight: 500;
-        }
-        .card-val {
-            font-size: 26px; font-weight: 700; color: var(--marine); margin-top: 8px;
-        }
-        .card-val.lg { font-size: 28px; margin-top: 6px; }
-        .card-val.gold { color: var(--gold); }
+        .dash-card h5 { margin: 0; color: var(--muted); font-size: 13px; font-weight: 500; }
+        .card-val { font-size: 26px; font-weight: 700; color: var(--marine); margin-top: 8px; }
+        .card-val.lg      { font-size: 28px; margin-top: 6px; }
+        .card-val.gold    { color: var(--gold); }
         .card-val.success { color: var(--success); }
-        .card-val.danger { color: var(--danger); }
-        .card-val.dark { color: #1e293b; }
+        .card-val.danger  { color: var(--danger); }
+        .card-val.dark    { color: #1e293b; }
 
-        .two-col-grid {
-            display: grid; grid-template-columns: 2fr 1fr; gap: 20px;
-        }
+        .two-col-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
 
         .predict-panel, .system-status-panel {
-            background: var(--white);
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 3px 10px rgba(22,59,109,0.06);
-            border: 1.5px solid var(--border);
+            background: var(--white); padding: 25px; border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(22,59,109,0.06); border: 1.5px solid var(--border);
         }
-        .system-status-panel {
-            display: flex; flex-direction: column; justify-content: space-between;
-        }
+        .system-status-panel { display: flex; flex-direction: column; justify-content: space-between; }
 
         .predict-table { width: 100%; border-collapse: collapse; text-align: left; }
-        .predict-table thead tr {
-            background: var(--cream); border-bottom: 2px solid var(--border);
-        }
-        .predict-table th {
-            padding: 14px; color: var(--marine); font-weight: 600; font-size: 14px;
-        }
+        .predict-table thead tr { background: var(--cream); border-bottom: 2px solid var(--border); }
+        .predict-table th { padding: 14px; color: var(--marine); font-weight: 600; font-size: 14px; }
 
         .status-row {
             display: flex; justify-content: space-between; align-items: center;
             border-bottom: 1px dashed var(--cream-dark); padding-bottom: 10px;
         }
-        .status-row span:first-child {
-            font-size: 14px; color: #475569; font-weight: 500;
-        }
-        .status-value {
-            font-size: 13px; color: var(--muted); font-weight: 600;
-        }
+        .status-row span:first-child { font-size: 14px; color: #475569; font-weight: 500; }
+        .status-value { font-size: 13px; color: var(--muted); font-weight: 600; }
 
         .status-dot {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            margin-right: 6px;
+            display: inline-block; width: 8px; height: 8px;
+            border-radius: 50%; margin-right: 6px;
         }
         .status-online { background-color: var(--success); animation: pulse 2s infinite; }
         @keyframes pulse {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(45, 122, 70, 0.6); }
-            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(45, 122, 70, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(45, 122, 70, 0); }
+            0%   { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(45,122,70,0.6); }
+            70%  { transform: scale(1);    box-shadow: 0 0 0 6px rgba(45,122,70,0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(45,122,70,0); }
         }
 
         .sys-log-box {
-            background: var(--cream);
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 12px;
-            color: var(--muted);
-            margin-top: 15px;
-            border: 1px solid var(--border);
+            background: var(--cream); padding: 12px; border-radius: 8px;
+            font-size: 12px; color: var(--muted); margin-top: 15px; border: 1px solid var(--border);
         }
     </style>
 </head>
 <body>
 
-    <div class="admin-container">
-        <button class="back-to-admin" onclick="globalThis.location.href='admin-dashboard.html'">← Admin Dashboard</button>
+<div class="admin-container">
+    <button class="back-to-admin" onclick="globalThis.location.href='admin-dashboard.html'">← Admin Dashboard</button>
 
+    <!-- ── Tab navigation ───────────────────────────────────────── -->
+    <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab('tab-report', this)">
+            📊 Doanh Thu & Hoạt Động
+        </button>
+        <button class="tab-btn" onclick="switchTab('tab-analytics', this)">
+            🧠 Khai Thác Dữ Liệu (AI)
+        </button>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- TAB 1: Báo cáo doanh thu — giữ nguyên 100% code cũ       -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <div id="tab-report" class="tab-panel active">
         <div class="admin-report-container">
 
             <div class="report-header">
@@ -174,12 +208,10 @@
                     <h5>Tổng Tiền Mặt (Cash)</h5>
                     <div class="card-val" id="adminDashCash">0 VNĐ</div>
                 </div>
-
                 <div class="dash-card transfer">
                     <h5>Tổng Chuyển Khoản Ngân Hàng</h5>
                     <div class="card-val" id="adminDashTransfer">0 VNĐ</div>
                 </div>
-
                 <div class="dash-card digital">
                     <h5>Tổng Thẻ &amp; Food App (Grab/Shopee)</h5>
                     <div class="card-val" id="adminDashDigital">0 VNĐ</div>
@@ -213,8 +245,9 @@
             <div class="two-col-grid">
                 <div class="predict-panel">
                     <h3 style="margin: 0 0 5px 0;">Kết Quả Phân Tích &amp; Dự Đoán</h3>
-                    <p style="color: var(--muted); font-size: 13px; margin: 0 0 20px 0;">Mô hình máy học tính toán lượng tiêu thụ dự kiến dựa trên hóa đơn trong ngày.</p>
-
+                    <p style="color: var(--muted); font-size: 13px; margin: 0 0 20px 0;">
+                        Mô hình máy học tính toán lượng tiêu thụ dự kiến dựa trên hóa đơn trong ngày.
+                    </p>
                     <table class="predict-table">
                         <thead>
                             <tr>
@@ -231,38 +264,115 @@
                 <div class="system-status-panel">
                     <div>
                         <h3 style="margin: 0 0 15px 0;">Tình Trạng Vận Hành</h3>
-
                         <div style="display: flex; flex-direction: column; gap: 15px;">
                             <div class="status-row">
                                 <span>Phân hệ Bếp (KDS)</span>
-                                <span id="statusKitchen" class="status-value"><span class="status-dot"></span>Đang kiểm tra...</span>
+                                <span id="statusKitchen" class="status-value">
+                                    <span class="status-dot"></span>Đang kiểm tra...
+                                </span>
                             </div>
                             <div class="status-row">
                                 <span>Hệ thống Thanh Toán</span>
-                                <span id="statusPayment" class="status-value"><span class="status-dot"></span>Đang kiểm tra...</span>
+                                <span id="statusPayment" class="status-value">
+                                    <span class="status-dot"></span>Đang kiểm tra...
+                                </span>
                             </div>
                             <div class="status-row">
                                 <span>Dữ liệu Chi Nhánh</span>
-                                <span id="statusBranch" class="status-value"><span class="status-dot"></span>Đang kiểm tra...</span>
+                                <span id="statusBranch" class="status-value">
+                                    <span class="status-dot"></span>Đang kiểm tra...
+                                </span>
                             </div>
                             <div class="status-row">
                                 <span>Quản lý Kho hàng</span>
-                                <span id="statusInventory" class="status-value"><span class="status-dot"></span>Đang kiểm tra...</span>
+                                <span id="statusInventory" class="status-value">
+                                    <span class="status-dot"></span>Đang kiểm tra...
+                                </span>
                             </div>
                         </div>
                     </div>
-
                     <div class="sys-log-box">
-                        <strong>Log kiểm tra hoạt động:</strong> <span id="lastSysCheckTime">00:00:00</span> <br>
+                        <strong>Log kiểm tra hoạt động:</strong>
+                        <span id="lastSysCheckTime">00:00:00</span><br>
                         Hệ thống tự động quét dữ liệu phân hệ thời gian thực.
                     </div>
                 </div>
             </div>
 
         </div>
-    </div>
+    </div><!-- /tab-report -->
 
-    <script src="../../static/js/staff/order-api.js"></script>
-    <script src="../../static/js/admin-report.js"></script>
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- TAB 2: React Analytics App nhúng qua iframe               -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <div id="tab-analytics" class="tab-panel">
+        <div class="analytics-frame-wrap">
+            <!--
+                CÁCH 1 (đang dùng): iframe trỏ thẳng vào React dev server port 5173.
+                Hoạt động ngay, không cần build.
+
+                CÁCH 2 (production): sau khi chạy "npm run build" trong project React,
+                copy thư mục dist/ vào frontend/static/analytics/ rồi đổi src thành:
+                src="../../static/analytics/index.html"
+                → Không cần port 5173 nữa, phục vụ qua cùng web server với port 5500.
+            -->
+            <div class="frame-loading" id="frameLoading">
+                <div class="spinner"></div>
+                <span>Đang tải dashboard khai thác dữ liệu...</span>
+            </div>
+            <iframe
+                id="analyticsFrame"
+                src="../../static/analytics/index.html"
+                style="display:none;"
+                onload="onFrameLoaded()"
+                onerror="onFrameError()"
+                
+            ></iframe>
+        </div>
+    </div><!-- /tab-analytics -->
+
+</div><!-- /admin-container -->
+
+<script src="../../static/js/staff/order-api.js"></script>
+<script src="../../static/js/admin-report.js"></script>
+<script>
+// ── Tab switcher ─────────────────────────────────────────────────
+function switchTab(panelId, btn) {
+    // Ẩn tất cả panels
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+
+    // Hiện panel được chọn
+    document.getElementById(panelId).classList.add('active');
+    btn.classList.add('active');
+
+    // Khi chuyển sang tab analytics, bắt đầu load iframe
+    if (panelId === 'tab-analytics') {
+        const frame = document.getElementById('analyticsFrame');
+        // Chỉ set src lần đầu (lazy load), không reload mỗi lần click
+        if (!frame.dataset.loaded) {
+            frame.style.display = 'block';
+            frame.dataset.loaded = 'true';
+        }
+    }
+}
+
+// ── Iframe load handlers ─────────────────────────────────────────
+function onFrameLoaded() {
+    document.getElementById('frameLoading').style.display = 'none';
+    document.getElementById('analyticsFrame').style.display = 'block';
+}
+
+function onFrameError() {
+    document.getElementById('frameLoading').innerHTML = `
+        <div style="text-align:center; color:#c0392b;">
+            <div style="font-size:32px; margin-bottom:12px;">⚠️</div>
+            <strong>Không kết nối được React app tại localhost:5173</strong><br>
+            <span style="font-size:13px; color:#64748b; margin-top:8px; display:block;">
+                Kiểm tra lại: <code>cd analytics-dashboard && npm run dev</code>
+            </span>
+        </div>`;
+}
+</script>
 </body>
 </html>

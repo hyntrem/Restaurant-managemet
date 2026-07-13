@@ -8,6 +8,7 @@
   // Các biến quản lý bộ nhớ đệm cho Tab Delivery Hub
   let deliveryOrdersCache = [];
   let currentSelectedDelivery = null;
+  let currentModifyOrderId = null; 
 
   /* ── AUTH ── */
   function getStaffUser() {
@@ -52,7 +53,7 @@
     const deliveryHub = document.getElementById("screenDeliveryHub");
     if (deliveryHub) deliveryHub.classList.toggle("hidden", screenId !== "deliveryHub");
 
-     const readyOrders = document.getElementById("screenReadyOrders");
+    const readyOrders = document.getElementById("screenReadyOrders");
     if (readyOrders) readyOrders.classList.toggle("hidden", screenId !== "readyOrders");
 
     var main = document.querySelector(".staff-main");
@@ -248,7 +249,11 @@
   }
 
   /* ── ACTIONS ── */
-  globalThis.createOrder = async function () {
+  globalThis.createOrder = async function (e) {
+    // 🟢 CHỐNG SẬP: Ngăn chặn triệt để hành vi ép reload trang từ thẻ form HTML nếu có
+    if (e && e.preventDefault) e.preventDefault();
+    if (globalThis.event) globalThis.event.preventDefault();
+
     if (!currentOrderType) { setMessage("Vui lòng chọn loại order trước."); return; }
     if (currentCart.length === 0) { setMessage("Vui lòng chọn ít nhất một món."); return; }
     
@@ -258,8 +263,7 @@
     if (currentOrderType === "EAT_IN" && !tableId) {
         setMessage("Order Eat In cần chọn hoặc nhập mã bàn."); return;
     }
-
-    // Kiểm tra dữ liệu đầu vào nghiêm ngặt cho đơn hàng DELIVERY bấm tại quầy
+// Kiểm tra thông tin giao hàng cho đơn Delivery
     let deliveryPhone = null;
     let deliveryAddress = null;
 
@@ -290,69 +294,64 @@
         }))
     };
     
-    const result = await globalThis.apiPost("/api/orders/", data);
-    if (!result.success) { setMessage(result.message || "Tạo order thất bại."); return; }
+    let result;
+    if (currentModifyOrderId) {
+        result = await globalThis.apiPut(`/api/orders/${currentModifyOrderId}`, data);
+    } else {
+        result = await globalThis.apiPost("/api/orders/", data);
+    }
+
+    if (!result.success) { setMessage(result.message || "Xử lý đơn hàng thất bại."); return; }
     
     const orderId = result.data.id || result.data.order_id || result.data.order_code;
     let rawTotalAmount = result.data.total_amount || result.data.total_price || calculateSubtotal();
     let cleanTotalAmount = parseInt(rawTotalAmount.toString().replace(/[^0-9]/g, '')) || 0;
 
-    //  Lưu thông tin SẠCH vào localStorage để các trang sau đọc chuẩn xác
     globalThis.localStorage.setItem("currentInvoiceId", orderId);
     globalThis.localStorage.setItem("currentTotal", cleanTotalAmount.toString());
     globalThis.localStorage.setItem("currentItems", JSON.stringify(currentCart));
     
-    //  Ghim chặt thông tin khách vào mã order_code công khai
     if (currentOrderType === "DELIVERY") {
         const deliveryInfo = {
             phone: deliveryPhone,
             address: deliveryAddress
         };
-        // Lấy chuẩn mã code công khai (Ví dụ: ORD-123456) để làm Key
         const finalCodeKey = result.data.order_code || result.data.id || orderId;
         globalThis.localStorage.setItem(`delivery_info_${finalCodeKey}`, JSON.stringify(deliveryInfo));
     }
     
-
-    //  Reset giỏ hàng hiện tại sau khi đã chuyển giao dữ liệu
     currentCart = [];
     selectedItemIndex = null;
     renderCart();
+    currentModifyOrderId = null;
 
     // ========================================================
-    // 🟢  LUỒNG ĐIỀU HƯỚNG TỰ ĐỘNG KHÔNG CẦN QUA NÚT BẤM
+    // 🟢 LUỒNG ĐIỀU HƯỚNG MỚI: BẢO VỆ TAB KHÔNG BỊ THOÁT
     // ========================================================
     if (currentOrderType === "DELIVERY") {
-        // Thông báo đặt đơn thành công rực rỡ
-        
-        // ⚡ THẦN CHÚ: Ép hệ thống mở bung màn hình Tab Delivery Hub lên ngay lập tức!
-        showScreen("deliveryHub");
-        
-        // Kích hoạt nạp lại danh sách đơn hàng để cái đơn vừa tạo nổ lên chành bành dướt danh sách chờ
-        globalThis.loadDeliveryOrders();
+        setMessage("🎉 Xử lý đơn Delivery thành công! Đang chuyển hướng...");
+        // Đá hướng bằng URL Query rõ ràng, dứt điểm lỗi bám đuôi mã sửa cũ
+        globalThis.location.href = "cashier-dashboard.html?tab=deliveryHub";
     } else {
-        // Các loại đơn bình thường khác (Eat In, Take Away) thì chuyển sang màn hình thanh toán tại quầy như cũ
         globalThis.location.href = "payment-dashboard.html";
     }
   };
+
   // ========================================================
-  // 🛵 CORE LOGIC: TAB HUB DELIVERY CỦA CASHIER (3 TRẠNG THÁI)
+  // 🛵 CORE LOGIC: TAB HUB DELIVERY CỦA CASHIER
   // ========================================================
   
-  // 1. Mở nhanh tab điều phối vận đơn Delivery
   globalThis.openDeliveryHubTab = function() {
     showScreen("deliveryHub");
     globalThis.loadDeliveryOrders();
   };
 
-  // 2. Tải danh sách đơn hàng DELIVERY từ chính xác cổng 5004 của Order Service
   globalThis.loadDeliveryOrders = async function () {
     try {
       const token = globalThis.localStorage.getItem("staff_token");
       const headers = { "Content-Type": "application/json" };
       if (token) headers["Authorization"] = `Bearer ${token}`;
 
-      // Ép gọi fetch trực tiếp sang cổng Gateway 8080 xử lý đơn hàng của nhóm bồ
       const response = await fetch("http://localhost:8080/api/orders/", {
         method: "GET",
         headers: headers
@@ -360,7 +359,6 @@
 
       if (response.ok) {
         const result = await response.json();
-        // Lọc lấy toàn bộ đơn hàng có order_type là DELIVERY từ database tổng trả về
         const allOrders = result.data || result || [];
         deliveryOrdersCache = allOrders.filter(o => o.order_type === "DELIVERY");
         
@@ -372,15 +370,16 @@
     } catch (error) {
       console.error("Lỗi kết nối Order Service:", error);
       const el = document.getElementById("deliveryCardsContainer");
-      if (el) el.innerHTML = '<p class="empty-text" style="color:#ef4444;text-align:center;">⚠️ Không thể kết nối đến cổng 5004 (Network Error)</p>';
+      if (el) el.innerHTML = '<p class="empty-text" style="color:#ef4444;text-align:center;">⚠️ Không thể kết nối đến hệ thống (Network Error)</p>';
     }
   };
+
   globalThis.openReadyOrdersTab = function () {
     showScreen("readyOrders");
     globalThis.loadReadyOrders();
-};
+  };
 
-globalThis.loadReadyOrders = async function () {
+  globalThis.loadReadyOrders = async function () {
     const container = document.getElementById("readyOrdersContainer");
     try {
         const result = await globalThis.apiGet("/api/orders/");
@@ -394,9 +393,9 @@ globalThis.loadReadyOrders = async function () {
         console.error("[Cashier] Lỗi loadReadyOrders:", error);
         if (container) container.innerHTML = '<p class="empty-text" style="color:#ef4444;">Lỗi kết nối hệ thống.</p>';
     }
-};
+  };
 
-function renderReadyOrders(orders) {
+  function renderReadyOrders(orders) {
     const container = document.getElementById("readyOrdersContainer");
     if (!container) return;
 
@@ -415,9 +414,9 @@ function renderReadyOrders(orders) {
             <button type="button" class="primary-btn" style="padding:8px 14px;" onclick="globalThis.receiveOrder(${order.id})">Khách Nhận Món</button>
         </div>
     `).join("");
-}
+  }
 
-globalThis.receiveOrder = async function (orderId) {
+  globalThis.receiveOrder = async function (orderId) {
     if (!confirm("Xác nhận khách đã nhận món / hoàn tất đơn hàng?")) return;
     try {
         const result = await globalThis.apiPut(`/api/orders/${orderId}/receive`);
@@ -431,8 +430,8 @@ globalThis.receiveOrder = async function (orderId) {
         console.error("[Cashier] Lỗi receiveOrder:", error);
         alert("Lỗi hệ thống khi xác nhận nhận món.");
     }
-};
-  // 3. Render danh sách thẻ đơn hàng mang trạng thái PENDING
+  };
+
   function renderDeliveryHubCards() {
     const container = document.getElementById("deliveryCardsContainer");
     if (!container) return;
@@ -467,13 +466,11 @@ globalThis.receiveOrder = async function (orderId) {
       container.appendChild(card);
     });
   }
-
-  // 4. Xem chi tiết hóa đơn (trái) và thông tin đặt hàng khách (phải)
+// Xem chi tiết đơn hàng Delivery khi click vào card
   async function showDeliveryHubDetails(order) {
     currentSelectedDelivery = order;
     renderDeliveryHubCards();
 
-    // 🟢 Bốc chuẩn theo mã order_code hiển thị trên card danh sách
     const currentCode = order.order_code || order.id;
     const savedInfoText = globalThis.localStorage.getItem(`delivery_info_${currentCode}`);
     
@@ -485,16 +482,14 @@ globalThis.receiveOrder = async function (orderId) {
         finalPhone = savedInfo.phone || "-";
         finalAddress = savedInfo.address || "-";
     } else {
-        // Dự phòng nếu DB có sẵn trường này dướt tương lai
         finalPhone = order.customer_phone || order.phone || "-";
         finalAddress = order.delivery_address || order.address || "-";
     }
-
-    // Đổ thông tin đặt hàng sạch sẽ sang cột bên phải
+// Cập nhật thông tin chi tiết lên UI
     document.getElementById("valOrderCode").innerText = currentCode;
     document.getElementById("valCustomerName").innerText = order.customer_name || "Khách đặt tại quầy";
-    document.getElementById("valCustomerPhone").innerText = finalPhone; // Hiện chuẩn đét dữ liệu gõ tay
-    document.getElementById("valAddress").innerText = finalAddress;     // Hiện chuẩn đét dữ liệu gõ tay
+    document.getElementById("valCustomerPhone").innerText = finalPhone;
+    document.getElementById("valAddress").innerText = finalAddress;
     document.getElementById("valPaymentMethod").innerText = order.id % 2 === 0 ? "Thẻ Ngân Hàng QR" : "Tiền mặt (CASH)";
     document.getElementById("lblDeliveryTotal").innerText = `${Number(order.total_amount || 0).toLocaleString("vi-VN")} VNĐ`;
 
@@ -519,31 +514,24 @@ globalThis.receiveOrder = async function (orderId) {
       tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#ef4444; padding:15px;">⚠️ Không thể tải danh sách món ăn từ đơn hàng này.</td></tr>';
     }
   }
-
-  // 5. Hàm điều phối hành động tối cao cho 3 nút (Accept, Modify, Cancel)
+// Xử lý các hành động ACCEPT, MODIFY, CANCEL cho đơn hàng Delivery
   globalThis.processDeliveryAction = async function (action) {
     if (!currentSelectedDelivery) { alert("Vui lòng chọn một đơn hàng Delivery cần xử lý trước!"); return; }
     const orderId = currentSelectedDelivery.id;
 
     if (action === "ACCEPT") {
-      //  Nhận đơn xong, mọi thứ chuẩn chỉnh rồi mới cho đi THANH TOÁN!
-      
-      // Bốc dữ liệu của đơn hàng đang chọn ném vào localStorage để trang payment-dashboard.html đọc chuẩn xác
       let rawTotalAmount = currentSelectedDelivery.total_amount || calculateSubtotal();
       let cleanTotalAmount = parseInt(rawTotalAmount.toString().replace(/[^0-9]/g, '')) || 0;
       
       globalThis.localStorage.setItem("currentInvoiceId", currentSelectedDelivery.id || currentSelectedDelivery.order_code);
       globalThis.localStorage.setItem("currentTotal", cleanTotalAmount.toString());
       
-      // Sau khi Accept thành công -> Chính thức đá hướng sang trang thanh toán!
       globalThis.location.href = "payment-dashboard.html";
     } 
     else if (action === "MODIFY") {
-      // ➔ TRẠNG THÁI 2: MODIFY -> Chuyển ngược về màn hình POS chọn món để nhân viên SỬA ĐƠN
       globalThis.location.href = `cashier-dashboard.html?modify_order_id=${orderId}&type=DELIVERY`;
     } 
     else if (action === "CANCEL") {
-      // ➔ TRẠNG THÁI 3: CANCEL -> Không nhận đơn, cập nhật trạng thái sang CANCELLED (XÓA KHỎI DANH SÁCH CHỜ)
       const confirmCancel = confirm("Bạn có chắc chắn muốn CANCEL (Hủy - Không nhận) đơn hàng Delivery này?");
       if (!confirmCancel) return;
 
@@ -617,7 +605,7 @@ globalThis.receiveOrder = async function (orderId) {
     const user = protectPage();
     if (user) setUserInfo(user);
 
-    showScreen("orderType");
+    // Mặc định ban đầu hệ thống thiết lập cơ bản
     bindOrderTypeButtons();
     bindModifierButtons();
     loadCategories();
@@ -632,18 +620,28 @@ globalThis.receiveOrder = async function (orderId) {
     }, 5000);
 
     // ========================================================
-    // 🔍 LUỒNG KIỂM TRA ĐIỀU PHỐI ĐƠN SỬA ĐỔI (MODIFY_ORDER_ID THÔNG MẠCH)
+    // 🔍 ĐIỀU PHỐI ĐỘNG QUA THAM SỐ URL (GIỮ TAB KIÊN CỐ)
     // ========================================================
     const urlParams = new URLSearchParams(globalThis.location.search);
-    const modifyOrderId = urlParams.get('modify_order_id');
+    const targetTab = urlParams.get('tab');
+
+    // Luồng 1: Nếu URL chỉ định mở thẳng tab Delivery Hub (Vừa lưu đơn xong)
+    if (targetTab === 'deliveryHub') {
+        showScreen("deliveryHub");
+        globalThis.loadDeliveryOrders();
+        setMessage("🎉 Đã tự động tải danh sách đơn Delivery mới nhất.");
+        return; // Dừng luồng xử lý tại đây để giữ vững màn hình Hub
+    }
+
+    // Luồng 2: Kiểm tra luồng sửa đơn cũ (Modify)
+    currentModifyOrderId = urlParams.get('modify_order_id');
     const isDelivery = urlParams.get('type') === 'DELIVERY';
 
-    if (modifyOrderId && isDelivery) {
+    if (currentModifyOrderId && isDelivery) {
         currentOrderType = "DELIVERY";
         const typeTag = document.getElementById("currentOrderType");
         if (typeTag) typeTag.textContent = "DELIVERY";
-        
-        // Mở ô nhập liệu thông tin khách hàng giao nhận
+        // Hiển thị ô nhập thông tin giao nhận khách hàng
         const deliveryInputBox = document.getElementById("deliveryInputBox");
         if (deliveryInputBox) deliveryInputBox.style.display = "block";
 
@@ -655,10 +653,8 @@ globalThis.receiveOrder = async function (orderId) {
             btnCreate.style.background = "#10b981";
         }
 
-        // Bốc chi tiết giỏ hàng cũ từ DB MySQL Workbench lên giao diện 3 cột POS của bồ để sửa
-        const result = await globalThis.apiGet(`/api/orders/${modifyOrderId}`);
+        const result = await globalThis.apiGet(`/api/orders/${currentModifyOrderId}`);
         if (result && result.success && result.data) {
-            // Điền lại SĐT và Địa chỉ cũ vào ô input để nhân viên kiểm tra sửa đổi
             if (document.getElementById("deliveryPhone")) document.getElementById("deliveryPhone").value = result.data.customer_phone || "";
             if (document.getElementById("deliveryAddress")) document.getElementById("deliveryAddress").value = result.data.delivery_address || "";
 
@@ -673,6 +669,9 @@ globalThis.receiveOrder = async function (orderId) {
             }
             renderCart();
         }
+    } else {
+        // Luồng 3: Nếu không có tham số gì đặc biệt thì hiện màn hình chọn loại Order thông thường
+        showScreen("orderType");
     }
   });
 }());

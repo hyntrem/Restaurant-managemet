@@ -2,7 +2,7 @@ const ORDER_URL = "http://localhost:8080/api/orders";
 
 function getOrderHeaders() {
     const token = localStorage.getItem("staff_token");
-    console.log("ORDER TOKEN =", token);
+    //console.log("ORDER TOKEN =", token);
     return {
         "Content-Type": "application/json",
         ...(token

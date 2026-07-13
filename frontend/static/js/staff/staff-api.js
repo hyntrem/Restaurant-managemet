@@ -46,7 +46,7 @@
 
     const token = localStorage.getItem("staff_token");
 
-    console.log("STAFF TOKEN =", token);
+    //console.log("STAFF TOKEN =", token);
 
     return {
         "Content-Type": "application/json",
