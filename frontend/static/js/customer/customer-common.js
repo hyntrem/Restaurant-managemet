@@ -622,14 +622,17 @@ async function handleOrderSubmit(e) {
 
     const cart = getCart();
 
-    globalThis.requestOtpVerification(phone, async (verified) => {
-        if (!verified) return;
+    globalThis.requestOtpVerification('ORDER_CREATION', phone, async (verified, verificationToken) => {
+        if (!verified || !verificationToken) return;
 
         submitBtn.disabled = true;
         submitBtn.innerHTML = `<span class="animate-spin inline-block border-2 border-primary border-t-transparent rounded-full w-4 h-4 mr-2"></span> Đang đặt đơn...`;
 
         // Prepare order request
         const token = localStorage.getItem('customer_token');
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        if (verificationToken) headers['X-Verification-Token'] = verificationToken;
 
         const orderPayload = {
             order_type: 'DELIVERY',
@@ -645,10 +648,7 @@ async function handleOrderSubmit(e) {
         try {
             const response = await fetch(`${API_BASE_URL}/api/orders/`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
+                headers: headers,
                 body: JSON.stringify(orderPayload)
             });
 
@@ -1087,13 +1087,13 @@ globalThis.showOrdersPopup = showOrdersPopup;
 globalThis.showOrderDetailPopup = showOrderDetailPopup;
 
 // 9. OTP Phone Verification for orders/reservations
-globalThis.requestOtpVerification = async (phone, callback) => {
+globalThis.requestOtpVerification = async (purpose, phone, callback) => {
     // 1. Trigger API send-otp
     try {
         const sendResponse = await fetch(`${API_BASE_URL}/api/users/send-otp`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ phone: phone })
+            body: JSON.stringify({ phone: phone, purpose: purpose })
         });
         const sendResult = await sendResponse.json();
 
@@ -1205,10 +1205,10 @@ globalThis.requestOtpVerification = async (phone, callback) => {
         resendBtn.disabled = true;
         resendBtn.textContent = 'Đang gửi...';
         try {
-            const res = await fetch(`${API_BASE_URL}/api/users/resend-otp`, {
+            const res = await fetch(`${API_BASE_URL}/api/users/send-otp`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone: phone })
+                body: JSON.stringify({ phone: phone, purpose: purpose })
             });
             const data = await res.json();
             if (res.ok && data.success) {
@@ -1250,14 +1250,14 @@ globalThis.requestOtpVerification = async (phone, callback) => {
             const verifyResponse = await fetch(`${API_BASE_URL}/api/users/verify-otp`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone: phone, otp_code: enteredOtp })
+                body: JSON.stringify({ phone: phone, purpose: purpose, otp_code: enteredOtp })
             });
             const verifyResult = await verifyResponse.json();
 
             if (verifyResponse.ok && verifyResult.success) {
                 clearInterval(countdownInterval);
                 modal.remove();
-                callback(true);
+                callback(true, verifyResult.verification_token);
             } else {
                 otpError.textContent = verifyResult.message || 'Mã OTP không chính xác. Vui lòng kiểm tra lại.';
                 otpError.classList.remove('hidden');

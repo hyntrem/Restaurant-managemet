@@ -63,17 +63,17 @@ def find_user_by_username(username):
     return dict(result) if result else None
 
 
-def find_user_by_email(email):
+def find_user_by_identifier(identifier):
     db = SessionLocal()
 
     query = text("""
-        SELECT id, email
+        SELECT id, email, phone
         FROM users
-        WHERE email = :email
+        WHERE email = :identifier OR phone = :identifier
         LIMIT 1
     """)
 
-    result = db.execute(query, {"email": email}).mappings().first()
+    result = db.execute(query, {"identifier": identifier}).mappings().first()
     db.close()
 
     return dict(result) if result else None
@@ -135,16 +135,16 @@ def get_all_users():
     return [dict(row) for row in result]
 
 
-def save_otp(email, otp_code, expired_at):
+def save_otp(identifier, otp_code, expired_at):
     db = SessionLocal()
 
     query = text("""
         INSERT INTO password_otps (email, otp_code, expired_at)
-        VALUES (:email, :otp_code, :expired_at)
+        VALUES (:identifier, :otp_code, :expired_at)
     """)
 
     db.execute(query, {
-        "email": email,
+        "identifier": identifier,
         "otp_code": otp_code,
         "expired_at": expired_at
     })
@@ -153,13 +153,13 @@ def save_otp(email, otp_code, expired_at):
     db.close()
 
 
-def verify_otp(email, otp_code):
+def verify_otp(identifier, otp_code):
     db = SessionLocal()
 
     query = text("""
         SELECT id, otp_code, attempts
         FROM password_otps
-        WHERE email = :email
+        WHERE email = :identifier
         AND is_used = FALSE
         AND expired_at > NOW()
         ORDER BY id DESC
@@ -167,7 +167,7 @@ def verify_otp(email, otp_code):
     """)
 
     result = db.execute(query, {
-        "email": email
+        "identifier": identifier
     }).mappings().first()
 
     if not result:
@@ -216,20 +216,20 @@ def verify_otp(email, otp_code):
             return False, f"Mã OTP không chính xác. Bạn còn {3 - new_attempts} lần thử."
 
 
-def check_otp_rate_limit(email, limit_seconds=30):
+def check_otp_rate_limit(identifier, limit_seconds=30):
     db = SessionLocal()
 
     query = text("""
         SELECT id
         FROM password_otps
-        WHERE email = :email
+        WHERE email = :identifier
         AND created_at > DATE_SUB(NOW(), INTERVAL :limit_seconds SECOND)
         ORDER BY id DESC
         LIMIT 1
     """)
 
     result = db.execute(query, {
-        "email": email,
+        "identifier": identifier,
         "limit_seconds": limit_seconds
     }).mappings().first()
 
@@ -237,17 +237,17 @@ def check_otp_rate_limit(email, limit_seconds=30):
     return True if result else False
 
 
-def update_password(email, password_hash):
+def update_password(identifier, password_hash):
     db = SessionLocal()
 
     query = text("""
         UPDATE users
         SET password_hash = :password_hash
-        WHERE email = :email
+        WHERE email = :identifier OR phone = :identifier
     """)
 
     db.execute(query, {
-        "email": email,
+        "identifier": identifier,
         "password_hash": password_hash
     })
 

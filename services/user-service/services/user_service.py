@@ -1,13 +1,17 @@
 import random
 import bcrypt
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+import uuid
+import jwt
+from enum import Enum
+from common.config import JWT_SECRET_KEY as SECRET_KEY
 
 from common.auth import generate_token
 from models.user_model import (
     create_user,
     find_user_by_username,
-    find_user_by_email,
+    find_user_by_identifier,
     find_user_by_id,
     get_all_users,
     save_otp,
@@ -15,6 +19,11 @@ from models.user_model import (
     check_otp_rate_limit,
     update_password
 )
+
+class Purpose(Enum):
+    ORDER_CREATION = "ORDER_CREATION"
+    TABLE_RESERVATION = "TABLE_RESERVATION"
+    PASSWORD_RESET = "PASSWORD_RESET"
 
 
 def register_user(data):
@@ -125,11 +134,26 @@ def logout_user():
 def send_otp_service(data):
     email = data.get("email")
     phone = data.get("phone")
+    purpose_str = data.get("purpose")
 
     if not email and not phone:
         return {
             "success": False,
             "message": "Email or phone is required"
+        }, 400
+
+    if not purpose_str:
+        return {
+            "success": False,
+            "message": "Purpose is required"
+        }, 400
+
+    try:
+        purpose = Purpose(purpose_str)
+    except ValueError:
+        return {
+            "success": False,
+            "message": f"Invalid purpose. Must be one of: {[e.value for e in Purpose]}"
         }, 400
 
     identifier = email if email else phone
@@ -141,22 +165,24 @@ def send_otp_service(data):
             "message": "Vui lòng đợi 30 giây trước khi yêu cầu gửi lại mã mới."
         }, 429
 
-    if email:
-        user = find_user_by_email(email)
+    if purpose == Purpose.PASSWORD_RESET:
+        user = find_user_by_identifier(identifier)
         if not user:
             return {
                 "success": False,
-                "message": "Email does not exist"
+                "message": "User does not exist"
             }, 404
 
-    otp_code = str(random.randint(100000, 999999))
+    # DEV Override: Use 123456 for testing in development
+    if os.getenv("APP_ENV") == "development":
+        otp_code = "123456"
+        print(f"[TESTING ONLY] DEV MODE Enabled. OTP for {identifier} forced to: 123456")
+    else:
+        otp_code = str(random.randint(100000, 999999))
+
     expired_at = datetime.now() + timedelta(minutes=5)
 
     save_otp(identifier, otp_code, expired_at)
-
-    # For testing/demo: print OTP to console logs
-    if os.getenv("APP_ENV") == "development":
-        print(f"[TESTING ONLY] Generated OTP for {identifier} is: {otp_code}")
 
     return {
         "success": True,
@@ -168,11 +194,26 @@ def verify_otp_service(data):
     email = data.get("email")
     phone = data.get("phone")
     otp_code = data.get("otp_code")
+    purpose_str = data.get("purpose")
 
     if not otp_code or (not email and not phone):
         return {
             "success": False,
             "message": "OTP code and email or phone are required"
+        }, 400
+
+    if not purpose_str:
+        return {
+            "success": False,
+            "message": "Purpose is required"
+        }, 400
+
+    try:
+        purpose = Purpose(purpose_str)
+    except ValueError:
+        return {
+            "success": False,
+            "message": f"Invalid purpose. Must be one of: {[e.value for e in Purpose]}"
         }, 400
 
     identifier = email if email else phone
@@ -184,24 +225,44 @@ def verify_otp_service(data):
             "message": message
         }, 400
 
+    # Nếu mục đích là PASSWORD_RESET, chỉ cần trả về OK không cần verification token phức tạp vì API reset password 
+    # đang tự check OTP lần nữa. (Hoặc có thể trả token và để reset_password check token).
+    # Hiện tại giữ nguyên luồng cũ cho reset_password để tránh gãy code hiện tại.
+
+    # Sinh Verification Token
+    expires_in_sec = 300
+    payload = {
+        "sub": identifier,
+        "purpose": purpose.value,
+        "jti": str(uuid.uuid4()),
+        "iss": "user-service",
+        "aud": "customer-action",
+        "exp": datetime.now(timezone.utc) + timedelta(seconds=expires_in_sec)
+    }
+    verification_token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
+
     return {
         "success": True,
-        "message": message
+        "message": message,
+        "verification_token": verification_token,
+        "expires_in": expires_in_sec
     }, 200
 
 
 def reset_password_service(data):
     email = data.get("email")
+    phone = data.get("phone")
     otp_code = data.get("otp_code")
     new_password = data.get("new_password")
 
-    if not email or not otp_code or not new_password:
+    if not otp_code or not new_password or (not email and not phone):
         return {
             "success": False,
-            "message": "Email, OTP and new password are required"
+            "message": "Email or phone, OTP and new password are required"
         }, 400
 
-    is_valid, message = verify_otp(email, otp_code)
+    identifier = email if email else phone
+    is_valid, message = verify_otp(identifier, otp_code)
 
     if not is_valid:
         return {
@@ -214,7 +275,7 @@ def reset_password_service(data):
         bcrypt.gensalt()
     ).decode("utf-8")
 
-    update_password(email, password_hash)
+    update_password(identifier, password_hash)
 
     return {
         "success": True,

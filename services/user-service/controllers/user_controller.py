@@ -30,8 +30,15 @@ def logout():
 
 
 def send_otp():
-    data = request.get_json()
+    try:
+        data = request.get_json()
+        print(f"[DEBUG] send_otp received: {data}")
+    except Exception as e:
+        print(f"[DEBUG] send_otp JSON parse error: {e}")
+        return jsonify({"success": False, "message": "Invalid JSON"}), 400
+    
     response, status_code = send_otp_service(data)
+    print(f"[DEBUG] send_otp returning: {response}, {status_code}")
     return jsonify(response), status_code
 
 

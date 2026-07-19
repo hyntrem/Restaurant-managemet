@@ -7,9 +7,8 @@ pyjwt
 bcrypt
 requests
 cryptography
-mysql-connector-python
-apscheduler
-pandas
-numpy
-mlxtend
-scikit-learn
+pytest
+pytest-mock
+pytest-cov
+selenium
+redis

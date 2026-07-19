@@ -18,5 +18,7 @@ DATABASE_URL = os.getenv(
     f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset={DB_CHARSET}"
 )
 
+REDIS_URL = os.getenv("REDIS_URL", "redis://restaurant_redis:6379/0")
+
 # JWT Security
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "restaurant_secret_key")

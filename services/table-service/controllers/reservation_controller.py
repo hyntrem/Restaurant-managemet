@@ -8,6 +8,9 @@ from services.reservation_service import (
     update_reservation_status_service,
     cancel_reservation_service
 )
+from common.verification_middleware import require_verification
+from common.redis_client import redis_client
+from flask import jsonify
 
 
 def check_availability_controller():
@@ -20,9 +23,28 @@ def check_availability_controller():
     return jsonify(res), status_code
 
 
+@require_verification(purpose="TABLE_RESERVATION")
 def create_reservation_controller():
-    res, status_code = create_reservation_service(request.json)
-    return jsonify(res), status_code
+    from flask import g
+    jti = g.verification.get("jti")
+    
+    # 1. Acquire Lock
+    lock_key = f"used_jti:{jti}"
+    is_first = redis_client.set(lock_key, "1", nx=True, ex=300)
+    if not is_first:
+        return jsonify({"success": False, "message": "Verification token đã được sử dụng hoặc đang xử lý."}), 409
+
+    try:
+        res, status_code = create_reservation_service(request.json)
+        
+        if status_code not in [200, 201]:
+            # Business logic failed, release the lock
+            redis_client.delete(lock_key)
+            
+        return jsonify(res), status_code
+    except Exception as e:
+        redis_client.delete(lock_key)
+        raise e
 
 
 def get_reservation_controller(reservation_code):

@@ -349,15 +349,15 @@
             const notes = document.getElementById('res-notes').value.trim();
 
             if (typeof globalThis.requestOtpVerification === 'function') {
-                globalThis.requestOtpVerification(phone, async (verified) => {
-                    if (!verified) return;
-                    await submitReservation();
+                globalThis.requestOtpVerification('TABLE_RESERVATION', phone, async (verified, verificationToken) => {
+                    if (!verified || !verificationToken) return;
+                    await submitReservation(verificationToken);
                 });
             } else {
                 await submitReservation();
             }
 
-            async function submitReservation() {
+            async function submitReservation(verificationToken = null) {
                 submitBtn.innerHTML = `<span class="animate-spin inline-block border-2 border-primary border-t-transparent rounded-full w-4 h-4 mr-2"></span> Đang xử lý...`;
                 submitBtn.disabled = true;
 
@@ -373,11 +373,13 @@
 
                 try {
                     // Call API
+                    const headers = { 'Content-Type': 'application/json' };
+                    if (verificationToken) {
+                        headers['X-Verification-Token'] = verificationToken;
+                    }
                     const response = await fetch(`${TABLE_API}/reservations`, {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
+                        headers: headers,
                         body: JSON.stringify(reservationData)
                     });
 

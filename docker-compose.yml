@@ -20,12 +20,25 @@ services:
       - ./database/seed_inventory.sql:/docker-entrypoint-initdb.d/03_seed_inventory.sql
       - ./database/migration_add_reservations.sql:/docker-entrypoint-initdb.d/04_migration_add_reservations.sql
       - ./database/migration_branch_service.sql:/docker-entrypoint-initdb.d/05_migration_branch_service.sql
-      - ./database/warehouse_schema.sql:/docker-entrypoint-initdb.d/06_warehouse_schema.sql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 5s
       timeout: 5s
       retries: 20
+    networks:
+      - restaurant_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: restaurant_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
     networks:
       - restaurant_network
 
@@ -45,6 +58,8 @@ services:
       PYTHONPATH: /app
     depends_on:
       mysql:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - restaurant_network
@@ -86,6 +101,8 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - restaurant_network
 
@@ -105,6 +122,8 @@ services:
       PYTHONPATH: /app
     depends_on:
       mysql:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - restaurant_network
@@ -145,6 +164,8 @@ services:
       PYTHONPATH: /app
     depends_on:
       mysql:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - restaurant_network

@@ -96,7 +96,7 @@ paths:
     post:
       tags:
         - Users
-      summary: Send OTP code for password reset
+      summary: Send OTP code
       requestBody:
         required: true
         content:
@@ -104,13 +104,59 @@ paths:
             schema:
               type: object
               required:
-                - email
+                - purpose
               properties:
                 email:
                   type: string
+                phone:
+                  type: string
+                purpose:
+                  type: string
+                  enum: [ORDER_CREATION, TABLE_RESERVATION, PASSWORD_RESET]
       responses:
         '200':
           description: OTP sent successfully
+
+  /api/users/verify-otp:
+    post:
+      tags:
+        - Users
+      summary: Verify OTP code and get Verification Token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - otp_code
+                - purpose
+              properties:
+                email:
+                  type: string
+                phone:
+                  type: string
+                otp_code:
+                  type: string
+                purpose:
+                  type: string
+                  enum: [ORDER_CREATION, TABLE_RESERVATION, PASSWORD_RESET]
+      responses:
+        '200':
+          description: OTP verified successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  verification_token:
+                    type: string
+                  expires_in:
+                    type: integer
 
   /api/users/reset-password:
     post:
@@ -124,11 +170,12 @@ paths:
             schema:
               type: object
               required:
-                - email
                 - otp
                 - new_password
               properties:
                 email:
+                  type: string
+                phone:
                   type: string
                 otp:
                   type: string
@@ -631,6 +678,13 @@ paths:
       summary: Create a new order
       security:
         - BearerAuth: []
+      parameters:
+        - in: header
+          name: X-Verification-Token
+          schema:
+            type: string
+          required: true
+          description: Verification token obtained from OTP verification
       requestBody:
         required: true
         content:
@@ -1221,6 +1275,13 @@ paths:
       tags:
         - Reservations
       summary: Create a table reservation (Public/Staff)
+      parameters:
+        - in: header
+          name: X-Verification-Token
+          schema:
+            type: string
+          required: true
+          description: Verification token obtained from OTP verification
       requestBody:
         required: true
         content:
