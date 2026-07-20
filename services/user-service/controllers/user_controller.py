@@ -1,5 +1,6 @@
-from flask import request, jsonify
+from flask import request, jsonify, g
 from common.auth import verify_token
+from common.verification_middleware import require_verification
 
 from services.user_service import (
     register_user,
@@ -42,9 +43,11 @@ def send_otp():
     return jsonify(response), status_code
 
 
+@require_verification(purpose="PASSWORD_RESET")
 def reset_password():
     data = request.get_json()
-    response, status_code = reset_password_service(data)
+    identifier = g.verification.get("sub")
+    response, status_code = reset_password_service(identifier, data)
     return jsonify(response), status_code
 
 

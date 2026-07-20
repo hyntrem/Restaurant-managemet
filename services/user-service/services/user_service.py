@@ -134,6 +134,7 @@ def logout_user():
 def send_otp_service(data):
     email = data.get("email")
     phone = data.get("phone")
+    username = data.get("username")
     purpose_str = data.get("purpose")
 
     if not email and not phone:
@@ -166,12 +167,24 @@ def send_otp_service(data):
         }, 429
 
     if purpose == Purpose.PASSWORD_RESET:
-        user = find_user_by_identifier(identifier)
-        if not user:
+        if not username:
             return {
                 "success": False,
-                "message": "User does not exist"
-            }, 404
+                "message": "Username is required for password reset"
+            }, 400
+        
+        user = find_user_by_username(username)
+        if not user or user.get("phone") != phone:
+            return {
+                "success": False,
+                "message": "Tên đăng nhập và số điện thoại không khớp."
+            }, 400
+        if user.get("role") != "CUSTOMER":
+            return {
+                "success": False,
+                "message": "Chỉ tài khoản khách hàng mới được phép khôi phục mật khẩu qua chức năng này."
+            }, 403
+        identifier = phone
 
     # DEV Override: Use 123456 for testing in development
     if os.getenv("APP_ENV") == "development":
@@ -225,10 +238,6 @@ def verify_otp_service(data):
             "message": message
         }, 400
 
-    # Nếu mục đích là PASSWORD_RESET, chỉ cần trả về OK không cần verification token phức tạp vì API reset password 
-    # đang tự check OTP lần nữa. (Hoặc có thể trả token và để reset_password check token).
-    # Hiện tại giữ nguyên luồng cũ cho reset_password để tránh gãy code hiện tại.
-
     # Sinh Verification Token
     expires_in_sec = 300
     payload = {
@@ -249,26 +258,22 @@ def verify_otp_service(data):
     }, 200
 
 
-def reset_password_service(data):
-    email = data.get("email")
-    phone = data.get("phone")
-    otp_code = data.get("otp_code")
+def reset_password_service(identifier, data):
     new_password = data.get("new_password")
 
-    if not otp_code or not new_password or (not email and not phone):
+    if not new_password:
         return {
             "success": False,
-            "message": "Email or phone, OTP and new password are required"
+            "message": "New password is required"
         }, 400
 
-    identifier = email if email else phone
-    is_valid, message = verify_otp(identifier, otp_code)
-
-    if not is_valid:
-        return {
-            "success": False,
-            "message": message
-        }, 400
+    user_basic = find_user_by_identifier(identifier)
+    if not user_basic:
+        return {"success": False, "message": "User not found"}, 404
+    
+    user_full = find_user_by_id(user_basic["id"])
+    if not user_full or user_full.get("role") != "CUSTOMER":
+        return {"success": False, "message": "Chỉ tài khoản khách hàng mới được phép khôi phục mật khẩu qua chức năng này."}, 403
 
     password_hash = bcrypt.hashpw(
         new_password.encode("utf-8"),

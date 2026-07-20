@@ -62,3 +62,80 @@ async function customerLogin() {
 
   globalThis.location.href = "menu.html";
 }
+
+// Reset Password Flow
+let resetVerificationToken = null;
+
+async function triggerResetOtp() {
+  const username = document.getElementById("username").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const msgEl = document.getElementById("message");
+  
+  if (!username || !phone) {
+    msgEl.innerText = "Vui lòng nhập Tên đăng nhập và Số điện thoại.";
+    return;
+  }
+  
+  const btn = document.getElementById("send-otp-btn");
+  btn.disabled = true;
+  btn.innerText = "Đang kiểm tra...";
+  msgEl.innerText = "";
+  
+  if (typeof globalThis.requestOtpVerification === 'function') {
+    globalThis.requestOtpVerification('PASSWORD_RESET', phone, (verified, verificationToken) => {
+      btn.disabled = false;
+      btn.innerText = "Gửi OTP";
+      
+      if (verified && verificationToken) {
+        // OTP thành công
+        resetVerificationToken = verificationToken;
+        // Ẩn form gửi OTP, hiện form mật khẩu mới
+        document.getElementById("request-otp-section").style.display = "none";
+        document.getElementById("new-password-section").style.display = "block";
+      }
+    }, username);
+  } else {
+    btn.disabled = false;
+    btn.innerText = "Gửi OTP";
+    msgEl.innerText = "Lỗi hệ thống: không tìm thấy hàm xác thực OTP.";
+  }
+}
+
+async function submitNewPassword() {
+  const newPassword = document.getElementById("new-password").value;
+  const confirmPassword = document.getElementById("confirm-password").value;
+  const msgEl = document.getElementById("reset-message");
+  
+  if (!newPassword || newPassword !== confirmPassword) {
+    msgEl.innerText = "Mật khẩu không khớp hoặc trống.";
+    return;
+  }
+  
+  const btn = document.getElementById("reset-password-btn");
+  btn.disabled = true;
+  btn.innerText = "Đang đổi mật khẩu...";
+  
+  try {
+    const res = await fetch(`${USER_API}/reset-password`, {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "X-Verification-Token": resetVerificationToken
+      },
+      body: JSON.stringify({ new_password: newPassword })
+    });
+    
+    const data = await res.json();
+    if (res.ok && data.success) {
+      alert("Đổi mật khẩu thành công! Vui lòng đăng nhập lại.");
+      globalThis.location.href = "login.html";
+    } else {
+      msgEl.innerText = data.message || "Đổi mật khẩu thất bại.";
+    }
+  } catch (err) {
+    msgEl.innerText = "Lỗi kết nối máy chủ.";
+  } finally {
+    btn.disabled = false;
+    btn.innerText = "Xác nhận đổi mật khẩu";
+  }
+}

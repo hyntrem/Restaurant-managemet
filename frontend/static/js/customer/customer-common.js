@@ -706,9 +706,9 @@ function showNotificationModal(success, title, htmlContent) {
             <div class="flex justify-center w-full">
                 ${icon}
             </div>
-            <h3 class="font-headline-md text-2xl font-bold text-primary">${title}</h3>
+            <h3 class="font-headline-md text-2xl font-bold text-[#00254e]">${title}</h3>
             <p class="font-body-md text-on-surface-variant leading-relaxed">${htmlContent}</p>
-            <button onclick="closeGlobalNotification()" class="w-full py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary-container transition-all active:scale-95 shadow-md">
+            <button onclick="closeGlobalNotification()" class="border-0 w-full py-3 bg-[#dded4e] text-[#00254e] font-bold rounded-lg hover:brightness-110 transition-all active:scale-95 shadow-md">
                 OK
             </button>
         </div>
@@ -1087,13 +1087,16 @@ globalThis.showOrdersPopup = showOrdersPopup;
 globalThis.showOrderDetailPopup = showOrderDetailPopup;
 
 // 9. OTP Phone Verification for orders/reservations
-globalThis.requestOtpVerification = async (purpose, phone, callback) => {
+globalThis.requestOtpVerification = async (purpose, phone, callback, username = null) => {
     // 1. Trigger API send-otp
     try {
+        const reqBody = { phone: phone, purpose: purpose };
+        if (username) reqBody.username = username;
+
         const sendResponse = await fetch(`${API_BASE_URL}/api/users/send-otp`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ phone: phone, purpose: purpose })
+            body: JSON.stringify(reqBody)
         });
         const sendResult = await sendResponse.json();
 
@@ -1120,10 +1123,10 @@ globalThis.requestOtpVerification = async (purpose, phone, callback) => {
     modal.innerHTML = `
         <div class="bg-white dark:bg-tertiary w-full max-w-md rounded-2xl shadow-2xl border border-white/20 p-8 flex flex-col items-center text-center space-y-6 animate-scale-in">
             <div class="flex justify-center w-full">
-                <span class="material-symbols-outlined text-6xl text-primary bg-surface-container p-4 rounded-full border-2 border-primary/20">lock_open</span>
+                <span class="material-symbols-outlined text-6xl text-[#00254e] bg-gray-100 p-4 rounded-full border-2 border-[#00254e]/20">lock_open</span>
             </div>
             <div>
-                <h3 class="font-headline-md text-2xl font-bold text-primary">Xác minh số điện thoại</h3>
+                <h3 class="font-headline-md text-2xl font-bold text-[#00254e]">Xác minh số điện thoại</h3>
                 <p class="font-body-md text-on-surface-variant leading-relaxed mt-2">
                     Mã xác thực gồm 6 chữ số đã được gửi đến số điện thoại <b>${phone}</b>.
                 </p>
@@ -1139,17 +1142,19 @@ globalThis.requestOtpVerification = async (purpose, phone, callback) => {
                 <p id="phone-otp-error" class="text-xs text-red-600 font-semibold hidden">Mã OTP không chính xác. Vui lòng kiểm tra lại.</p>
                 
                 <div class="text-right">
-                    <button id="phone-otp-resend" class="text-xs text-primary font-semibold hover:underline disabled:opacity-50 disabled:no-underline disabled:cursor-not-allowed">
+                    <button
+                        id="phone-otp-resend"
+                        class="border-0 bg-transparent text-xs text-[#00254e] font-semibold hover:underline disabled:opacity-50 disabled:no-underline disabled:cursor-not-allowed">
                         Gửi lại mã (30s)
                     </button>
                 </div>
             </div>
             
             <div class="flex gap-4 w-full pt-2">
-                <button id="phone-otp-cancel" class="flex-1 py-3 border border-outline text-primary font-bold rounded-lg hover:bg-surface-container-low transition-all active:scale-95">
+                <button id="phone-otp-cancel" class="border-0 flex-1 py-3 text-primary font-bold rounded-lg border border-gray-300 hover:bg-gray-100 transition-all active:scale-95">
                     Hủy
                 </button>
-                <button id="phone-otp-submit" class="flex-1 py-3 bg-secondary text-primary font-bold rounded-lg hover:brightness-110 active:scale-95 transition-all shadow-md">
+                <button id="phone-otp-submit" class="border-0 flex-1 py-3 bg-[#dded4e] text-[#00254e] font-bold rounded-lg hover:brightness-110 active:scale-95 transition-all">
                     Xác nhận
                 </button>
             </div>
@@ -1205,10 +1210,13 @@ globalThis.requestOtpVerification = async (purpose, phone, callback) => {
         resendBtn.disabled = true;
         resendBtn.textContent = 'Đang gửi...';
         try {
+            const reqBody = { phone: phone, purpose: purpose };
+            if (username) reqBody.username = username;
+
             const res = await fetch(`${API_BASE_URL}/api/users/send-otp`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone: phone, purpose: purpose })
+                body: JSON.stringify(reqBody)
             });
             const data = await res.json();
             if (res.ok && data.success) {
