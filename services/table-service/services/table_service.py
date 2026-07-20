@@ -70,7 +70,17 @@ def edit_table_info(table_id, data):
             "success": False,
             "message": "Mã bàn không tồn tại "
         }, 404
+        
     table_number = data.get("table_number")
+    area_id = data.get("area_id")
+    capacity = data.get("capacity")
+
+    if not table_number or not area_id or not capacity:
+        return {
+            "success": False,
+            "message": "Vui lòng điền số bàn, mã khu vực và sức chứa"
+        }, 400
+
     existing_table = get_table_by_number(table_number)
     if existing_table and existing_table["id"] != table_id:
         return {

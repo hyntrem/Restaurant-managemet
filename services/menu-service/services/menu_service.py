@@ -63,7 +63,13 @@ def update_category(category_id, data):
 
 
 def delete_category(category_id):
-    delete_category_by_id(category_id)
+    try:
+        delete_category_by_id(category_id)
+    except Exception as e:
+        return {
+            "success": False,
+            "message": "Cannot delete category (might be in use)"
+        }, 400
 
     return {
         "success": True,
@@ -175,7 +181,13 @@ def update_menu_item(item_id, data):
 
 
 def delete_menu_item(item_id):
-    delete_menu_item_by_id(item_id)
+    try:
+        delete_menu_item_by_id(item_id)
+    except Exception as e:
+        return {
+            "success": False,
+            "message": "Cannot delete menu item (might be in use)"
+        }, 400
 
     return {
         "success": True,
