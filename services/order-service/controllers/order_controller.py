@@ -18,13 +18,15 @@ from common.database import SessionLocal
 def create_order_controller():
     """POST /api/orders"""
     from flask import g
-    jti = g.verification.get("jti")
+    jti = getattr(g, "verification", {}).get("jti")
     
     # 1. Acquire Lock
-    lock_key = f"used_jti:{jti}"
-    is_first = redis_client.set(lock_key, "1", nx=True, ex=300)
-    if not is_first:
-        return jsonify({"success": False, "message": "Verification token đã được sử dụng hoặc đang xử lý."}), 409
+    lock_key = None
+    if jti:
+        lock_key = f"used_jti:{jti}"
+        is_first = redis_client.set(lock_key, "1", nx=True, ex=300)
+        if not is_first:
+            return jsonify({"success": False, "message": "Verification token đã được sử dụng hoặc đang xử lý."}), 409
 
     try:
         data = request.get_json()
@@ -35,11 +37,13 @@ def create_order_controller():
         # So we just rely on its success status.
         if status_code not in [200, 201]:
             # Business logic failed, release the lock so they can try again with the same token!
-            redis_client.delete(lock_key)
+            if lock_key:
+                redis_client.delete(lock_key)
             
         return jsonify(response), status_code
     except Exception as e:
-        redis_client.delete(lock_key)
+        if lock_key:
+            redis_client.delete(lock_key)
         raise e
 
 

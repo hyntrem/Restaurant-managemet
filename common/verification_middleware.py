@@ -7,6 +7,21 @@ def require_verification(purpose):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
+            # Try to get role from request (set by other middlewares)
+            user_role = getattr(request, 'user_role', None)
+            
+            # If not set, try to decode from Authorization header
+            if not user_role:
+                from common.auth import verify_token
+                payload = verify_token(request)
+                if payload:
+                    user_role = payload.get('role')
+            
+            # If user is staff (not CUSTOMER and not None), skip verification
+            if user_role and user_role != 'CUSTOMER':
+                g.verification = {}
+                return f(*args, **kwargs)
+
             auth_header = request.headers.get("X-Verification-Token")
             if not auth_header:
                 return jsonify({
