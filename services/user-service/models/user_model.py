@@ -1,7 +1,5 @@
 from common.database import SessionLocal
 from sqlalchemy import text
-
-
 def create_user(
     full_name,
     username,

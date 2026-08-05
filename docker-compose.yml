@@ -210,15 +210,23 @@ services:
     networks:
       - restaurant_network
 
-  frontend:
+  customer-frontend:
     image: nginx:alpine
-    container_name: frontend_service
+    container_name: customer_frontend
     ports:
       - "3000:80"
     volumes:
       - ./frontend:/usr/share/nginx/html:ro
-    networks:
-      - restaurant_network
+      - ./nginx/customer.conf:/etc/nginx/conf.d/default.conf:ro
+
+  staff-frontend:
+    image: nginx:alpine
+    container_name: staff_frontend
+    ports:
+      - "3001:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+      - ./nginx/staff.conf:/etc/nginx/conf.d/default.conf:ro
 
   api-gateway:
     build:
