@@ -3,7 +3,7 @@
    Đổi MOCK_MODE = false khi backend sẵn sàng
 ───────────────────────────────────────────── */
 (function () {
-  const BASE_URL = "http://localhost:8080";
+  const BASE_URL = "http://57.158.27.22:8080";
   const MOCK_MODE = false;
 
   /* ── MOCK DATA ── */
@@ -140,7 +140,7 @@
     }
   };
   // ── INVENTORY SERVICE (port 5003) ──
-  const INVENTORY_URL = "http://localhost:8080/api/inventory";
+  const INVENTORY_URL = "http://57.158.27.22:8080/api/inventory";
 
   globalThis.inventoryPost = async function(path, body) {
     try {

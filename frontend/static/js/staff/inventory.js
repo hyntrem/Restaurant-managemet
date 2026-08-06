@@ -658,7 +658,7 @@ globalThis.InventoryApp.deductStockForOrder = async function (orderItems) {
             if (token) headers["Authorization"] = `Bearer ${token}`;
 
             
-            const baseUrl = globalThis.API_BASE_URL || globalThis.BASE_URL || globalThis.ORDER_API_URL || "http://localhost:8080";
+            const baseUrl = globalThis.API_BASE_URL || globalThis.BASE_URL || globalThis.ORDER_API_URL || "http://57.158.27.22:8080";
             
           
             const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;

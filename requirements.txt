@@ -12,3 +12,8 @@ pytest-mock
 pytest-cov
 selenium
 redis
+apscheduler
+
+mysql-connector-python
+pandas
+mlxtend

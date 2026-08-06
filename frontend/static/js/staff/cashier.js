@@ -352,7 +352,7 @@
       const headers = { "Content-Type": "application/json" };
       if (token) headers["Authorization"] = `Bearer ${token}`;
 
-      const response = await fetch("http://localhost:8080/api/orders/", {
+      const response = await fetch("http://57.158.27.22:8080/api/orders/", {
         method: "GET",
         headers: headers
       });

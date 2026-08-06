@@ -1,5 +1,5 @@
 // API Gateway Configuration
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = 'http://57.158.27.22:8080';
 
 // Default Image for Menu Items
 const DEFAULT_MENU_IMAGE = 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&q=80';

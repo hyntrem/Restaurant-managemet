@@ -10,7 +10,7 @@
     /*=========================================================
         CONFIG (Đã được cấu hình chuẩn theo Microservices)
     =========================================================*/
-    const GATEWAY_URL = "http://localhost:8080";
+    const GATEWAY_URL = "http://57.158.27.22:8080";
     const USER_API = GATEWAY_URL + "/api/users";
     const ORDER_API = GATEWAY_URL + "/api/orders";
     const TABLE_API = GATEWAY_URL + "/api/tables";
