@@ -1,11 +1,23 @@
 # PIZZA 4P's - Hệ thống quản nhà hàng 
 Hệ thống quản lý nhà hàng theo kiến trúc Microservices dành cho chuỗi nhà hàng Pizza, hỗ trợ quản lý khách hàng, thực đơn, bàn ăn, đơn hàng, bếp, kho nguyên liệu, thanh toán, báo cáo và phân tích dữ liệu. Dự án được xây dựng nhằm số hóa toàn bộ quy trình vận hành nhà hàng, từ đặt món → bếp → thanh toán → quản lý kho → báo cáo → Data Warehouse, đáp ứng khả năng mở rộng cho nhiều chi nhánh.
 # Demo
-Customer Website: http://localhost:3000
+## 🌐 Website Khách hàng
+Truy cập: http://57.158.27.22:3000
+Người dùng có thể:
+- Đăng ký tài khoản mới để trải nghiệm hệ thống.
+- Hoặc đăng nhập bằng tài khoản mẫu:
 
-Staff Dashboard: http://localhost:3000/staff
-
-API Gateway: http://localhost:8080
+- **Tên đăng nhập:** `hyntrem`
+- **Mật khẩu:** `1234`
+---
+## 👨‍💼 Website Quản trị (Nhân viên/Admin)
+Truy cập: http://57.158.27.22:3001
+Tài khoản quản trị:
+- **Tên đăng nhập:** `admin`
+- **Mật khẩu:** `admin123`
+---
+## 🔗 API Gateway
+Truy cập: http://57.158.27.22:8080
 # Mục lục
 - [Giới thiệu](#-giới-thiệu)
 - [Kiến trúc hệ thống](#-kiến-trúc-hệ-thống)
