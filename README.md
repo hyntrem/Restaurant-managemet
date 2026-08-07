@@ -626,11 +626,6 @@ Report Service là trung tâm phân tích dữ liệu của hệ thống, chịu
 - Phân tích hiệu suất chi nhánh
 - Thực hiện Data Mining
 - Cung cấp Dashboard và báo cáo thống kê
-## Tài khoản Demo
-Admin
-Username: admin
-
-Password: admin123
 ## Production
 
 Checklist
