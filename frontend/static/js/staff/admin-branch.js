@@ -2,8 +2,8 @@
    admin-branch.js
    Dùng cho: frontend/templates/staff/admin-dashboard.html
    Backend: Branch Service qua API Gateway
-   API base: http://localhost:5007/api/branches
-   Audit base: http://localhost:5007/api/audit-logs
+   API base: http://57.158.27.22:8080/api/branches
+   Audit base: http://57.158.27.22:8080/api/audit-logs
 ========================================================== */
 
 (function () {
